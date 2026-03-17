@@ -1,0 +1,199 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #F0F2F8;
+}
+
+.admin-sidebar {
+  width: $admin-sidebar-width;
+  background: #1A1D2E;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: $z-fixed;
+  transform: translateX(-100%);
+  transition: transform $transition-base;
+
+  @include lg {
+    position: sticky;
+    transform: none;
+  }
+
+  &--open {
+    transform: translateX(0);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-lg;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__logo {
+    font-size: 1.8rem;
+  }
+
+  &__brand {
+    font-family: $font-heading;
+    font-size: 1.2rem;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  &__close {
+    color: white;
+    font-size: 1.3rem;
+    @include flex-center;
+
+    @include lg { display: none; }
+  }
+
+  &__nav {
+    flex: 1;
+    padding: $space-md;
+    overflow-y: auto;
+    @include custom-scrollbar;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-sm $space-md;
+    border-radius: $radius-lg;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    transition: all $transition-base;
+
+    &:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &--active {
+      color: white;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+  }
+
+  &__footer {
+    padding: $space-md;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-sm;
+    margin-bottom: $space-sm;
+  }
+
+  &__avatar {
+    @include flex-center;
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-full;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  &__name {
+    display: block;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  &__role {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  &__logout {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    width: 100%;
+    padding: $space-sm $space-md;
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: $radius;
+    font-size: 0.85rem;
+    transition: all $transition-base;
+
+    &:hover {
+      color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
+}
+
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: $z-modal-backdrop;
+
+  @include lg { display: none; }
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-topbar {
+  @include flex-between;
+  padding: $space-md $space-lg;
+  background: white;
+  border-bottom: 1px solid #E2E4EC;
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+
+  &__menu {
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    border-radius: $radius;
+    font-size: 1.3rem;
+    color: #1A1D2E;
+
+    @include lg { display: none; }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.2rem;
+  }
+
+  &__view-site {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    transition: color $transition-base;
+
+    &:hover { color: var(--color-primary-dark); }
+  }
+}
+
+.admin-content {
+  flex: 1;
+  padding: $space-lg;
+
+  @include md { padding: $space-xl; }
+}

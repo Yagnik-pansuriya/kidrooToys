@@ -1,0 +1,235 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+// Shared Admin Styles
+.admin-products {
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+    margin-bottom: $space-xl;
+
+    h1 { font-family: $font-heading; font-size: 1.8rem; }
+  }
+
+  &__table-wrap {
+    background: white;
+    border-radius: $radius-xl;
+    overflow-x: auto;
+    box-shadow: $shadow-sm;
+    @include custom-scrollbar;
+  }
+
+  &__thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: $radius;
+    object-fit: cover;
+  }
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+
+  th, td {
+    padding: $space-md;
+    text-align: left;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  th {
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.75rem;
+    background: #F8F9FC;
+    border-bottom: 2px solid #E2E4EC;
+  }
+
+  td {
+    border-bottom: 1px solid #F0F2F8;
+    color: var(--color-text-secondary);
+  }
+
+  .td-bold {
+    font-weight: 700;
+    color: #1A1D2E;
+  }
+
+  tr:hover td {
+    background: #FAFBFE;
+  }
+}
+
+.admin-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: $radius-full;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(123, 47, 247, 0.08);
+  color: var(--color-secondary);
+  text-transform: capitalize;
+}
+
+.admin-actions {
+  display: flex;
+  gap: $space-xs;
+}
+
+.admin-action-btn {
+  @include flex-center;
+  width: 34px;
+  height: 34px;
+  border-radius: $radius;
+  transition: all $transition-base;
+
+  &--edit {
+    color: var(--color-secondary);
+    &:hover { background: rgba(123, 47, 247, 0.1); }
+  }
+
+  &--delete {
+    color: var(--color-danger);
+    &:hover { background: rgba(239, 68, 68, 0.1); }
+  }
+}
+
+.admin-btn {
+  @include btn-base;
+  border-radius: $radius-lg;
+  padding: $space-sm $space-lg;
+
+  &--primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    &:hover { transform: translateY(-2px); box-shadow: $shadow-glow; }
+  }
+
+  &--secondary {
+    background: #F0F2F8;
+    color: var(--color-text-primary);
+    &:hover { background: #E2E4EC; }
+  }
+}
+
+// Modal
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  @include flex-center;
+  z-index: $z-modal;
+  padding: $space-md;
+  animation: fadeIn 0.2s ease;
+}
+
+.admin-modal {
+  background: white;
+  border-radius: $radius-xl;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: scaleIn 0.3s ease;
+  @include custom-scrollbar;
+
+  &__header {
+    @include flex-between;
+    padding: $space-lg;
+    border-bottom: 1px solid #E2E4EC;
+
+    h2 { font-family: $font-heading; font-size: 1.3rem; }
+
+    button {
+      @include flex-center;
+      width: 36px; height: 36px;
+      border-radius: $radius-full;
+      font-size: 1.2rem;
+      color: var(--color-text-muted);
+      &:hover { background: #F0F2F8; color: var(--color-danger); }
+    }
+  }
+
+  &__form {
+    padding: $space-lg;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-sm;
+    padding-top: $space-lg;
+    border-top: 1px solid #E2E4EC;
+    margin-top: $space-lg;
+  }
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-md;
+}
+
+.admin-field {
+  &--full {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-bottom: $space-xxs;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: $space-sm $space-md;
+    border: 2px solid #E2E4EC;
+    border-radius: $radius;
+    font-size: 0.9rem;
+    transition: border-color $transition-base;
+
+    &:focus { border-color: var(--color-primary); }
+  }
+
+  textarea { resize: vertical; }
+
+  &__preview {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: $radius;
+    margin-top: $space-xs;
+  }
+}
+
+.mt-2 { margin-top: $space-xs; }
+
+.admin-checkboxes {
+  display: flex;
+  gap: $space-lg;
+  flex-wrap: wrap;
+}
+
+.admin-checkbox {
+  display: flex !important;
+  align-items: center;
+  gap: $space-xs;
+  font-weight: 600 !important;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--color-primary);
+  }
+}

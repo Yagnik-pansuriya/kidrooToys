@@ -1,0 +1,119 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.admin-login {
+  min-height: 100vh;
+  @include flex-center;
+  background: linear-gradient(135deg, #1A1D2E 0%, #2D1B69 50%, #1A1D2E 100%);
+  padding: $space-lg;
+
+  &__card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    border-radius: $radius-2xl;
+    box-shadow: $shadow-elevated;
+    overflow: hidden;
+    animation: scaleIn 0.5s ease;
+  }
+
+  &__header {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: $space-2xl;
+    text-align: center;
+    color: white;
+
+    h1 {
+      font-family: $font-heading;
+      font-size: 1.8rem;
+      color: white;
+      margin: $space-sm 0 $space-xxs;
+    }
+
+    p {
+      opacity: 0.85;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__icon {
+    font-size: 3rem;
+    display: block;
+    animation: bounce 2s ease infinite;
+  }
+
+  &__form {
+    padding: $space-xl;
+  }
+
+  &__error {
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--color-danger);
+    padding: $space-sm $space-md;
+    border-radius: $radius;
+    margin-bottom: $space-md;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    animation: slideUp 0.3s ease;
+  }
+
+  &__field {
+    margin-bottom: $space-lg;
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--color-text-secondary);
+      margin-bottom: $space-xs;
+    }
+
+    input {
+      width: 100%;
+      padding: $space-md;
+      border: 2px solid var(--color-border);
+      border-radius: $radius-lg;
+      font-size: 0.95rem;
+      transition: border-color $transition-base;
+
+      &:focus {
+        border-color: var(--color-primary);
+      }
+    }
+  }
+
+  &__btn {
+    @include btn-base;
+    width: 100%;
+    padding: $space-md;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    border-radius: $radius-lg;
+    font-size: 1rem;
+    margin-bottom: $space-md;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: $shadow-glow;
+    }
+  }
+
+  &__spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  &__hint {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+}

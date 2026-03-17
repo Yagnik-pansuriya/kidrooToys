@@ -1,0 +1,217 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-sticky;
+  padding: $space-sm 0;
+  transition: all $transition-base;
+  background: transparent;
+
+  &--scrolled {
+    @include glass(0.92);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+    padding: $space-xs 0;
+  }
+
+  &__container {
+    @include container;
+    @include flex-between;
+    gap: $space-lg;
+  }
+
+  &__logo {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  &__logo-text {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  &__logo-icon {
+    font-size: 1.8rem;
+    animation: bounce 2s ease infinite;
+  }
+
+  &__logo-name {
+    font-family: $font-heading;
+    font-size: 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  &__nav {
+    display: none;
+    align-items: center;
+    gap: $space-xs;
+
+    @include lg {
+      display: flex;
+    }
+  }
+
+  &__nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: $space-xs $space-md;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    border-radius: $radius;
+    transition: all $transition-base;
+
+    &:hover {
+      color: var(--color-primary);
+      background: rgba(255, 107, 53, 0.08);
+    }
+
+    &--active {
+      color: var(--color-primary);
+      background: rgba(255, 107, 53, 0.1);
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 20px;
+        height: 3px;
+        background: var(--color-primary);
+        border-radius: $radius-full;
+      }
+    }
+  }
+
+  &__nav-badge {
+    font-size: 0.75rem;
+    animation: pulse 1.5s ease infinite;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+  }
+
+  &__action-btn {
+    @include flex-center;
+    width: 42px;
+    height: 42px;
+    border-radius: $radius-full;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    transition: all $transition-base;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-primary);
+      background: rgba(255, 107, 53, 0.1);
+      transform: scale(1.05);
+    }
+  }
+
+  &__cart-btn {
+    position: relative;
+  }
+
+  &__cart-count {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: white;
+    background: var(--color-primary);
+    border-radius: $radius-full;
+    padding: 0 4px;
+    animation: scaleIn $transition-spring;
+  }
+
+  &__mobile-toggle {
+    display: flex;
+    @include flex-center;
+    width: 42px;
+    height: 42px;
+    border-radius: $radius;
+    font-size: 1.4rem;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    background: transparent;
+    border: none;
+
+    @include lg {
+      display: none;
+    }
+  }
+
+  &__mobile-menu {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    @include glass(0.98);
+    padding: $space-lg;
+    transform: translateX(100%);
+    transition: transform $transition-base;
+    z-index: $z-modal;
+
+    @include lg {
+      display: none;
+    }
+
+    &--open {
+      transform: translateX(0);
+    }
+  }
+
+  &__mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: $space-xs;
+  }
+
+  &__mobile-link {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-md $space-lg;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    border-radius: $radius-lg;
+    transition: all $transition-base;
+
+    &:hover,
+    &--active {
+      color: var(--color-primary);
+      background: rgba(255, 107, 53, 0.08);
+    }
+  }
+}

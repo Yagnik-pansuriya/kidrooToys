@@ -1,0 +1,176 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.cart-page {
+  padding-top: 60px;
+  &__hero {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: $space-2xl 0;
+    h1 { display: flex; align-items: center; gap: $space-sm; font-family: $font-heading; font-size: 2rem; color: white; }
+  }
+}
+
+.cart-empty {
+  @include flex-center;
+  flex-direction: column;
+  gap: $space-md;
+  padding: $space-3xl 0;
+  text-align: center;
+
+  &__icon { font-size: 5rem; opacity: 0.4; }
+  h2 { font-family: $font-heading; }
+  p { color: var(--color-text-muted); }
+  &__btn {
+    @include btn-base;
+    background: var(--color-primary);
+    color: white;
+    border-radius: $radius-full;
+    &:hover { background: var(--color-primary-dark); }
+  }
+}
+
+.cart-layout {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xl;
+  padding: $space-xl 0;
+
+  @include lg { flex-direction: row; align-items: flex-start; }
+}
+
+.cart-items {
+  flex: 1;
+
+  &__header {
+    @include flex-between;
+    margin-bottom: $space-md;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  &__clear {
+    color: var(--color-danger);
+    font-weight: 600;
+    font-size: 0.85rem;
+    &:hover { text-decoration: underline; }
+  }
+}
+
+.cart-item {
+  @include card;
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-md;
+  border-radius: $radius-lg;
+  margin-bottom: $space-sm;
+  flex-wrap: wrap;
+
+  &__img {
+    width: 80px; height: 80px;
+    border-radius: $radius;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  &__info { flex: 1; min-width: 120px; }
+  &__name { font-weight: 600; font-size: 0.95rem; display: block; margin-bottom: 2px; }
+  &__category { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; display: block; margin-bottom: 4px; }
+  &__price { font-weight: 700; color: var(--color-primary); }
+
+  &__qty {
+    display: flex; align-items: center; gap: $space-sm;
+    button {
+      @include flex-center;
+      width: 32px; height: 32px;
+      border-radius: $radius-full;
+      border: 1px solid var(--color-border);
+      transition: all $transition-fast;
+      &:hover { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    }
+    span { font-weight: 700; min-width: 24px; text-align: center; }
+  }
+
+  &__subtotal {
+    font-family: $font-heading;
+    font-weight: 700;
+    font-size: 1.1rem;
+    min-width: 70px;
+    text-align: right;
+  }
+
+  &__remove {
+    color: var(--color-text-muted);
+    padding: $space-xs;
+    border-radius: $radius;
+    transition: all $transition-base;
+    &:hover { color: var(--color-danger); background: rgba(239, 68, 68, 0.1); }
+  }
+}
+
+.cart-summary {
+  @include card;
+  border-radius: $radius-xl;
+  padding: $space-xl;
+  flex-shrink: 0;
+
+  @include lg { width: 340px; position: sticky; top: 90px; }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.3rem;
+    margin-bottom: $space-lg;
+  }
+
+  &__row {
+    @include flex-between;
+    margin-bottom: $space-sm;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+
+    &--total {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      span:last-child { color: var(--color-primary); font-family: $font-heading; font-size: 1.4rem; }
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: $space-md 0;
+  }
+
+  &__note {
+    font-size: 0.8rem;
+    color: var(--color-accent);
+    background: rgba(0, 212, 170, 0.08);
+    padding: $space-sm;
+    border-radius: $radius;
+    text-align: center;
+    margin: $space-md 0;
+  }
+
+  &__checkout {
+    @include btn-base;
+    width: 100%;
+    padding: $space-md;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    border-radius: $radius-lg;
+    font-size: 1rem;
+    margin-bottom: $space-sm;
+    &:hover { transform: translateY(-2px); box-shadow: $shadow-glow; }
+  }
+
+  &__continue {
+    @include flex-center;
+    gap: $space-xs;
+    width: 100%;
+    padding: $space-sm;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    &:hover { color: var(--color-primary); }
+  }
+}

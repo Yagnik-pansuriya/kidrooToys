@@ -1,0 +1,61 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.offers-page {
+  padding-top: 60px;
+
+  &__hero {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: $space-3xl 0;
+    text-align: center;
+    color: white;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 2rem;
+    color: white;
+    margin-bottom: $space-xs;
+
+    @include md {
+      font-size: 2.8rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+  }
+
+  &__grid {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2xl;
+    padding: $space-2xl 0;
+  }
+
+  &__item {
+    animation: slideUp 0.5s ease;
+  }
+
+  &__empty {
+    @include flex-center;
+    flex-direction: column;
+    gap: $space-md;
+    padding: $space-3xl;
+    text-align: center;
+
+    span {
+      font-size: 4rem;
+    }
+
+    h3 {
+      font-family: $font-heading;
+      font-size: 1.5rem;
+    }
+
+    p {
+      color: var(--color-text-muted);
+    }
+  }
+}
