@@ -1,13 +1,3 @@
-# Node modules
-node_modules/
-
-# Environment files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # Logs
 logs
 *.log
@@ -15,11 +5,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Build outputs
-dist/
-dist-ssr/
-build/
+node_modules
+dist
+dist-ssr
+*.local
 
 # Editor directories and files
 .vscode/*
@@ -31,6 +22,3 @@ build/
 *.njsproj
 *.sln
 *.sw?
-
-# OS files
-Thumbs.db
