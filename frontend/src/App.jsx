@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { CartProvider } from './context/CartContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 
 // User Layout
 import Header from './components/Header/Header';
@@ -34,9 +34,11 @@ const UserLayout = ({ children }) => (
   </>
 );
 
+import { useSelector } from 'react-redux';
+
 // Protected Route
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useSelector((state) => state.auth);
   if (!isAuthenticated) return <Navigate to="/admin" replace />;
   return children;
 };

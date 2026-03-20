@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiGrid, FiBox, FiShoppingBag, FiTag, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
-import { useAuth } from '../../../context/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../../store/ReducerApi/authSlice';
 import './AdminLayout.scss';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { logout, user } = useAuth();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/admin');
   };
 

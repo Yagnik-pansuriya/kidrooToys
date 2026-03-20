@@ -25,7 +25,23 @@
     height: 50px;
     border-radius: $radius;
     object-fit: cover;
+
+    &--placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F0F2F8;
+      color: var(--color-text-muted);
+      font-size: 1.2rem;
+    }
   }
+}
+
+.admin-loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--color-text-muted);
+  font-size: 1rem;
 }
 
 .admin-table {
@@ -209,6 +225,21 @@
     object-fit: cover;
     border-radius: $radius;
     margin-top: $space-xs;
+  }
+
+  &__previews {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-xs;
+    margin-top: $space-xs;
+
+    img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: $radius;
+      border: 2px solid #E2E4EC;
+    }
   }
 }
 

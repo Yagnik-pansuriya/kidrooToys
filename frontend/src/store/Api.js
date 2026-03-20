@@ -4,7 +4,7 @@ const BASE_URL = 'http://localhost:5000/api/';
 
 export const API_ENDPOINTS = {
   LOGIN: 'auth/login',
-
+  PRODUCTS: 'products',
 };
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
@@ -22,5 +22,6 @@ const baseQuery = fetchBaseQuery({
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery,
+  tagTypes: ['Products'],
   endpoints: () => ({}),
 });
