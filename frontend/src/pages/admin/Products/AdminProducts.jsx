@@ -7,9 +7,10 @@ import {
   useUpdateProductMutation,
   useDeleteProductMutation,
 } from '../../../store/ActionApi/productApi';
+import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 import './AdminProducts.scss';
 
-const CATEGORIES = ['vehicles', 'dolls', 'puzzles', 'blocks', 'outdoor', 'educational', 'arts', 'sports'];
+// Dynamic categories from Redux store/API instead of hardcoded list
 
 const emptyForm = {
   productName: '',
@@ -41,11 +42,13 @@ const AdminProducts = () => {
 
   // ── RTK Query hooks & Redux ────────────────────────────────────
   const { isLoading: loadingProducts } = useGetProductsQuery();
+  const { isLoading: loadingCategories } = useGetCategoriesQuery();
   const [addProduct,    { isLoading: adding }]   = useAddProductMutation();
   const [updateProduct, { isLoading: updating }] = useUpdateProductMutation();
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
 
   const productList = useSelector((state) => state.product.products) || [];
+  const categoryOptions = useSelector((state) => state.category.categories) || [];
   const isBusy = adding || updating;
 
   // ── Modal helpers ──────────────────────────────────────────────
@@ -66,7 +69,7 @@ const AdminProducts = () => {
       originalPrice: product.originalPrice ?? '',
       discountPercentage: product.discountPercentage ?? '',
       stock: product.stock ?? '',
-      category: product.category || '',
+      category: (product.category?._id || product.category) || '',
       ratings: product.ratings ?? '',
       numReviews: product.numReviews ?? '',
       featured: product.featured ?? false,
@@ -185,7 +188,7 @@ const AdminProducts = () => {
                       }
                     </td>
                     <td className="td-bold">{product.productName || product.name}</td>
-                    <td><span className="admin-tag">{product.category}</span></td>
+                    <td><span className="admin-tag">{product.category?.catagoryName || product.category}</span></td>
                     <td className="td-bold">${Number(product.price || 0).toFixed(2)}</td>
                     <td>
                       <span className={`status ${product.stock > 0 ? 'status--delivered' : 'status--cancelled'}`}>
@@ -348,8 +351,10 @@ const AdminProducts = () => {
                     required
                   >
                     <option value="">Select Category</option>
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                    {categoryOptions.map((c) => (
+                      <option key={c._id || c.id} value={c._id || c.id}>
+                        {c.catagoryName}
+                      </option>
                     ))}
                   </select>
                 </div>

@@ -19,6 +19,7 @@ import Cart from './pages/user/Cart/Cart';
 import AdminLogin from './pages/admin/AdminLogin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard/Dashboard';
+import AdminCategories from './pages/admin/Categories/AdminCategories';
 import AdminProducts from './pages/admin/Products/AdminProducts';
 import AdminOrders from './pages/admin/Orders/AdminOrders';
 import AdminOffers from './pages/admin/Offers/AdminOffers';
@@ -61,6 +62,7 @@ function App() {
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="categories" element={<AdminCategories />} />
                 <Route path="products" element={<AdminProducts />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="offers" element={<AdminOffers />} />

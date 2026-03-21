@@ -18,6 +18,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { to: '/admin/dashboard', icon: <FiGrid />, label: 'Dashboard' },
+    { to: '/admin/categories', icon: <FiGrid />, label: 'Categories' },
     { to: '/admin/products', icon: <FiBox />, label: 'Products' },
     { to: '/admin/orders', icon: <FiShoppingBag />, label: 'Orders' },
     { to: '/admin/offers', icon: <FiTag />, label: 'Offers' },
