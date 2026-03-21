@@ -1,9 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-const path = location.hostname;
-if(path === 'localhost'){
+let path = location.hostname;
+if (path === 'localhost') {
   path = 'http://localhost:5000/api/';
-}
-else{
+} else {
   path = 'https://kidrooapi.vercel.app/api/';
 }
 const BASE_URL = import.meta.env.VITE_API_URL || path;
