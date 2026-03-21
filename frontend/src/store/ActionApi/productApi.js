@@ -1,4 +1,5 @@
 import { baseApi, API_ENDPOINTS } from '../Api';
+import { setProducts } from '../ReducerApi/productSlice';
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -7,6 +8,16 @@ export const productApi = baseApi.injectEndpoints({
     getProducts: builder.query({
       query: () => API_ENDPOINTS.PRODUCTS,
       providesTags: ['Products'],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          // Action sets products. API provides payload under `data.data` (as seen in request block) or fallback to `data`.
+          const productsArray = data?.data || data;
+          dispatch(setProducts(productsArray));
+        } catch (err) {
+          console.error('Failed to load products automatically', err);
+        }
+      },
     }),
 
     // POST /api/products  (multipart/form-data — name, description, price, category, images[])

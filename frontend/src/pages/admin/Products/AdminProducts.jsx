@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiLoader } from 'react-icons/fi';
 import {
   useGetProductsQuery,
@@ -11,10 +12,23 @@ import './AdminProducts.scss';
 const CATEGORIES = ['vehicles', 'dolls', 'puzzles', 'blocks', 'outdoor', 'educational', 'arts', 'sports'];
 
 const emptyForm = {
-  name: '',
+  productName: '',
+  slug: '',
   description: '',
   price: '',
+  originalPrice: '',
+  discountPercentage: '',
+  stock: '',
   category: '',
+  ratings: '',
+  numReviews: '',
+  featured: false,
+  newArrival: false,
+  bestSeller: false,
+  ageRangeFrom: '',
+  ageRangeTo: '',
+  tags: '',
+  isActive: true,
   images: [],          // File objects for NEW uploads
   previewUrls: [],     // Data-URL strings for preview
 };
@@ -25,13 +39,13 @@ const AdminProducts = () => {
   const [form, setForm] = useState(emptyForm);
   const [apiError, setApiError] = useState('');
 
-  // ── RTK Query hooks ────────────────────────────────────────────
-  const { data: productsData, isLoading: loadingProducts } = useGetProductsQuery();
+  // ── RTK Query hooks & Redux ────────────────────────────────────
+  const { isLoading: loadingProducts } = useGetProductsQuery();
   const [addProduct,    { isLoading: adding }]   = useAddProductMutation();
   const [updateProduct, { isLoading: updating }] = useUpdateProductMutation();
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
 
-  const productList = productsData?.data || productsData || [];
+  const productList = useSelector((state) => state.product.products) || [];
   const isBusy = adding || updating;
 
   // ── Modal helpers ──────────────────────────────────────────────
@@ -45,10 +59,23 @@ const AdminProducts = () => {
   const openEdit = (product) => {
     setEditing(product);
     setForm({
-      name: product.name || '',
+      productName: product.productName || product.name || '',
+      slug: product.slug || '',
       description: product.description || '',
       price: product.price ?? '',
+      originalPrice: product.originalPrice ?? '',
+      discountPercentage: product.discountPercentage ?? '',
+      stock: product.stock ?? '',
       category: product.category || '',
+      ratings: product.ratings ?? '',
+      numReviews: product.numReviews ?? '',
+      featured: product.featured ?? false,
+      newArrival: product.newArrival ?? false,
+      bestSeller: product.bestSeller ?? false,
+      ageRangeFrom: product.ageRange?.from ?? '',
+      ageRangeTo: product.ageRange?.to ?? '',
+      tags: Array.isArray(product.tags) ? product.tags.join(',') : (product.tags || ''),
+      isActive: product.isActive ?? true,
       images: [],
       previewUrls: product.images || [],
     });
@@ -65,13 +92,25 @@ const AdminProducts = () => {
     setForm((p) => ({ ...p, images: files, previewUrls: urls }));
   };
 
-  // ── Build FormData matching API: name, description, price, category, images[] ──
+  // ── Build FormData matching API
   const buildFormData = () => {
     const fd = new FormData();
-    fd.append('name', form.name);
+    fd.append('productName', form.productName);
+    fd.append('slug', form.slug);
     fd.append('description', form.description);
     fd.append('price', form.price);
+    fd.append('originalPrice', form.originalPrice);
+    fd.append('discountPercentage', form.discountPercentage);
+    fd.append('stock', form.stock);
     fd.append('category', form.category);
+    fd.append('ratings', form.ratings);
+    fd.append('numReviews', form.numReviews);
+    fd.append('featured', form.featured);
+    fd.append('newArrival', form.newArrival);
+    fd.append('bestSeller', form.bestSeller);
+    fd.append('ageRange', JSON.stringify({ from: Number(form.ageRangeFrom), to: Number(form.ageRangeTo) }));
+    fd.append('tags', form.tags);
+    fd.append('isActive', form.isActive);
     form.images.forEach((file) => fd.append('images', file));
     return fd;
   };
@@ -141,11 +180,11 @@ const AdminProducts = () => {
                   <tr key={product._id || product.id}>
                     <td>
                       {imgSrc
-                        ? <img src={imgSrc} alt={product.name} className="admin-products__thumb" />
+                        ? <img src={imgSrc} alt={product.productName || product.name} className="admin-products__thumb" />
                         : <div className="admin-products__thumb admin-products__thumb--placeholder"><FiImage /></div>
                       }
                     </td>
-                    <td className="td-bold">{product.name}</td>
+                    <td className="td-bold">{product.productName || product.name}</td>
                     <td><span className="admin-tag">{product.category}</span></td>
                     <td className="td-bold">${Number(product.price || 0).toFixed(2)}</td>
                     <td>
@@ -194,14 +233,26 @@ const AdminProducts = () => {
               {apiError && <div className="admin-login__error" style={{ marginBottom: '1rem' }}>{apiError}</div>}
 
               <div className="admin-form-grid">
-                {/* Name */}
+                {/* Product Name */}
                 <div className="admin-field admin-field--full">
                   <label>Product Name *</label>
                   <input
                     type="text"
-                    value={form.name}
-                    onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                    value={form.productName}
+                    onChange={(e) => setForm((p) => ({ ...p, productName: e.target.value }))}
                     placeholder="e.g. Wooden Toy Car"
+                    required
+                  />
+                </div>
+
+                {/* Slug */}
+                <div className="admin-field">
+                  <label>Slug *</label>
+                  <input
+                    type="text"
+                    value={form.slug}
+                    onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
+                    placeholder="e.g. wooden-toy-car"
                     required
                   />
                 </div>
@@ -216,6 +267,74 @@ const AdminProducts = () => {
                     value={form.price}
                     onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
                     placeholder="29.99"
+                    required
+                  />
+                </div>
+
+                {/* Original Price */}
+                <div className="admin-field">
+                  <label>Original Price *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={form.originalPrice}
+                    onChange={(e) => setForm((p) => ({ ...p, originalPrice: e.target.value }))}
+                    placeholder="39.99"
+                    required
+                  />
+                </div>
+
+                {/* Discount Percentage */}
+                <div className="admin-field">
+                  <label>Discount Percentage *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.discountPercentage}
+                    onChange={(e) => setForm((p) => ({ ...p, discountPercentage: e.target.value }))}
+                    placeholder="25"
+                    required
+                  />
+                </div>
+
+                {/* Stock */}
+                <div className="admin-field">
+                  <label>Stock *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.stock}
+                    onChange={(e) => setForm((p) => ({ ...p, stock: e.target.value }))}
+                    placeholder="100"
+                    required
+                  />
+                </div>
+
+                {/* Ratings */}
+                <div className="admin-field">
+                  <label>Ratings *</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    value={form.ratings}
+                    onChange={(e) => setForm((p) => ({ ...p, ratings: e.target.value }))}
+                    placeholder="4.5"
+                    required
+                  />
+                </div>
+
+                {/* Num Reviews */}
+                <div className="admin-field">
+                  <label>Num Reviews *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.numReviews}
+                    onChange={(e) => setForm((p) => ({ ...p, numReviews: e.target.value }))}
+                    placeholder="120"
                     required
                   />
                 </div>
@@ -235,14 +354,86 @@ const AdminProducts = () => {
                   </select>
                 </div>
 
+                {/* Tags */}
+                <div className="admin-field">
+                  <label>Tags * (comma separated)</label>
+                  <input
+                    type="text"
+                    value={form.tags}
+                    onChange={(e) => setForm((p) => ({ ...p, tags: e.target.value }))}
+                    placeholder="wooden,car,toy"
+                    required
+                  />
+                </div>
+
+                {/* Age Range From */}
+                <div className="admin-field">
+                  <label>Age Range From *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.ageRangeFrom}
+                    onChange={(e) => setForm((p) => ({ ...p, ageRangeFrom: e.target.value }))}
+                    placeholder="3"
+                    required
+                  />
+                </div>
+
+                {/* Age Range To */}
+                <div className="admin-field">
+                  <label>Age Range To *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.ageRangeTo}
+                    onChange={(e) => setForm((p) => ({ ...p, ageRangeTo: e.target.value }))}
+                    placeholder="8"
+                    required
+                  />
+                </div>
+
+                {/* Booleans / Toggles */}
+                <div className="admin-field">
+                  <label>Featured</label>
+                  <select value={form.featured} onChange={(e) => setForm((p) => ({ ...p, featured: e.target.value === 'true' }))}>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                  </select>
+                </div>
+
+                <div className="admin-field">
+                  <label>New Arrival</label>
+                  <select value={form.newArrival} onChange={(e) => setForm((p) => ({ ...p, newArrival: e.target.value === 'true' }))}>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                  </select>
+                </div>
+
+                <div className="admin-field">
+                  <label>Best Seller</label>
+                  <select value={form.bestSeller} onChange={(e) => setForm((p) => ({ ...p, bestSeller: e.target.value === 'true' }))}>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                  </select>
+                </div>
+
+                <div className="admin-field">
+                  <label>Is Active</label>
+                  <select value={form.isActive} onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.value === 'true' }))}>
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                  </select>
+                </div>
+
                 {/* Description */}
                 <div className="admin-field admin-field--full">
-                  <label>Description</label>
+                  <label>Description *</label>
                   <textarea
                     value={form.description}
                     onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                     rows={3}
                     placeholder="High-quality wooden toy car…"
+                    required
                   />
                 </div>
 
