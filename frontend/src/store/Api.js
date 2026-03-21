@@ -1,11 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-const BASE_URL = "https://kidroo-backend.vercel.app/api/";
-// const BASE_URL = "http://localhost:5000/api/";
+// const BASE_URL = "https://kidroo-backend.vercel.app/api/";
+const BASE_URL = "http://localhost:5000/api/";
 
 export const API_ENDPOINTS = {
   LOGIN: 'auth/login',
   PRODUCTS: 'products',
   CATEGORIES: 'categories',
+  OFFERS: 'offers',
 };
 
 const baseQuery = fetchBaseQuery({
@@ -24,6 +25,6 @@ const baseQuery = fetchBaseQuery({
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Products', 'Categories'],
+  tagTypes: ['Products', 'Categories', 'Offers'],
   endpoints: () => ({}),
 });

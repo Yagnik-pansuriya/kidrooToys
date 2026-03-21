@@ -3,6 +3,7 @@ import { baseApi } from './Api';
 import authReducer from './ReducerApi/authSlice';
 import productReducer from './ReducerApi/productSlice';
 import categoryReducer from './ReducerApi/categorySlice';
+import offerReducer from './ReducerApi/offerSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     auth: authReducer,
     product: productReducer,
     category: categoryReducer,
+    offer: offerReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseApi.middleware),
