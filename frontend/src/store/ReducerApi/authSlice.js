@@ -11,7 +11,6 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      // The API returns data inside a 'data' field (which we alias as user), and accessToken at the root level.
       const { data: user, accessToken } = action.payload;
       state.user = user;
       state.token = accessToken;

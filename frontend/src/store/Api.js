@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { logout } from './ReducerApi/authSlice';
 const BASE_URL = "https://kidroo-backend.vercel.app/api/";
 // const BASE_URL = "http://localhost:5000/api/";
 
@@ -21,10 +22,26 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+const baseQueryWithReauth = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
+  
+  if (result.error && result.error.status === 401) {
+    // Clear token & auth state
+    api.dispatch(logout());
+    
+    // Redirect to admin login if not already there
+    if (window.location.pathname !== '/admin') {
+      window.location.href = '/admin';
+    }
+  }
+  
+  return result;
+};
+
 // ─── Base API (all endpoints injected from feature files) ─────────────────────
 export const baseApi = createApi({
   reducerPath: 'api',
-  baseQuery,
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Products', 'Categories', 'Offers'],
   endpoints: () => ({}),
 });
