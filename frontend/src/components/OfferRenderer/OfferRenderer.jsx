@@ -24,11 +24,13 @@ const SliderOffer = ({ offer }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide(prev => (prev + 1) % offer.images.length);
-  }, [offer.images.length]);
+    const imgs = offer.image || offer.images || [];
+    setCurrentSlide(prev => (prev + 1) % imgs.length);
+  }, [offer.image, offer.images]);
 
   const prevSlide = () => {
-    setCurrentSlide(prev => (prev - 1 + offer.images.length) % offer.images.length);
+    const imgs = offer.image || offer.images || [];
+    setCurrentSlide(prev => (prev - 1 + imgs.length) % imgs.length);
   };
 
   useEffect(() => {
@@ -39,11 +41,11 @@ const SliderOffer = ({ offer }) => {
   return (
     <div className="offer-slider">
       <div className="offer-slider__track" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
-        {offer.images.map((img, i) => (
+        {(offer.image || offer.images || []).map((img, i) => (
           <div className="offer-slider__slide" key={i}>
             <img src={img} alt={`${offer.title} - Slide ${i + 1}`} />
             <div className="offer-slider__content" style={{ background: `linear-gradient(135deg, ${offer.bgColor}dd, ${offer.bgColor}88)` }}>
-              <span className="offer-slider__discount">{offer.discount}% OFF</span>
+              <span className="offer-slider__discount">{offer.discountPercentage || offer.discount}% OFF</span>
               <h2 className="offer-slider__title" style={{ color: offer.textColor }}>{offer.title}</h2>
               <p className="offer-slider__subtitle" style={{ color: offer.textColor }}>{offer.subtitle}</p>
               {offer.couponCode && (
@@ -56,12 +58,12 @@ const SliderOffer = ({ offer }) => {
           </div>
         ))}
       </div>
-      {offer.images.length > 1 && (
+      {(offer.image || offer.images || []).length > 1 && (
         <>
           <button className="offer-slider__arrow offer-slider__arrow--prev" onClick={prevSlide}><FiChevronLeft /></button>
           <button className="offer-slider__arrow offer-slider__arrow--next" onClick={nextSlide}><FiChevronRight /></button>
           <div className="offer-slider__dots">
-            {offer.images.map((_, i) => (
+            {(offer.image || offer.images || []).map((_, i) => (
               <button key={i} className={`offer-slider__dot ${i === currentSlide ? 'offer-slider__dot--active' : ''}`} onClick={() => setCurrentSlide(i)} />
             ))}
           </div>
@@ -82,10 +84,10 @@ const FullscreenPoster = ({ offer }) => {
   };
 
   return (
-    <div className="offer-poster" style={{ backgroundImage: `url(${offer.images[0]})` }}>
+    <div className="offer-poster" style={{ backgroundImage: `url(${(offer.image || offer.images || [])[0]})` }}>
       <div className="offer-poster__overlay" style={{ background: `linear-gradient(135deg, ${offer.bgColor}cc, ${offer.bgColor}66)` }}>
         <div className="offer-poster__content">
-          <div className="offer-poster__discount-badge">{offer.discount}% OFF</div>
+          <div className="offer-poster__discount-badge">{offer.discountPercentage || offer.discount}% OFF</div>
           <h1 className="offer-poster__title" style={{ color: offer.textColor }}>{offer.title}</h1>
           <p className="offer-poster__subtitle" style={{ color: offer.textColor }}>{offer.subtitle}</p>
           <p className="offer-poster__desc" style={{ color: `${offer.textColor}cc` }}>{offer.description}</p>
@@ -104,9 +106,9 @@ const FullscreenPoster = ({ offer }) => {
 const PostOffer = ({ offer }) => (
   <div className="offer-post">
     <div className="offer-post__image-wrap">
-      <img src={offer.images[0]} alt={offer.title} />
-      {offer.discount > 0 && (
-        <span className="offer-post__discount">{offer.discount}% OFF</span>
+      <img src={(offer.image || offer.images || [])[0]} alt={offer.title} />
+      {(offer.discountPercentage || offer.discount) > 0 && (
+        <span className="offer-post__discount">{offer.discountPercentage || offer.discount}% OFF</span>
       )}
     </div>
     <div className="offer-post__content" style={{ borderLeft: `4px solid ${offer.bgColor}` }}>
@@ -119,7 +121,7 @@ const PostOffer = ({ offer }) => (
             Code: {offer.couponCode}
           </span>
         )}
-        <span className="offer-post__valid">Valid until: {new Date(offer.validUntil).toLocaleDateString()}</span>
+        <span className="offer-post__valid">Valid until: {new Date(offer.validity?.to || offer.validUntil).toLocaleDateString()}</span>
       </div>
     </div>
   </div>
@@ -136,7 +138,7 @@ const BuyableOffer = ({ offer }) => {
     <div className="offer-buyable" style={{ background: `linear-gradient(135deg, ${offer.bgColor}15, ${offer.bgColor}05)`, border: `2px solid ${offer.bgColor}30` }}>
       <div className="offer-buyable__image">
         <img src={product.image} alt={product.name} />
-        <span className="offer-buyable__badge" style={{ background: offer.bgColor }}>{offer.discount}% OFF</span>
+        <span className="offer-buyable__badge" style={{ background: offer.bgColor }}>{offer.discountPercentage || offer.discount}% OFF</span>
       </div>
       <div className="offer-buyable__content">
         <span className="offer-buyable__flash" style={{ color: offer.bgColor }}>⚡ Flash Deal</span>

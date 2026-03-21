@@ -1,19 +1,25 @@
 import { useState } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiEye } from 'react-icons/fi';
-import { offers as initialOffers } from '../../../mock/offers';
 import OfferRenderer from '../../../components/OfferRenderer/OfferRenderer';
+import { useGetOffersQuery, useAddOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation } from '../../../store/ActionApi/offerApi';
 import './AdminOffers.scss';
 
 const AdminOffers = () => {
-  const [offerList, setOfferList] = useState(initialOffers);
+  const { data: offersResponse, isLoading: isOffersLoading } = useGetOffersQuery();
+  const offerList = offersResponse?.data || offersResponse || [];
+  
+  const [addOffer, { isLoading: isAdding }] = useAddOfferMutation();
+  const [updateOffer, { isLoading: isUpdating }] = useUpdateOfferMutation();
+  const [deleteOfferApi] = useDeleteOfferMutation();
+
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [preview, setPreview] = useState(null);
   const [form, setForm] = useState({
     title: '', subtitle: '', description: '', type: 'post',
-    images: [''], discount: '', couponCode: '', validUntil: '',
-    active: true, bgColor: '#FF6B35', textColor: '#FFFFFF',
-    productId: '', specialPrice: '',
+    images: [], existingImages: [], discountPercentage: '', couponCode: '', validFrom: '', validTo: '',
+    isActive: true, bgColor: '#FF6B35', textColor: '#FFFFFF',
+    targetUrl: ''
   });
 
   const offerTypes = [
@@ -25,49 +31,79 @@ const AdminOffers = () => {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ title: '', subtitle: '', description: '', type: 'post', images: [''], discount: '', couponCode: '', validUntil: '', active: true, bgColor: '#FF6B35', textColor: '#FFFFFF', productId: '', specialPrice: '' });
+    setForm({ title: '', subtitle: '', description: '', type: 'post', images: [], existingImages: [], discountPercentage: '', couponCode: '', validFrom: '', validTo: '', isActive: true, bgColor: '#FF6B35', textColor: '#FFFFFF', targetUrl: '' });
     setShowModal(true);
   };
 
   const openEdit = (offer) => {
-    setEditing(offer.id);
+    setEditing(offer._id);
+    const validFrom = offer.validity?.from ? new Date(offer.validity.from).toISOString().split('T')[0] : '';
+    const validTo = offer.validity?.to ? new Date(offer.validity.to).toISOString().split('T')[0] : '';
     setForm({
-      title: offer.title, subtitle: offer.subtitle, description: offer.description,
-      type: offer.type, images: offer.images, discount: offer.discount,
-      couponCode: offer.couponCode || '', validUntil: offer.validUntil,
-      active: offer.active, bgColor: offer.bgColor, textColor: offer.textColor,
-      productId: offer.productId || '', specialPrice: offer.specialPrice || '',
+      title: offer.title || '', subtitle: offer.subtitle || '', description: offer.description || '',
+      type: offer.type || 'post', images: [], existingImages: offer.image || offer.images || [], discountPercentage: offer.discountPercentage || '',
+      couponCode: offer.couponCode || '', validFrom, validTo,
+      isActive: offer.isActive !== undefined ? offer.isActive : true, bgColor: offer.bgColor || '#FF6B35', textColor: offer.textColor || '#FFFFFF',
+      targetUrl: offer.targetUrl || '',
     });
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this offer?')) {
-      setOfferList(prev => prev.filter(o => o.id !== id));
+      try {
+        await deleteOfferApi(id).unwrap();
+      } catch (err) {
+        console.error("Failed to delete", err);
+        alert("Failed to delete offer");
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const offerData = {
-      ...form,
-      discount: parseInt(form.discount) || 0,
-      productId: form.productId ? parseInt(form.productId) : null,
-      specialPrice: form.specialPrice ? parseFloat(form.specialPrice) : null,
-      images: form.images.filter(Boolean),
-    };
-
-    if (editing) {
-      setOfferList(prev => prev.map(o => o.id === editing ? { ...o, ...offerData } : o));
-    } else {
-      setOfferList(prev => [{ ...offerData, id: Date.now() }, ...prev]);
+    const formData = new FormData();
+    formData.append('title', form.title);
+    if (form.subtitle) formData.append('subtitle', form.subtitle);
+    if (form.description) formData.append('description', form.description);
+    if (form.type) formData.append('type', form.type);
+    if (form.discountPercentage !== '') formData.append('discountPercentage', form.discountPercentage);
+    if (form.couponCode) formData.append('couponCode', form.couponCode);
+    if (form.targetUrl) formData.append('targetUrl', form.targetUrl);
+    formData.append('isActive', form.isActive);
+    if (form.bgColor) formData.append('bgColor', form.bgColor);
+    if (form.textColor) formData.append('textColor', form.textColor);
+    
+    // validity
+    if (form.validFrom && form.validTo) {
+      formData.append('validity', JSON.stringify({ from: form.validFrom, to: form.validTo }));
     }
-    setShowModal(false);
+
+    form.images.forEach((file) => {
+      formData.append('images', file);
+    });
+
+    try {
+      if (editing) {
+        await updateOffer({ id: editing, formData }).unwrap();
+      } else {
+        await addOffer(formData).unwrap();
+      }
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to save offer", err);
+      alert("Failed to save offer: " + (err?.data?.message || err.message));
+    }
   };
 
-  const addImageField = () => setForm(p => ({ ...p, images: [...p.images, ''] }));
-  const updateImage = (index, value) => setForm(p => ({ ...p, images: p.images.map((img, i) => i === index ? value : img) }));
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setForm(p => ({ ...p, images: [...p.images, ...files] }));
+  };
+  
   const removeImage = (index) => setForm(p => ({ ...p, images: p.images.filter((_, i) => i !== index) }));
+
+  const isSubmitting = isAdding || isUpdating;
 
   return (
     <div className="admin-offers">
@@ -76,38 +112,43 @@ const AdminOffers = () => {
         <button className="admin-btn admin-btn--primary" onClick={openAdd}><FiPlus /> Add Offer</button>
       </div>
 
-      <div className="admin-offers__grid">
-        {offerList.map(offer => (
-          <div className="admin-offer-card" key={offer.id}>
-            <div className="admin-offer-card__header">
-              <div>
-                <span className={`admin-offer-card__type admin-offer-card__type--${offer.type}`}>
-                  {offerTypes.find(t => t.value === offer.type)?.label || offer.type}
-                </span>
-                <span className={`admin-offer-card__status ${offer.active ? 'admin-offer-card__status--active' : ''}`}>
-                  {offer.active ? 'Active' : 'Inactive'}
-                </span>
+      {isOffersLoading ? (
+        <p>Loading offers...</p>
+      ) : (
+        <div className="admin-offers__grid">
+          {(Array.isArray(offerList) ? offerList : []).map(offer => (
+            <div className="admin-offer-card" key={offer._id || offer.id}>
+              <div className="admin-offer-card__header">
+                <div>
+                  <span className={`admin-offer-card__type admin-offer-card__type--${offer.type}`}>
+                    {offerTypes.find(t => t.value === offer.type)?.label || offer.type}
+                  </span>
+                  <span className={`admin-offer-card__status ${offer.isActive ? 'admin-offer-card__status--active' : ''}`}>
+                    {offer.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                <div className="admin-actions">
+                  <button className="admin-action-btn admin-action-btn--edit" onClick={() => setPreview(offer)} title="Preview"><FiEye /></button>
+                  <button className="admin-action-btn admin-action-btn--edit" onClick={() => openEdit(offer)} title="Edit"><FiEdit2 /></button>
+                  <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(offer._id || offer.id)} title="Delete"><FiTrash2 /></button>
+                </div>
               </div>
-              <div className="admin-actions">
-                <button className="admin-action-btn admin-action-btn--edit" onClick={() => setPreview(offer)} title="Preview"><FiEye /></button>
-                <button className="admin-action-btn admin-action-btn--edit" onClick={() => openEdit(offer)} title="Edit"><FiEdit2 /></button>
-                <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(offer.id)} title="Delete"><FiTrash2 /></button>
+              <h3 className="admin-offer-card__title">{offer.title}</h3>
+              <p className="admin-offer-card__desc">{offer.subtitle}</p>
+              <div className="admin-offer-card__meta">
+                {offer.discountPercentage > 0 && <span className="admin-offer-card__discount">{offer.discountPercentage}% OFF</span>}
+                {offer.couponCode && <span className="admin-offer-card__coupon">{offer.couponCode}</span>}
+                {offer.validity?.to && <span className="admin-offer-card__date">Until: {new Date(offer.validity.to).toLocaleDateString()}</span>}
+              </div>
+              <div className="admin-offer-card__colors">
+                <span style={{ background: offer.bgColor }} />
+                <span style={{ background: offer.textColor, border: '1px solid #ddd' }} />
               </div>
             </div>
-            <h3 className="admin-offer-card__title">{offer.title}</h3>
-            <p className="admin-offer-card__desc">{offer.subtitle}</p>
-            <div className="admin-offer-card__meta">
-              {offer.discount > 0 && <span className="admin-offer-card__discount">{offer.discount}% OFF</span>}
-              {offer.couponCode && <span className="admin-offer-card__coupon">{offer.couponCode}</span>}
-              <span className="admin-offer-card__date">Until: {new Date(offer.validUntil).toLocaleDateString()}</span>
-            </div>
-            <div className="admin-offer-card__colors">
-              <span style={{ background: offer.bgColor }} />
-              <span style={{ background: offer.textColor, border: '1px solid #ddd' }} />
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+          {Array.isArray(offerList) && offerList.length === 0 && <p>No offers found.</p>}
+        </div>
+      )}
 
       {/* Preview Modal */}
       {preview && (
@@ -160,15 +201,19 @@ const AdminOffers = () => {
                 </div>
                 <div className="admin-field">
                   <label>Discount %</label>
-                  <input type="number" value={form.discount} onChange={(e) => setForm(p => ({ ...p, discount: e.target.value }))} />
+                  <input type="number" value={form.discountPercentage} onChange={(e) => setForm(p => ({ ...p, discountPercentage: e.target.value }))} />
                 </div>
                 <div className="admin-field">
                   <label>Coupon Code</label>
                   <input type="text" value={form.couponCode} onChange={(e) => setForm(p => ({ ...p, couponCode: e.target.value }))} />
                 </div>
                 <div className="admin-field">
-                  <label>Valid Until</label>
-                  <input type="date" value={form.validUntil} onChange={(e) => setForm(p => ({ ...p, validUntil: e.target.value }))} />
+                  <label>Valid From *</label>
+                  <input type="date" value={form.validFrom} onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} required />
+                </div>
+                <div className="admin-field">
+                  <label>Valid To *</label>
+                  <input type="date" value={form.validTo} onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} required />
                 </div>
                 <div className="admin-field">
                   <label>Background Color</label>
@@ -184,43 +229,46 @@ const AdminOffers = () => {
                     <input type="text" value={form.textColor} onChange={(e) => setForm(p => ({ ...p, textColor: e.target.value }))} />
                   </div>
                 </div>
-
-                {form.type === 'buyable' && (
-                  <>
-                    <div className="admin-field">
-                      <label>Product ID</label>
-                      <input type="number" value={form.productId} onChange={(e) => setForm(p => ({ ...p, productId: e.target.value }))} />
-                    </div>
-                    <div className="admin-field">
-                      <label>Special Price</label>
-                      <input type="number" step="0.01" value={form.specialPrice} onChange={(e) => setForm(p => ({ ...p, specialPrice: e.target.value }))} />
-                    </div>
-                  </>
-                )}
+                <div className="admin-field admin-field--full">
+                  <label>Target URL</label>
+                  <input type="text" value={form.targetUrl} onChange={(e) => setForm(p => ({ ...p, targetUrl: e.target.value }))} />
+                </div>
 
                 {/* Images */}
                 <div className="admin-field admin-field--full">
-                  <label>Images (URLs)</label>
-                  {form.images.map((img, i) => (
-                    <div className="image-input-row" key={i}>
-                      <input type="text" value={img} onChange={(e) => updateImage(i, e.target.value)} placeholder={`Image URL ${i + 1}`} />
-                      {form.images.length > 1 && <button type="button" className="image-input-remove" onClick={() => removeImage(i)}><FiX /></button>}
+                  <label>Images</label>
+                  {form.existingImages && form.existingImages.length > 0 && form.images.length === 0 && (
+                    <div style={{ marginBottom: '10px' }}>
+                      <p style={{ fontSize: '12px', color: '#666' }}>Current Images (Upload new files to replace these):</p>
+                      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginTop: '6px' }}>
+                        {form.existingImages.map((img, i) => (
+                          <img key={i} src={img} alt="Current" style={{ height: '50px', borderRadius: '4px', objectFit: 'cover' }} />
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                  <button type="button" className="admin-btn admin-btn--secondary" onClick={addImageField} style={{ marginTop: '8px' }}>
-                    <FiPlus /> Add Image
-                  </button>
+                  )}
+                  <input type="file" multiple accept="image/*" onChange={handleImageChange} />
+                  {form.images.length > 0 && (
+                    <div style={{ marginTop: '10px' }}>
+                      {form.images.map((img, i) => (
+                        <div className="image-input-row" style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }} key={i}>
+                          <span style={{flex: 1}}>{img.name}</span>
+                          <button type="button" className="image-input-remove admin-btn admin-btn--secondary" onClick={() => removeImage(i)}><FiX /></button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="admin-field">
                   <label className="admin-checkbox">
-                    <input type="checkbox" checked={form.active} onChange={(e) => setForm(p => ({ ...p, active: e.target.checked }))} /> Active
+                    <input type="checkbox" checked={form.isActive} onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} /> Active
                   </label>
                 </div>
               </div>
               <div className="admin-modal__actions">
-                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn--primary">{editing ? 'Update' : 'Create'} Offer</button>
+                <button type="button" className="admin-btn admin-btn--secondary" onClick={() => setShowModal(false)} disabled={isSubmitting}>Cancel</button>
+                <button type="submit" className="admin-btn admin-btn--primary" disabled={isSubmitting}>{isSubmitting ? 'Saving...' : (editing ? 'Update Offer' : 'Create Offer')}</button>
               </div>
             </form>
           </div>
