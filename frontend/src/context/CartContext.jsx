@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useCallback } from 'react';
 
 const CartContext = createContext();
 
+
 export const useCart = () => {
   const ctx = useContext(CartContext);
   if (!ctx) throw new Error('useCart must be used within CartProvider');
