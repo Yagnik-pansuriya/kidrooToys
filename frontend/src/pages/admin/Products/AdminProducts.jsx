@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import { products as initialProducts } from '../../../mock/products';
 import { categories } from '../../../mock/categories';
 import './AdminProducts.scss';
@@ -36,13 +37,26 @@ const AdminProducts = () => {
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       setProductList(prev => prev.filter(p => p.id !== id));
+      toast.success('Product deleted successfully!');
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!form.name || !form.price || !form.originalPrice || form.stock === '' || !form.image) {
+      alert("Please fill all compulsory fields: Product Name, Price, Original Price, Stock, and Product Image.");
+      return;
+    }
+
+    if (parseFloat(form.price) < 0 || parseFloat(form.originalPrice) < 0 || parseInt(form.stock) < 0) {
+      alert("Price, Original Price, and Stock cannot be negative.");
+      return;
+    }
+
     if (editing) {
       setProductList(prev => prev.map(p => p.id === editing ? { ...p, ...form, price: parseFloat(form.price), originalPrice: form.originalPrice ? parseFloat(form.originalPrice) : null, stock: parseInt(form.stock), discount: parseInt(form.discount) } : p));
+      toast.success('Product updated successfully!');
     } else {
       const newProduct = {
         ...form,
@@ -57,6 +71,7 @@ const AdminProducts = () => {
         tags: [],
       };
       setProductList(prev => [newProduct, ...prev]);
+      toast.success('Product added successfully!');
     }
     setShowModal(false);
   };
@@ -135,11 +150,11 @@ const AdminProducts = () => {
                 </div>
                 <div className="admin-field">
                   <label>Price *</label>
-                  <input type="number" step="0.01" value={form.price} onChange={(e) => setForm(p => ({ ...p, price: e.target.value }))} required />
+                  <input type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm(p => ({ ...p, price: e.target.value }))} required />
                 </div>
                 <div className="admin-field">
-                  <label>Original Price</label>
-                  <input type="number" step="0.01" value={form.originalPrice} onChange={(e) => setForm(p => ({ ...p, originalPrice: e.target.value }))} />
+                  <label>Original Price *</label>
+                  <input type="number" min="0" step="0.01" value={form.originalPrice} onChange={(e) => setForm(p => ({ ...p, originalPrice: e.target.value }))} required />
                 </div>
                 <div className="admin-field">
                   <label>Discount %</label>
@@ -147,7 +162,7 @@ const AdminProducts = () => {
                 </div>
                 <div className="admin-field">
                   <label>Stock *</label>
-                  <input type="number" value={form.stock} onChange={(e) => setForm(p => ({ ...p, stock: e.target.value }))} required />
+                  <input type="number" min="0" value={form.stock} onChange={(e) => setForm(p => ({ ...p, stock: e.target.value }))} required />
                 </div>
                 <div className="admin-field">
                   <label>Category</label>
@@ -165,7 +180,7 @@ const AdminProducts = () => {
                   <textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={3} />
                 </div>
                 <div className="admin-field admin-field--full">
-                  <label><FiImage /> Product Image</label>
+                  <label><FiImage /> Product Image *</label>
                   <input type="file" accept="image/*" onChange={handleImageChange} />
                   {form.image && <img src={form.image} alt="Preview" className="admin-field__preview" />}
                   <input type="text" value={form.image} onChange={(e) => setForm(p => ({ ...p, image: e.target.value }))} placeholder="Or paste image URL" className="mt-2" />

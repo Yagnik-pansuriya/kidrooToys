@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiGrid, FiBox, FiShoppingBag, FiTag, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 import './AdminLayout.scss';
 
 const AdminLayout = () => {
@@ -24,6 +25,25 @@ const AdminLayout = () => {
 
   return (
     <div className="admin-layout">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#1A1D2E',
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '16px',
+            fontFamily: 'inherit',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
+          },
+          success: {
+            iconTheme: {
+              primary: '#00D4AA',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
       {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar--open' : ''}`}>
         <div className="admin-sidebar__header">

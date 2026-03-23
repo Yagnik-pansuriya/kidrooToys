@@ -17,13 +17,14 @@
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: $z-fixed;
+  z-index: 9999;
   transform: translateX(-100%);
   transition: transform $transition-base;
 
   @include lg {
     position: sticky;
     transform: none;
+    height: 100vh;
   }
 
   &--open {

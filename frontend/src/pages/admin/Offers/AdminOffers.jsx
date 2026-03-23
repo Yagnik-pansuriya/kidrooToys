@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiEye } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import { offers as initialOffers } from '../../../mock/offers';
 import OfferRenderer from '../../../components/OfferRenderer/OfferRenderer';
 import './AdminOffers.scss';
@@ -44,6 +45,7 @@ const AdminOffers = () => {
   const handleDelete = (id) => {
     if (window.confirm('Delete this offer?')) {
       setOfferList(prev => prev.filter(o => o.id !== id));
+      toast.success('Offer deleted successfully!');
     }
   };
 
@@ -59,8 +61,10 @@ const AdminOffers = () => {
 
     if (editing) {
       setOfferList(prev => prev.map(o => o.id === editing ? { ...o, ...offerData } : o));
+      toast.success('Offer updated successfully!');
     } else {
       setOfferList(prev => [{ ...offerData, id: Date.now() }, ...prev]);
+      toast.success('Offer added successfully!');
     }
     setShowModal(false);
   };

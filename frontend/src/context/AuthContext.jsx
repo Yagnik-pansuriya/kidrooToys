@@ -36,8 +36,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('kidroo_admin_user');
   };
 
+  const setAuthData = (userData) => {
+    setIsAuthenticated(true);
+    setUser(userData);
+    localStorage.setItem('kidroo_admin_auth', 'true');
+    localStorage.setItem('kidroo_admin_user', JSON.stringify(userData));
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, setAuthData }}>
       {children}
     </AuthContext.Provider>
   );
