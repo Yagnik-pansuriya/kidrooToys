@@ -1,0 +1,94 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+// ── Pagination Wrapper ────────────────────────────────────────────────────────
+.pagination-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $space-md;
+  padding: $space-md $space-lg;
+  border-top: 1px solid #E2E4EC;
+  background: #FAFBFE;
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+// ── Info text ────────────────────────────────────────────────────────────────
+.pagination-info {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+
+  strong {
+    color: var(--color-text-primary);
+    font-weight: 700;
+  }
+}
+
+// ── Nav container ────────────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.pagination__btn {
+  @include flex-center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  border-radius: $radius;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: white;
+  border: 1.5px solid #E2E4EC;
+  cursor: pointer;
+  transition: all $transition-base;
+  line-height: 1;
+
+  svg {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(88, 28, 235, 0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(88, 28, 235, 0.15);
+  }
+
+  &:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  // Active / current page
+  &--active {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white !important;
+    border-color: transparent !important;
+    box-shadow: 0 4px 12px rgba(88, 28, 235, 0.3);
+    transform: translateY(-1px);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(88, 28, 235, 0.4) !important;
+    }
+  }
+}
+
+// ── Ellipsis ─────────────────────────────────────────────────────────────────
+.pagination__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  user-select: none;
+}
