@@ -96,6 +96,8 @@ const AdminOrders = () => {
                     </div>
                     <span className="order-detail__item-total">${(item.quantity * item.price).toFixed(2)}</span>
                   </div>
+
+                  
                 ))}
               </div>
               <div className="order-detail__summary">
