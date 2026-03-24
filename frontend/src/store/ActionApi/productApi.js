@@ -1,32 +1,41 @@
 import { baseApi, API_ENDPOINTS } from '../Api';
-import { setProducts } from '../ReducerApi/productSlice';
+import { setProducts, setPaginationMeta } from '../ReducerApi/productSlice';
 
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    // GET /api/products
+    // GET /api/products?page=1&limit=10&search=...
     getProducts: builder.query({
-      query: () => API_ENDPOINTS.PRODUCTS,
+      query: ({ page = 1, limit = 10, search = '' } = {}) => {
+        const params = new URLSearchParams({ page, limit });
+        if (search.trim()) params.append('search', search.trim());
+        return `${API_ENDPOINTS.PRODUCTS}?${params.toString()}`;
+      },
       providesTags: ['Products'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          // Action sets products. API provides payload under `data.data` (as seen in request block) or fallback to `data`.
+          // API shape: { data: [...], total, page, limit, totalPages }
           const productsArray = data?.data || data;
           dispatch(setProducts(productsArray));
+          dispatch(setPaginationMeta({
+            total: data?.total ?? (Array.isArray(data) ? data.length : 0),
+            totalPages: data?.totalPages ?? 1,
+            currentPage: data?.page ?? (arg?.page ?? 1),
+            limit: data?.limit ?? (arg?.limit ?? 10),
+          }));
         } catch (err) {
-          console.error('Failed to load products automatically', err);
+          console.error('Failed to load products', err);
         }
       },
     }),
 
-    // POST /api/products  (multipart/form-data — name, description, price, category, images[])
+    // POST /api/products  (multipart/form-data)
     addProduct: builder.mutation({
       query: (formData) => ({
         url: API_ENDPOINTS.PRODUCTS,
         method: 'POST',
-        body: formData,          // FormData object with files included
-        // Do NOT set Content-Type; browser sets it automatically with the correct boundary
+        body: formData,
         formData: true,
       }),
       invalidatesTags: ['Products'],

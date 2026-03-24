@@ -7,9 +7,100 @@
     @include flex-between;
     flex-wrap: wrap;
     gap: $space-md;
-    margin-bottom: $space-xl;
+    margin-bottom: $space-lg;
 
     h1 { font-family: $font-heading; font-size: 1.8rem; }
+  }
+
+  // ── Search bar ────────────────────────────────────────────────
+  &__search-bar {
+    display: flex;
+    gap: $space-sm;
+    align-items: center;
+    margin-bottom: $space-md;
+
+    @media (max-width: 540px) { flex-direction: column; align-items: stretch; }
+  }
+
+  &__search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__search-icon {
+    position: absolute;
+    left: $space-md;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    pointer-events: none;
+  }
+
+  &__search-input {
+    width: 100%;
+    padding: $space-sm $space-xl $space-sm 2.5rem;
+    border: 2px solid #E2E4EC;
+    border-radius: $radius-lg;
+    font-size: 0.9rem;
+    background: white;
+    transition: border-color $transition-base, box-shadow $transition-base;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(88, 28, 235, 0.1);
+      outline: none;
+    }
+  }
+
+  &__search-clear {
+    position: absolute;
+    right: $space-sm;
+    top: 50%;
+    transform: translateY(-50%);
+    @include flex-center;
+    width: 24px;
+    height: 24px;
+    border-radius: $radius-full;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all $transition-base;
+
+    &:hover { background: #F0F2F8; color: var(--color-danger); }
+  }
+
+  &__search-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  // ── Active search notice ──────────────────────────────────────
+  &__search-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-sm;
+    font-size: 0.83rem;
+    color: var(--color-text-secondary);
+    background: rgba(88, 28, 235, 0.06);
+    border: 1px solid rgba(88, 28, 235, 0.15);
+    border-radius: $radius-full;
+    padding: 4px 14px;
+    margin-bottom: $space-md;
+
+    strong { color: var(--color-primary); }
+
+    button {
+      font-size: 0.78rem;
+      color: var(--color-danger);
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+
+      &:hover { opacity: 0.75; }
+    }
   }
 
   &__table-wrap {
@@ -76,6 +167,13 @@
     color: #1A1D2E;
   }
 
+  &__empty {
+    text-align: center;
+    padding: 2.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
   tr:hover td {
     background: #FAFBFE;
   }
@@ -87,8 +185,8 @@
   border-radius: $radius-full;
   font-size: 0.75rem;
   font-weight: 600;
-  background: rgba(123, 47, 247, 0.08);
-  color: var(--color-secondary);
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-primary);
   text-transform: capitalize;
 }
 
@@ -105,8 +203,8 @@
   transition: all $transition-base;
 
   &--edit {
-    color: var(--color-secondary);
-    &:hover { background: rgba(123, 47, 247, 0.1); }
+    color: var(--color-primary);
+    &:hover { background: rgba(0, 0, 0, 0.06); }
   }
 
   &--delete {
@@ -121,9 +219,9 @@
   padding: $space-sm $space-lg;
 
   &--primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     color: white;
-    &:hover { transform: translateY(-2px); box-shadow: $shadow-glow; }
+    &:hover { background: var(--color-hover); transform: translateY(-2px); }
   }
 
   &--secondary {
@@ -344,6 +442,13 @@
 }
 
 .mt-2 { margin-top: $space-xs; }
+
+// ── Spinner animation ─────────────────────────────────────────────────────────
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin { animation: spin 0.8s linear infinite; }
 
 .admin-checkboxes {
   display: flex;

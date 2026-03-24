@@ -7,7 +7,7 @@ const Dashboard = () => {
   const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
   const stats = [
     { icon: <FiBox />, label: 'Total Products', value: products.length, color: 'var(--color-primary)' },
-    { icon: <FiShoppingBag />, label: 'Total Orders', value: orders.length, color: 'var(--color-secondary)' },
+    { icon: <FiShoppingBag />, label: 'Total Orders', value: orders.length, color: 'var(--color-primary)' },
     { icon: <FiDollarSign />, label: 'Revenue', value: `$${totalRevenue.toFixed(0)}`, color: 'var(--color-success)' },
     { icon: <FiUsers />, label: 'Customers', value: '1,250', color: 'var(--color-accent)' },
   ];
