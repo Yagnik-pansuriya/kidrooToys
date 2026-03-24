@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiLoader } from 'react-icons/fi';
 import {
@@ -8,6 +8,7 @@ import {
   useDeleteProductMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
+import { useToast } from '../../../context/ToastContext';
 import './AdminProducts.scss';
 
 // Dynamic categories from Redux store/API instead of hardcoded list
@@ -39,7 +40,7 @@ const AdminProducts = () => {
   const [editing, setEditing] = useState(null);   // null = add mode, else product object
   const [form, setForm] = useState(emptyForm);
   const [apiError, setApiError] = useState('');
-
+  const { showSuccess, showError } = useToast();
   // ── RTK Query hooks & Redux ────────────────────────────────────
   const { isLoading: loadingProducts } = useGetProductsQuery();
   const { isLoading: loadingCategories } = useGetCategoriesQuery();
@@ -48,6 +49,7 @@ const AdminProducts = () => {
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
 
   const productList = useSelector((state) => state.product.products) || [];
+  const productsArray = Array.isArray(productList) ? productList : (productList?.data || []);
   const categoryOptions = useSelector((state) => state.category.categories) || [];
   const isBusy = adding || updating;
 
@@ -88,11 +90,33 @@ const AdminProducts = () => {
 
   const closeModal = () => setShowModal(false);
 
-  // ── Image picker (up to 5) ─────────────────────────────────────
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files).slice(0, 5);
-    const urls = files.map((f) => URL.createObjectURL(f));
-    setForm((p) => ({ ...p, images: files, previewUrls: urls }));
+  // ── Image picker (up to 5, add individually) ──────────────────
+  const fileInputRef = useRef(null);
+
+  const handleAddImages = (e) => {
+    const incoming = Array.from(e.target.files);
+    // reset input so the same file can be re-selected if removed
+    e.target.value = '';
+
+    setForm((p) => {
+      const remaining = 5 - p.images.length;
+      if (remaining <= 0) return p;
+      const newFiles = incoming.slice(0, remaining);
+      const newUrls  = newFiles.map((f) => URL.createObjectURL(f));
+      return {
+        ...p,
+        images:      [...p.images, ...newFiles],
+        previewUrls: [...p.previewUrls, ...newUrls],
+      };
+    });
+  };
+
+  const handleRemoveImage = (index) => {
+    setForm((p) => {
+      const imgs = p.images.filter((_, i) => i !== index);
+      const urls = p.previewUrls.filter((_, i) => i !== index);
+      return { ...p, images: imgs, previewUrls: urls };
+    });
   };
 
   // ── Build FormData matching API
@@ -127,12 +151,16 @@ const AdminProducts = () => {
     try {
       if (editing) {
         await updateProduct({ id: editing._id || editing.id, formData: fd }).unwrap();
+        showSuccess('Product updated successfully');
       } else {
         await addProduct(fd).unwrap();
+        showSuccess('Product added successfully');
       }
       closeModal();
     } catch (err) {
-      setApiError(err?.data?.message || 'Something went wrong. Please try again.');
+      const msg = err?.data?.message || 'Something went wrong. Please try again.';
+      setApiError(msg);
+      showError(msg);
     }
   };
 
@@ -141,8 +169,11 @@ const AdminProducts = () => {
     if (!window.confirm(`Delete "${product.name}"?`)) return;
     try {
       await deleteProduct(product._id || product.id).unwrap();
+      showSuccess('Product deleted successfully');
     } catch (err) {
-      alert(err?.data?.message || 'Delete failed. Please try again.');
+      const msg = err?.data?.message || 'Delete failed. Please try again.';
+      alert(msg);
+      showError(msg);
     }
   };
 
@@ -174,10 +205,10 @@ const AdminProducts = () => {
               </tr>
             </thead>
             <tbody>
-              {productList.length === 0 && (
+              {productsArray.length === 0 && (
                 <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>No products yet.</td></tr>
               )}
-              {productList.map((product) => {
+              {productsArray.map((product) => {
                 const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
                 return (
                   <tr key={product._id || product.id}>
@@ -445,20 +476,48 @@ const AdminProducts = () => {
                 {/* Images (up to 5) */}
                 <div className="admin-field admin-field--full">
                   <label><FiImage /> Product Images (up to 5)</label>
+
+                  {/* Hidden file input */}
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     multiple
-                    onChange={handleImageChange}
+                    style={{ display: 'none' }}
+                    onChange={handleAddImages}
                   />
-                  {/* Preview grid */}
-                  {form.previewUrls.length > 0 && (
-                    <div className="admin-field__previews">
-                      {form.previewUrls.map((url, i) => (
-                        <img key={i} src={url} alt={`Preview ${i + 1}`} className="admin-field__preview" />
-                      ))}
-                    </div>
-                  )}
+
+                  {/* Preview grid + Add slot */}
+                  <div className="admin-image-grid">
+                    {form.previewUrls.map((url, i) => (
+                      <div key={i} className="admin-image-slot admin-image-slot--filled">
+                        <img src={url} alt={`Preview ${i + 1}`} />
+                        <button
+                          type="button"
+                          className="admin-image-slot__remove"
+                          onClick={() => handleRemoveImage(i)}
+                          title="Remove"
+                        >
+                          <FiX />
+                        </button>
+                        <span className="admin-image-slot__num">{i + 1}</span>
+                      </div>
+                    ))}
+
+                    {/* Add-more slot — shown only if < 5 images */}
+                    {form.previewUrls.length < 5 && (
+                      <button
+                        type="button"
+                        className="admin-image-slot admin-image-slot--add"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Add image"
+                      >
+                        <FiPlus />
+                        <span>Add Image</span>
+                        <small>{form.previewUrls.length}/5</small>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
