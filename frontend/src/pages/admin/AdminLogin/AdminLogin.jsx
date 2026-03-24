@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiLock, FiMail } from 'react-icons/fi';
+import { FiLock, FiMail, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useLoginMutation } from '../../../store/ActionApi/authApi';
 import './AdminLogin.scss';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
@@ -53,13 +54,23 @@ const AdminLogin = () => {
 
           <div className="admin-login__field">
             <label><FiLock /> Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-            />
+            <div className="admin-login__password-input">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+              <button 
+                type="button" 
+                className="admin-login__toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="admin-login__btn" disabled={isLoading}>

@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { logout } from './ReducerApi/authSlice';
-const BASE_URL = "https://kidroo-backend.vercel.app/api/";
-// const BASE_URL = "http://localhost:5000/api/";
+// const BASE_URL = "https://kidroo-backend.vercel.app/api/";
+const BASE_URL = "http://localhost:5000/api/";
 
 export const API_ENDPOINTS = {
   LOGIN: 'auth/login',
