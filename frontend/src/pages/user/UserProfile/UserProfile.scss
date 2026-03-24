@@ -5,7 +5,7 @@
   padding-top: 60px;
 
   &__hero {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     padding: $space-2xl 0;
     color: white;
     h1 { font-family: $font-heading; font-size: 2rem; color: white; }
@@ -38,7 +38,7 @@
     width: 80px; height: 80px;
     margin: 0 auto $space-md;
     border-radius: $radius-full;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     color: white;
     font-size: 2rem;
   }

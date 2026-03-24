@@ -12,19 +12,28 @@ export const useTheme = () => {
 export const ThemeProvider = ({ children }) => {
   const [settings, setSettings] = useState(() => {
     const saved = localStorage.getItem('kidroo_settings');
-    return saved ? JSON.parse(saved) : defaultSettings;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Migrate old settings format to new simplified format
+      return {
+        ...defaultSettings,
+        ...parsed,
+        // Map old fields to new ones if present
+        hoverColor: parsed.hoverColor || parsed.primaryDark || defaultSettings.hoverColor,
+        headerColor: parsed.headerColor || defaultSettings.headerColor,
+        footerColor: parsed.footerColor || defaultSettings.footerColor,
+      };
+    }
+    return defaultSettings;
   });
 
   // Apply CSS variables whenever settings change
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--color-primary', settings.primaryColor);
-    root.style.setProperty('--color-primary-light', settings.primaryLight);
-    root.style.setProperty('--color-primary-dark', settings.primaryDark);
-    root.style.setProperty('--color-secondary', settings.secondaryColor);
-    root.style.setProperty('--color-secondary-light', settings.secondaryLight);
-    root.style.setProperty('--color-secondary-dark', settings.secondaryDark);
-    root.style.setProperty('--color-accent', settings.accentColor);
+    root.style.setProperty('--color-hover', settings.hoverColor);
+    root.style.setProperty('--color-header', settings.headerColor);
+    root.style.setProperty('--color-footer', settings.footerColor);
     localStorage.setItem('kidroo_settings', JSON.stringify(settings));
   }, [settings]);
 

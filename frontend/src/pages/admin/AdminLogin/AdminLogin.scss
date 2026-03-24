@@ -4,7 +4,7 @@
 .admin-login {
   min-height: 100vh;
   @include flex-center;
-  background: linear-gradient(135deg, #1A1D2E 0%, #2D1B69 50%, #1A1D2E 100%);
+  background: var(--color-header);
   padding: $space-lg;
 
   &__card {
@@ -18,7 +18,7 @@
   }
 
   &__header {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     padding: $space-2xl;
     text-align: center;
     color: white;
@@ -118,15 +118,15 @@
     @include btn-base;
     width: 100%;
     padding: $space-md;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     color: white;
     border-radius: $radius-lg;
     font-size: 1rem;
     margin-bottom: $space-md;
 
     &:hover:not(:disabled) {
+      background: var(--color-hover);
       transform: translateY(-2px);
-      box-shadow: $shadow-glow;
     }
   }
 

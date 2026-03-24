@@ -185,8 +185,8 @@
   border-radius: $radius-full;
   font-size: 0.75rem;
   font-weight: 600;
-  background: rgba(123, 47, 247, 0.08);
-  color: var(--color-secondary);
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--color-primary);
   text-transform: capitalize;
 }
 
@@ -203,8 +203,8 @@
   transition: all $transition-base;
 
   &--edit {
-    color: var(--color-secondary);
-    &:hover { background: rgba(123, 47, 247, 0.1); }
+    color: var(--color-primary);
+    &:hover { background: rgba(0, 0, 0, 0.06); }
   }
 
   &--delete {
@@ -219,9 +219,9 @@
   padding: $space-sm $space-lg;
 
   &--primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     color: white;
-    &:hover { transform: translateY(-2px); box-shadow: $shadow-glow; }
+    &:hover { background: var(--color-hover); transform: translateY(-2px); }
   }
 
   &--secondary {

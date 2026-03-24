@@ -10,7 +10,7 @@ const UserProfile = () => {
   const wishlistItems = products.filter(p => mockUser.wishlist.includes(p.id));
 
   const getStatusColor = (s) => {
-    const map = { delivered: 'var(--color-success)', shipped: 'var(--color-secondary)', processing: 'var(--color-warning)', pending: 'var(--color-text-muted)', cancelled: 'var(--color-danger)' };
+    const map = { delivered: 'var(--color-success)', shipped: 'var(--color-primary)', processing: 'var(--color-warning)', pending: 'var(--color-text-muted)', cancelled: 'var(--color-danger)' };
     return map[s] || 'var(--color-text-muted)';
   };
 

@@ -38,8 +38,8 @@
     font-weight: 700;
     margin-right: $space-xs;
 
-    &--slider { background: rgba(255, 107, 53, 0.1); color: var(--color-primary); }
-    &--fullscreen-poster { background: rgba(123, 47, 247, 0.1); color: var(--color-secondary); }
+    &--slider { background: rgba(0,0,0,0.07); color: var(--color-primary); }
+    &--fullscreen-poster { background: rgba(0,0,0,0.07); color: var(--color-primary); }
     &--post { background: rgba(0, 212, 170, 0.1); color: var(--color-accent); }
     &--buyable { background: rgba(245, 158, 11, 0.1); color: var(--color-warning); }
   }
@@ -84,7 +84,7 @@
   }
 
   &__coupon {
-    @include badge(rgba(123, 47, 247, 0.1), var(--color-secondary));
+    @include badge(rgba(0,0,0,0.08), var(--color-text-secondary));
     font-size: 0.7rem;
   }
 
