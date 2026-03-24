@@ -24,14 +24,14 @@ const Home = () => {
       title: 'Where Imagination Comes to Play! 🎈',
       subtitle: 'Discover the magic of childhood with our curated collection of premium toys',
       cta: 'Shop Now',
-      bg: 'linear-gradient(135deg, var(--color-primary), var(--color-secondary))',
+      bg: 'var(--color-primary)',
       emoji: '🧸🎮🎨',
     },
     {
       title: 'New STEM Kits Just Arrived! 🔬',
       subtitle: 'Build, code, and explore with our latest educational toys for young minds',
       cta: 'Explore STEM',
-      bg: 'linear-gradient(135deg, var(--color-secondary), var(--color-accent))',
+      bg: 'var(--color-hover)',
       emoji: '🤖📚🧪',
     },
   ];

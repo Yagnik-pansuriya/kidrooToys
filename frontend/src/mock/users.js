@@ -30,12 +30,9 @@ export const siteSettings = {
   logo: null, // Dynamic — admin can upload
   tagline: 'Where Imagination Comes to Play! 🎈',
   primaryColor: '#FF6B35',
-  primaryLight: '#FF8F65',
-  primaryDark: '#E55A25',
-  secondaryColor: '#7B2FF7',
-  secondaryLight: '#9B5FF9',
-  secondaryDark: '#6320D6',
-  accentColor: '#00D4AA',
+  hoverColor: '#E55A25',
+  headerColor: '#1A1D2E',
+  footerColor: '#1A1D2E',
   contactEmail: 'hello@kidrootoys.com',
   contactPhone: '+91 1800 123 4567',
   socialLinks: {

@@ -9,7 +9,7 @@
 
 .admin-sidebar {
   width: $admin-sidebar-width;
-  background: #1A1D2E;
+  background: var(--color-header);
   color: white;
   display: flex;
   flex-direction: column;
@@ -83,8 +83,7 @@
 
     &--active {
       color: white;
-      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+      background: var(--color-primary);
     }
   }
 
@@ -106,7 +105,7 @@
     width: 36px;
     height: 36px;
     border-radius: $radius-full;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     font-weight: 700;
     font-size: 0.9rem;
   }
@@ -187,7 +186,7 @@
     color: var(--color-primary);
     transition: color $transition-base;
 
-    &:hover { color: var(--color-primary-dark); }
+    &:hover { color: var(--color-hover); }
   }
 }
 

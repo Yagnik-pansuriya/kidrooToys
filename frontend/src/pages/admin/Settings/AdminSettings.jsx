@@ -24,13 +24,26 @@ const AdminSettings = () => {
   };
 
   const colorFields = [
-    { key: 'primaryColor', label: 'Primary Color' },
-    { key: 'primaryLight', label: 'Primary Light' },
-    { key: 'primaryDark', label: 'Primary Dark' },
-    { key: 'secondaryColor', label: 'Secondary Color' },
-    { key: 'secondaryLight', label: 'Secondary Light' },
-    { key: 'secondaryDark', label: 'Secondary Dark' },
-    { key: 'accentColor', label: 'Accent Color' },
+    {
+      key: 'primaryColor',
+      label: 'Primary Color',
+      description: 'Used for buttons, links, icons, and all main accents.',
+    },
+    {
+      key: 'hoverColor',
+      label: 'Hover Color',
+      description: 'Shown when users hover over buttons and interactive elements.',
+    },
+    {
+      key: 'headerColor',
+      label: 'Header Color',
+      description: 'Background color of the site header and admin sidebar.',
+    },
+    {
+      key: 'footerColor',
+      label: 'Footer Color',
+      description: 'Background color of the site footer.',
+    },
   ];
 
   return (
@@ -92,28 +105,67 @@ const AdminSettings = () => {
         {/* Theme Colors */}
         <div className="settings-card settings-card--full">
           <h2 className="settings-card__title"><FiDroplet /> Theme Colors</h2>
-          <p className="settings-card__desc">Customize your store's color scheme. Changes apply to the user-facing site in real-time.</p>
+          <p className="settings-card__desc">
+            Set the 4 core colors for your store. Changes apply instantly to both the admin panel and the user-facing site.
+          </p>
           <div className="colors-grid">
-            {colorFields.map(({ key, label }) => (
+            {colorFields.map(({ key, label, description }) => (
               <div className="color-field" key={key}>
                 <label>{label}</label>
+                <p className="color-field__desc">{description}</p>
                 <div className="color-field__input">
-                  <input type="color" value={form[key]} onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))} />
-                  <input type="text" value={form[key]} onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))} />
+                  <input
+                    type="color"
+                    value={form[key] || '#000000'}
+                    onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))}
+                  />
+                  <input
+                    type="text"
+                    value={form[key] || ''}
+                    onChange={(e) => setForm(p => ({ ...p, [key]: e.target.value }))}
+                    placeholder="#000000"
+                  />
                 </div>
               </div>
             ))}
           </div>
-          {/* Color Preview */}
+
+          {/* Live Preview */}
           <div className="color-preview">
-            <h4>Preview</h4>
+            <h4>Live Preview</h4>
             <div className="color-preview__swatches">
-              <div className="color-preview__swatch" style={{ background: form.primaryColor }}>Primary</div>
-              <div className="color-preview__swatch" style={{ background: form.secondaryColor }}>Secondary</div>
-              <div className="color-preview__swatch" style={{ background: form.accentColor, color: '#1A1D2E' }}>Accent</div>
+              <div className="color-preview__swatch" style={{ background: form.primaryColor }}>
+                <span>Primary</span>
+                <small>{form.primaryColor}</small>
+              </div>
+              <div className="color-preview__swatch" style={{ background: form.hoverColor }}>
+                <span>Hover</span>
+                <small>{form.hoverColor}</small>
+              </div>
+              <div className="color-preview__swatch" style={{ background: form.headerColor }}>
+                <span>Header</span>
+                <small>{form.headerColor}</small>
+              </div>
+              <div className="color-preview__swatch" style={{ background: form.footerColor }}>
+                <span>Footer</span>
+                <small>{form.footerColor}</small>
+              </div>
             </div>
-            <div className="color-preview__gradient" style={{ background: `linear-gradient(135deg, ${form.primaryColor}, ${form.secondaryColor})` }}>
-              Gradient Preview
+            <div className="color-preview__demo">
+              <button
+                className="color-preview__demo-btn"
+                style={{ background: form.primaryColor }}
+                onMouseEnter={e => (e.currentTarget.style.background = form.hoverColor)}
+                onMouseLeave={e => (e.currentTarget.style.background = form.primaryColor)}
+              >
+                Sample Button (hover me)
+              </button>
+              <div className="color-preview__demo-header" style={{ background: form.headerColor }}>
+                Header Preview
+              </div>
+              <div className="color-preview__demo-footer" style={{ background: form.footerColor }}>
+                Footer Preview
+              </div>
             </div>
           </div>
         </div>

@@ -2,24 +2,32 @@
 
 // CSS Custom Properties (Dynamic via Admin)
 :root {
-  // Colors - dynamically set by admin
-  --color-primary: #{$default-primary};
-  --color-primary-light: #{$default-primary-light};
-  --color-primary-dark: #{$default-primary-dark};
-  --color-secondary: #{$default-secondary};
-  --color-secondary-light: #{$default-secondary-light};
-  --color-secondary-dark: #{$default-secondary-dark};
-  --color-accent: #{$default-accent};
+  // === THEME COLORS — dynamically set by ThemeContext ===
+  --color-primary: #{$default-primary};   // Main brand color — buttons, links, accents
+  --color-hover:   #{$default-primary-dark}; // Hover state for primary elements
+  --color-header:  #1A1D2E;               // Header / admin sidebar background
+  --color-footer:  #1A1D2E;               // Footer background
+
+  // Surface Colors (static)
   --color-surface: #{$default-surface};
   --color-surface-alt: #{$default-surface-alt};
   --color-bg: #{$default-bg};
+
+  // Text Colors (static)
   --color-text-primary: #{$default-text-primary};
   --color-text-secondary: #{$default-text-secondary};
   --color-text-muted: #{$default-text-muted};
+
+  // Border (static)
   --color-border: #{$default-border};
+
+  // Status Colors (static)
   --color-success: #{$default-success};
   --color-warning: #{$default-warning};
-  --color-danger: #{$default-danger};
+  --color-danger:  #{$default-danger};
+
+  // Accent (static, not admin-configurable)
+  --color-accent: #{$default-accent};
 
   // Typography
   --font-heading: #{$font-heading};
@@ -33,7 +41,6 @@
   // Shadows
   --shadow-card: #{$shadow-card};
   --shadow-elevated: #{$shadow-elevated};
-  --shadow-glow: #{$shadow-glow};
 }
 
 // Reset & Base
