@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiX, FiEye } from 'react-icons/fi';
 import OfferRenderer from '../../../components/OfferRenderer/OfferRenderer';
 import { useGetOffersQuery, useAddOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation } from '../../../store/ActionApi/offerApi';
+import { useToast } from '../../../context/ToastContext';
 import './AdminOffers.scss';
 
 const AdminOffers = () => {
@@ -11,6 +12,7 @@ const AdminOffers = () => {
   const [addOffer, { isLoading: isAdding }] = useAddOfferMutation();
   const [updateOffer, { isLoading: isUpdating }] = useUpdateOfferMutation();
   const [deleteOfferApi] = useDeleteOfferMutation();
+  const { showSuccess, showError } = useToast();
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -53,9 +55,12 @@ const AdminOffers = () => {
     if (window.confirm('Delete this offer?')) {
       try {
         await deleteOfferApi(id).unwrap();
+        showSuccess('Offer deleted successfully');
       } catch (err) {
+        const msg = err?.data?.message || err.message || 'Failed to delete offer';
         console.error("Failed to delete", err);
-        alert("Failed to delete offer");
+        alert(msg);
+        showError(msg);
       }
     }
   };
@@ -86,13 +91,17 @@ const AdminOffers = () => {
     try {
       if (editing) {
         await updateOffer({ id: editing, formData }).unwrap();
+        showSuccess('Offer updated successfully');
       } else {
         await addOffer(formData).unwrap();
+        showSuccess('Offer created successfully');
       }
       setShowModal(false);
     } catch (err) {
+      const msg = err?.data?.message || err.message || 'Failed to save offer';
       console.error("Failed to save offer", err);
-      alert("Failed to save offer: " + (err?.data?.message || err.message));
+      alert(msg);
+      showError(msg);
     }
   };
 
