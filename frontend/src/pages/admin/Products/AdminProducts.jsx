@@ -8,6 +8,7 @@ import {
   useDeleteProductMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
+import { useToast } from '../../../context/ToastContext';
 import './AdminProducts.scss';
 
 // Dynamic categories from Redux store/API instead of hardcoded list
@@ -39,7 +40,7 @@ const AdminProducts = () => {
   const [editing, setEditing] = useState(null);   // null = add mode, else product object
   const [form, setForm] = useState(emptyForm);
   const [apiError, setApiError] = useState('');
-
+  const { showSuccess, showError } = useToast();
   // ── RTK Query hooks & Redux ────────────────────────────────────
   const { isLoading: loadingProducts } = useGetProductsQuery();
   const { isLoading: loadingCategories } = useGetCategoriesQuery();
@@ -48,6 +49,7 @@ const AdminProducts = () => {
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
 
   const productList = useSelector((state) => state.product.products) || [];
+  const productsArray = Array.isArray(productList) ? productList : (productList?.data || []);
   const categoryOptions = useSelector((state) => state.category.categories) || [];
   const isBusy = adding || updating;
 
@@ -149,12 +151,16 @@ const AdminProducts = () => {
     try {
       if (editing) {
         await updateProduct({ id: editing._id || editing.id, formData: fd }).unwrap();
+        showSuccess('Product updated successfully');
       } else {
         await addProduct(fd).unwrap();
+        showSuccess('Product added successfully');
       }
       closeModal();
     } catch (err) {
-      setApiError(err?.data?.message || 'Something went wrong. Please try again.');
+      const msg = err?.data?.message || 'Something went wrong. Please try again.';
+      setApiError(msg);
+      showError(msg);
     }
   };
 
@@ -163,8 +169,11 @@ const AdminProducts = () => {
     if (!window.confirm(`Delete "${product.name}"?`)) return;
     try {
       await deleteProduct(product._id || product.id).unwrap();
+      showSuccess('Product deleted successfully');
     } catch (err) {
-      alert(err?.data?.message || 'Delete failed. Please try again.');
+      const msg = err?.data?.message || 'Delete failed. Please try again.';
+      alert(msg);
+      showError(msg);
     }
   };
 
@@ -196,10 +205,10 @@ const AdminProducts = () => {
               </tr>
             </thead>
             <tbody>
-              {productList.data.length === 0 && (
+              {productsArray.length === 0 && (
                 <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>No products yet.</td></tr>
               )}
-              {productList.data.map((product) => {
+              {productsArray.map((product) => {
                 const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
                 return (
                   <tr key={product._id || product.id}>

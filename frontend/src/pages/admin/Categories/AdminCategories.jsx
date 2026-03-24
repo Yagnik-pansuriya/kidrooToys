@@ -7,6 +7,7 @@ import {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
 } from '../../../store/ActionApi/categoryApi';
+import { useToast } from '../../../context/ToastContext';
 
 const emptyForm = {
   catagoryName: '',
@@ -23,6 +24,7 @@ const AdminCategories = () => {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [apiError, setApiError] = useState('');
+  const { showSuccess, showError } = useToast();
 
   // ── RTK Query hooks & Redux ────────────────────────────────────
   const { isLoading: loadingCategories } = useGetCategoriesQuery();
@@ -93,12 +95,16 @@ const AdminCategories = () => {
     try {
       if (editing) {
         await updateCategory({ id: editing._id || editing.id, formData: fd }).unwrap();
+        showSuccess('Category updated successfully');
       } else {
         await addCategory(fd).unwrap();
+        showSuccess('Category added successfully');
       }
       closeModal();
     } catch (err) {
-      setApiError(err?.data?.message || 'Something went wrong. Please try again.');
+      const msg = err?.data?.message || 'Something went wrong. Please try again.';
+      setApiError(msg);
+      showError(msg);
     }
   };
 
@@ -107,8 +113,11 @@ const AdminCategories = () => {
     if (!window.confirm(`Delete "${category.catagoryName}"?`)) return;
     try {
       await deleteCategory(category._id || category.id).unwrap();
+      showSuccess('Category deleted successfully');
     } catch (err) {
-      alert(err?.data?.message || 'Delete failed. Please try again.');
+      const msg = err?.data?.message || 'Delete failed. Please try again.';
+      alert(msg);
+      showError(msg);
     }
   };
 
