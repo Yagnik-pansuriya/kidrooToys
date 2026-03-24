@@ -38,9 +38,10 @@
   text-transform: capitalize;
 
   &--active {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     color: white;
     border-color: transparent;
+    &:hover { background: var(--color-hover); }
   }
 }
 
@@ -54,7 +55,7 @@
   text-transform: capitalize;
 
   &--delivered { color: var(--color-success); }
-  &--shipped { color: var(--color-secondary); }
+  &--shipped { color: var(--color-primary); }
   &--processing { color: var(--color-warning); }
   &--pending { color: var(--color-text-muted); }
   &--cancelled { color: var(--color-danger); }

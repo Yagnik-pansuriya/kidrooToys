@@ -5,7 +5,7 @@
   padding-top: 60px;
 
   &__hero {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    background: var(--color-primary);
     padding: $space-3xl 0;
     text-align: center;
     color: white;

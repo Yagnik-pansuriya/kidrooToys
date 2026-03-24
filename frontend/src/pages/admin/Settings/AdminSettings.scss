@@ -94,22 +94,30 @@
   }
 }
 
+// 4-column grid for the 4 color fields
 .colors-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: $space-md;
+  gap: $space-lg;
 
   @include sm { grid-template-columns: repeat(2, 1fr); }
-  @include lg { grid-template-columns: repeat(3, 1fr); }
+  @include lg { grid-template-columns: repeat(4, 1fr); }
 }
 
 .color-field {
   label {
     display: block;
     font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
     margin-bottom: $space-xxs;
+  }
+
+  &__desc {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-bottom: $space-sm;
+    line-height: 1.4;
   }
 
   &__input {
@@ -118,27 +126,31 @@
     align-items: center;
 
     input[type="color"] {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       padding: 3px;
       border: 2px solid #E2E4EC;
       border-radius: $radius;
       cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color $transition-base;
+      &:hover { border-color: var(--color-primary); }
     }
 
     input[type="text"] {
       flex: 1;
-      padding: $space-sm;
+      padding: $space-sm $space-md;
       border: 2px solid #E2E4EC;
       border-radius: $radius;
       font-size: 0.85rem;
       font-family: monospace;
-
+      transition: border-color $transition-base;
       &:focus { border-color: var(--color-primary); }
     }
   }
 }
 
+// Live Preview
 .color-preview {
   margin-top: $space-xl;
   padding-top: $space-lg;
@@ -146,31 +158,68 @@
 
   h4 {
     font-family: $font-heading;
+    font-size: 1rem;
     margin-bottom: $space-md;
+    color: var(--color-text-secondary);
   }
 
   &__swatches {
     display: flex;
     gap: $space-md;
-    margin-bottom: $space-md;
+    margin-bottom: $space-lg;
     flex-wrap: wrap;
   }
 
   &__swatch {
-    padding: $space-md $space-xl;
+    flex: 1;
+    min-width: 100px;
+    padding: $space-md;
     border-radius: $radius-lg;
     color: white;
-    font-weight: 700;
-    font-size: 0.85rem;
+    text-align: center;
     box-shadow: $shadow-card;
+
+    span {
+      display: block;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    small {
+      display: block;
+      font-size: 0.7rem;
+      opacity: 0.8;
+      font-family: monospace;
+      margin-top: 2px;
+    }
   }
 
-  &__gradient {
-    padding: $space-lg;
+  &__demo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-md;
+    align-items: center;
+  }
+
+  &__demo-btn {
+    padding: $space-sm $space-xl;
     border-radius: $radius-lg;
+    border: none;
     color: white;
     font-weight: 700;
-    text-align: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background $transition-base, transform $transition-base;
+    font-family: $font-body;
+    &:hover { transform: translateY(-2px); }
+  }
+
+  &__demo-header,
+  &__demo-footer {
+    padding: $space-sm $space-xl;
+    border-radius: $radius-lg;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
   }
 }
