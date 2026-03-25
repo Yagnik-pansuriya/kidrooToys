@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FiPlus, FiLoader } from 'react-icons/fi';
 
@@ -22,6 +22,17 @@ const AdminProducts = () => {
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // ── Live Search effect ───────────────────────────────────────
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery !== searchInput.trim()) {
+        setSearchQuery(searchInput.trim());
+        setPage(1);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchInput, searchQuery]);
+
   // ── Pagination state ─────────────────────────────────────────
   const [page, setPage] = useState(1);
 
@@ -39,6 +50,22 @@ const AdminProducts = () => {
   const productsArray = Array.isArray(productList)
     ? productList
     : productList?.data || [];
+
+  // ── Frontend Live Filtering ────────────────────────────────────
+  const displayedProducts = productsArray.filter((product) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    
+    // Match how ProductTable derives these strings
+    const name = product?.productName || product?.name || '';
+    const cat = product?.category;
+    const catName = typeof cat === 'string' ? cat : cat?.catagoryName || cat?.name || '';
+    
+    return (
+      name.toLowerCase().includes(q) ||
+      catName.toLowerCase().includes(q)
+    );
+  });
 
   // ── Form / CRUD logic (custom hook) ──────────────────────────
   const {
@@ -99,7 +126,7 @@ const AdminProducts = () => {
       ) : (
         <div className="admin-products__table-wrap">
           <ProductTable
-            products={productsArray}
+            products={displayedProducts}
             searchQuery={searchQuery}
             deleting={deleting}
             onEdit={openEdit}

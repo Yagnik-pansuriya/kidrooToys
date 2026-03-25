@@ -40,12 +40,6 @@ const ProductSearchBar = ({ searchInput, searchQuery, onInputChange, onSubmit, o
         )}
       </div>
 
-      <button
-        type="submit"
-        className="admin-btn admin-btn--primary admin-products__search-btn"
-      >
-        Search
-      </button>
     </form>
 
     {/* ── Active search notice ── */}
