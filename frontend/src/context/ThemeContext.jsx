@@ -31,14 +31,14 @@ const applyCssVars = (s) => {
   root.style.setProperty('--color-header',  s.headerColor);
   root.style.setProperty('--color-footer',  s.footerColor);
 
-  // ── Browser tab title ────────────────────────────────────────────────────
+  // Browser tab title
   if (s.siteName) {
     document.title = s.tagline
       ? `${s.siteName} - ${s.tagline}`
       : s.siteName;
   }
 
-  // ── Favicon — use logo URL if available, else fall back to 🧸 emoji SVG ──
+  // Favicon — logo image or fallback 🧸 emoji SVG
   const faviconEl = document.querySelector('link[rel="icon"]')
     || (() => {
       const el = document.createElement('link');
@@ -56,7 +56,7 @@ const applyCssVars = (s) => {
   }
 };
 
-// ─── Read cached settings from localStorage (used on first render) ────────────
+// ─── Read cached settings from localStorage (for splash fallback) ─────────────
 const loadFromCache = () => {
   try {
     const saved = localStorage.getItem('kidroo_settings');
@@ -65,7 +65,6 @@ const loadFromCache = () => {
       return {
         ...defaultSettings,
         ...parsed,
-        // migrate old field names if present
         hoverColor:  parsed.hoverColor  || parsed.primaryDark || defaultSettings.hoverColor,
         headerColor: parsed.headerColor || defaultSettings.headerColor,
         footerColor: parsed.footerColor || defaultSettings.footerColor,
@@ -75,31 +74,108 @@ const loadFromCache = () => {
   return defaultSettings;
 };
 
-export const ThemeProvider = ({ children }) => {
-  // 1️⃣ Instantly hydrate from localStorage so there is no colour flash on load
-  const [settings, setSettings] = useState(() => {
-    const cached = loadFromCache();
-    applyCssVars(cached); // apply synchronously before first paint
-    return cached;
-  });
+// ─── Splash / Loading Screen ──────────────────────────────────────────────────
+const AppSplash = ({ cached }) => (
+  <div style={{
+    position:       'fixed',
+    inset:          0,
+    display:        'flex',
+    flexDirection:  'column',
+    alignItems:     'center',
+    justifyContent: 'center',
+    background:     '#ffffff',
+    zIndex:         9999,
+    gap:            '1rem',
+    fontFamily:     'Fredoka, Nunito, sans-serif',
+  }}>
+    {/* Logo or emoji */}
+    {cached.logo ? (
+      <img
+        src={cached.logo}
+        alt={cached.siteName}
+        style={{ height: 72, width: 'auto', objectFit: 'contain', borderRadius: 12 }}
+      />
+    ) : (
+      <span style={{ fontSize: '4.5rem', lineHeight: 1 }}>🧸</span>
+    )}
 
-  // 2️⃣ Fire GET /api/site-settings on every mount / refresh
-  const { data: apiResponse, isSuccess } = useGetSettingsQuery(undefined, {
-    // Always refetch on mount so the site always reflects the latest admin settings
+    {/* Site name */}
+    <h1 style={{
+      margin:     0,
+      fontSize:   '1.8rem',
+      fontWeight: 700,
+      color:      cached.primaryColor || '#FF6B35',
+      letterSpacing: '-0.5px',
+    }}>
+      {cached.siteName || 'Kidroo Toys'}
+    </h1>
+
+    {/* Spinner dots */}
+    <div style={{ display: 'flex', gap: '6px', marginTop: '0.5rem' }}>
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          style={{
+            width:            10,
+            height:           10,
+            borderRadius:     '50%',
+            background:       cached.primaryColor || '#FF6B35',
+            display:          'inline-block',
+            animation:        `splashDot 1s ease-in-out ${i * 0.2}s infinite`,
+            opacity:          0.8,
+          }}
+        />
+      ))}
+    </div>
+
+    {/* keyframes injected once */}
+    <style>{`
+      @keyframes splashDot {
+        0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+        40%            { transform: scale(1);   opacity: 1;   }
+      }
+    `}</style>
+  </div>
+);
+
+// ─── ThemeProvider ────────────────────────────────────────────────────────────
+export const ThemeProvider = ({ children }) => {
+  const [settings, setSettings] = useState(defaultSettings);
+  const [isReady,  setIsReady]  = useState(false);
+
+  // Read cache once for the splash screen (logo, siteName, primaryColor)
+  const cached = loadFromCache();
+
+  // 🔑 GET /api/site-settings — must resolve before app renders
+  const {
+    data:      apiResponse,
+    isSuccess,
+    isError,
+  } = useGetSettingsQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
 
-  // 3️⃣ When the API responds, merge → apply CSS vars → persist to localStorage
+  // ── On API success: apply fresh settings → show app ─────────────────────────
   useEffect(() => {
     if (isSuccess && apiResponse?.data) {
       const fresh = mapApiToSettings(apiResponse.data);
       applyCssVars(fresh);
       localStorage.setItem('kidroo_settings', JSON.stringify(fresh));
       setSettings(fresh);
+      setIsReady(true);
     }
   }, [isSuccess, apiResponse]);
 
-  // 4️⃣ Manual override (used by AdminSettings after a successful PUT)
+  // ── On API error: fall back to cached settings → still show app ──────────────
+  useEffect(() => {
+    if (isError) {
+      applyCssVars(cached);
+      setSettings(cached);
+      setIsReady(true);
+    }
+  }, [isError]);
+
+  // ── Manual override (AdminSettings after a successful PUT) ───────────────────
   const updateSettings = (newSettings) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
@@ -108,6 +184,11 @@ export const ThemeProvider = ({ children }) => {
       return updated;
     });
   };
+
+  // ── Block rendering until API responds ───────────────────────────────────────
+  if (!isReady) {
+    return <AppSplash cached={cached} />;
+  }
 
   return (
     <ThemeContext.Provider value={{ settings, updateSettings }}>
