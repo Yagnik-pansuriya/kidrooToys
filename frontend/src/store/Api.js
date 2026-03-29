@@ -1,7 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { logout } from './ReducerApi/authSlice';
-// const BASE_URL = "https://kidroo-backend.vercel.app/api/";
-const BASE_URL = "http://localhost:5000/api/";
+
+// ── Auto-switch: localhost in dev, Vercel backend in production ───────────────
+// This prevents Chrome's "Private Network Access" permission popup on Vercel.
+const BASE_URL = import.meta.env.DEV
+  ? 'http://localhost:5000/api/'
+  : (import.meta.env.VITE_API_URL || 'https://kidroo-backend.vercel.app/api/');
 
 export const API_ENDPOINTS = {
   LOGIN: 'auth/login',
