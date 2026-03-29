@@ -48,6 +48,13 @@
     font-size: 2rem;
   }
 
+  &__logo-img {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+
   &__logo-name {
     font-family: $font-heading;
     font-size: 1.5rem;

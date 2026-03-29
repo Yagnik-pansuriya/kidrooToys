@@ -1,13 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { logout } from './ReducerApi/authSlice';
-const BASE_URL = "https://kidroo-backend.vercel.app/api/";
-// const BASE_URL = "http://localhost:5000/api/";
+// const BASE_URL = "https://kidroo-backend.vercel.app/api/";
+const BASE_URL = "http://localhost:5000/api/";
 
 export const API_ENDPOINTS = {
   LOGIN: 'auth/login',
   PRODUCTS: 'products',
   CATEGORIES: 'categories',
   OFFERS: 'offers',
+  VARIANTS: 'products',   
+  SITE_SETTINGS: 'site-settings',
 };
 
 const baseQuery = fetchBaseQuery({
@@ -38,10 +40,10 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
   return result;
 };
 
-// ─── Base API (all endpoints injected from feature files) ─────────────────────
+
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Products', 'Categories', 'Offers'],
+  tagTypes: ['Products', 'Categories', 'Offers', 'Variants', 'SiteSettings'],
   endpoints: () => ({}),
 });

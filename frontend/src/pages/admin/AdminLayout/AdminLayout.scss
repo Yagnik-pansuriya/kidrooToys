@@ -42,6 +42,14 @@
     font-size: 1.8rem;
   }
 
+  &__logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
   &__brand {
     font-family: $font-heading;
     font-size: 1.2rem;

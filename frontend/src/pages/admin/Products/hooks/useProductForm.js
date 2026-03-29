@@ -57,6 +57,8 @@ const useProductForm = () => {
                             ? product.tags.join(',')
                             : (product.tags || ''),
       isActive:           product.isActive ?? true,
+      hasVariants:        product.hasVariants ?? false,
+      variants:           Array.isArray(product.variants) ? product.variants : [],
       images:             [],
       previewUrls:        product.images || [],
     });
@@ -98,13 +100,15 @@ const useProductForm = () => {
     const fields = [
       'productName', 'slug', 'description', 'price', 'originalPrice',
       'discountPercentage', 'stock', 'category', 'ratings', 'numReviews',
-      'featured', 'newArrival', 'bestSeller', 'tags', 'isActive',
+      'featured', 'newArrival', 'bestSeller', 'tags', 'isActive', 'hasVariants',
     ];
     fields.forEach((key) => fd.append(key, form[key]));
     fd.append(
       'ageRange',
       JSON.stringify({ from: Number(form.ageRangeFrom), to: Number(form.ageRangeTo) })
     );
+    // variants: send as JSON array (backend expects array of strings)
+    fd.append('variants', JSON.stringify(form.hasVariants ? form.variants : []));
     form.images.forEach((file) => fd.append('images', file));
     return fd;
   };
