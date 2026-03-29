@@ -3,12 +3,14 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiGrid, FiBox, FiShoppingBag, FiTag, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../store/ReducerApi/authSlice';
+import { useTheme } from '../../../context/ThemeContext';
 import './AdminLayout.scss';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
+  const { settings } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -30,8 +32,12 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar--open' : ''}`}>
         <div className="admin-sidebar__header">
-          <span className="admin-sidebar__logo">🧸</span>
-          <span className="admin-sidebar__brand">Kidroo Admin</span>
+          {settings.logo ? (
+            <img src={settings.logo} alt={settings.siteName || 'Kidroo'} className="admin-sidebar__logo-img" />
+          ) : (
+            <span className="admin-sidebar__logo">🧸</span>
+          )}
+          <span className="admin-sidebar__brand">{settings.siteName ? `${settings.siteName} Admin` : 'Kidroo Admin'}</span>
           <button className="admin-sidebar__close" onClick={() => setSidebarOpen(false)}><FiX /></button>
         </div>
         <nav className="admin-sidebar__nav">

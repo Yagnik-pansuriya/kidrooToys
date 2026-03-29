@@ -1,24 +1,101 @@
-import { useState } from 'react';
-import { FiSave, FiImage, FiDroplet } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiSave, FiImage, FiDroplet, FiLoader } from 'react-icons/fi';
 import { useTheme } from '../../../context/ThemeContext';
+import { useGetSettingsQuery, useUpdateSettingsMutation } from '../../../store/ActionApi/settingsApi';
+import { useToast } from '../../../context/ToastContext';
 import './AdminSettings.scss';
 
 const AdminSettings = () => {
-  const { settings, updateSettings } = useTheme();
-  const [form, setForm] = useState({ ...settings });
+  const { updateSettings } = useTheme();
+  const { showSuccess, showError } = useToast();
+  
+  const { data: settingsData, isLoading } = useGetSettingsQuery();
+  const [updateSettingsMutation, { isLoading: isUpdating }] = useUpdateSettingsMutation();
+
+  const [form, setForm] = useState({
+    siteName: '',
+    tagline: '',
+    contactEmail: '',
+    contactPhone: '',
+    primaryColor: '#FF6B35',
+    hoverColor: '#E55A25',
+    headerColor: '#000000',
+    footerColor: '#031268',
+    logo: '',
+    logoFile: null,
+  });
+
   const [saved, setSaved] = useState(false);
 
-  const handleSave = () => {
-    updateSettings(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  // Populate form when data fetches from API
+  useEffect(() => {
+    if (settingsData?.data) {
+      const apiSettings = settingsData.data;
+      const theme = apiSettings.themeColors || {};
+      setForm({
+        siteName:      apiSettings.siteName      || '',
+        tagline:       apiSettings.tagline        || '',
+        contactEmail:  apiSettings.contactEmail   || '',
+        contactPhone:  apiSettings.contactPhone   || '',
+        primaryColor:  theme.primary             || '#FF6B35',
+        hoverColor:    theme.hover               || '#E55A25',
+        headerColor:   theme.header              || '#000000',
+        footerColor:   theme.footer              || '#031268',
+        logo:          apiSettings.logo          || '',
+        logoFile:      null,
+      });
+    }
+  }, [settingsData]);
+
+  const handleSave = async () => {
+    try {
+      // Construct API payload mapped from frontend local state
+      const payload = {
+        siteName: form.siteName,
+        tagline: form.tagline,
+        contactEmail: form.contactEmail,
+        contactPhone: form.contactPhone,
+        themeColors: {
+          primary: form.primaryColor,
+          hover: form.hoverColor,
+          header: form.headerColor,
+          footer: form.footerColor,
+        },
+        logo: form.logo,          // existing URL string (fallback)
+        logoFile: form.logoFile,  // File object if newly uploaded
+      };
+
+      await updateSettingsMutation(payload).unwrap();
+
+      // Ensure contexts know we saved successfully
+      updateSettings({
+        primaryColor: form.primaryColor,
+        hoverColor: form.hoverColor,
+        headerColor: form.headerColor,
+        footerColor: form.footerColor,
+        siteName: form.siteName,
+        logo: form.logo,
+      });
+
+      setSaved(true);
+      showSuccess('Settings saved successfully!');
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      showError(err?.data?.message || 'Failed to save settings');
+    }
   };
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => setForm(prev => ({ ...prev, logo: reader.result }));
+      reader.onload = () => {
+        setForm(prev => ({ 
+          ...prev, 
+          logo: reader.result, // Sets base64 for instant local preview
+          logoFile: file       // Keeps raw File blob for form POST API
+        }));
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -46,12 +123,20 @@ const AdminSettings = () => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="admin-loading" style={{ height: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <FiLoader className="spin" /> <span style={{ marginLeft: 8 }}>Loading Settings...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-settings">
       <div className="admin-settings__header">
         <h1>Settings ⚙️</h1>
-        <button className="admin-btn admin-btn--primary" onClick={handleSave}>
-          <FiSave /> {saved ? '✓ Saved!' : 'Save Changes'}
+        <button className="admin-btn admin-btn--primary" onClick={handleSave} disabled={isUpdating}>
+          {isUpdating ? <><FiLoader className="spin" /> Saving...</> : <><FiSave /> {saved ? 'Saved!' : 'Save Changes'}</>}
         </button>
       </div>
 
@@ -87,7 +172,7 @@ const AdminSettings = () => {
             {form.logo ? (
               <div className="logo-upload__preview">
                 <img src={form.logo} alt="Logo preview" />
-                <button className="logo-upload__remove" onClick={() => setForm(p => ({ ...p, logo: null }))}>Remove</button>
+                <button className="logo-upload__remove" onClick={() => setForm(p => ({ ...p, logo: null, logoFile: null }))}>Remove</button>
               </div>
             ) : (
               <div className="logo-upload__placeholder">
