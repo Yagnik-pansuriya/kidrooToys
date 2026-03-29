@@ -1,4 +1,4 @@
-import { FiEdit2, FiTrash2, FiImage } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiImage, FiLayers } from 'react-icons/fi';
 
 /**
  * ProductTable
@@ -9,8 +9,9 @@ import { FiEdit2, FiTrash2, FiImage } from 'react-icons/fi';
  *  deleting     {boolean}  Disable actions while a delete is in flight
  *  onEdit       {fn}       Called with the product object to edit
  *  onDelete     {fn}       Called with the product object to delete
+ *  onVariants   {fn}       Called with the product object to manage variants
  */
-const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete }) => (
+const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants }) => (
   <table className="admin-table" aria-label="Products table">
     <thead>
       <tr>
@@ -85,6 +86,17 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
             {/* Actions */}
             <td>
               <div className="admin-actions">
+                {/* Variants */}
+                <button
+                  className="admin-action-btn admin-action-btn--variants"
+                  onClick={() => onVariants(product)}
+                  disabled={deleting}
+                  title="Manage variants"
+                  aria-label={`Manage variants for ${name}`}
+                >
+                  <FiLayers />
+                </button>
+
                 <button
                   className="admin-action-btn admin-action-btn--edit"
                   onClick={() => onEdit(product)}

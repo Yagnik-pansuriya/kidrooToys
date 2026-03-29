@@ -19,10 +19,10 @@ export const productApi = baseApi.injectEndpoints({
           const productsArray = data?.data || data;
           dispatch(setProducts(productsArray));
           dispatch(setPaginationMeta({
-            total: data?.total ?? (Array.isArray(data) ? data.length : 0),
-            totalPages: data?.totalPages ?? 1,
-            currentPage: data?.page ?? (arg?.page ?? 1),
-            limit: data?.limit ?? (arg?.limit ?? 10),
+            total:       data?.total      ?? (Array.isArray(data) ? data.length : 0),
+            totalPages:  data?.totalPages ?? 1,
+            currentPage: data?.page       ?? (arg?.page  ?? 1),
+            limit:       data?.limit      ?? (arg?.limit ?? 10),
           }));
         } catch (err) {
           console.error('Failed to load products', err);

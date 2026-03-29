@@ -469,3 +469,234 @@
     accent-color: var(--color-primary);
   }
 }
+
+// ─── Variants action button ───────────────────────────────────────────────────
+.admin-action-btn--variants {
+  color: #7c3aed; // violet
+  &:hover { background: rgba(124, 58, 237, 0.1); }
+}
+
+// ─── Wide modal modifier ──────────────────────────────────────────────────────
+.admin-modal--wide {
+  max-width: 780px;
+
+  em { font-style: italic; font-weight: 400; color: var(--color-text-muted); }
+}
+
+// ─── Variant list header ──────────────────────────────────────────────────────
+.variant-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $space-md;
+
+  .variant-list-count {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+}
+
+// ─── Variant empty state ──────────────────────────────────────────────────────
+.variant-empty {
+  text-align: center;
+  padding: 3rem $space-md;
+  color: var(--color-text-muted);
+
+  svg {
+    font-size: 2.5rem;
+    margin-bottom: $space-sm;
+    display: block;
+    margin-inline: auto;
+  }
+
+  p { font-size: 0.9rem; }
+}
+
+// ─── Variant list ─────────────────────────────────────────────────────────────
+.variant-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+}
+
+// ─── Variant row ─────────────────────────────────────────────────────────────
+.variant-row {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-md;
+  background: #F8F9FC;
+  border: 1px solid #E2E4EC;
+  border-radius: $radius;
+  transition: box-shadow $transition-base;
+
+  &:hover { box-shadow: $shadow-sm; }
+
+  &__img {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: $radius;
+    overflow: hidden;
+    background: #eee;
+    border: 1px solid #E2E4EC;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 1.4rem;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__sku {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1A1D2E;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__attrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm;
+    font-size: 0.8rem;
+  }
+
+  &__price {
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  &__original {
+    text-decoration: line-through;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+  }
+
+  &__stock {
+    color: var(--color-text-muted);
+  }
+}
+
+// ─── Variant form ─────────────────────────────────────────────────────────────
+.variant-form {
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-sm;
+    padding-top: $space-lg;
+    border-top: 1px solid #E2E4EC;
+    margin-top: $space-lg;
+  }
+}
+
+// ─── Dynamic attributes editor ────────────────────────────────────────────────
+.variant-attrs {
+  margin-top: $space-md;
+  background: #F8F9FC;
+  border: 1px solid #E2E4EC;
+  border-radius: $radius;
+  padding: $space-md;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-sm;
+
+    span {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+  }
+
+  &__add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    padding: 4px 10px;
+    border-radius: $radius-full;
+    border: 1px solid var(--color-primary);
+    transition: all $transition-base;
+
+    &:hover {
+      background: var(--color-primary);
+      color: white;
+    }
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: $space-sm;
+    margin-bottom: $space-sm;
+
+    input {
+      padding: $space-xs $space-sm;
+      border: 1px solid #E2E4EC;
+      border-radius: $radius;
+      font-size: 0.85rem;
+      &:focus { border-color: var(--color-primary); outline: none; }
+    }
+  }
+
+  &__remove-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius;
+    color: var(--color-danger);
+    transition: background $transition-base;
+    align-self: center;
+
+    &:hover { background: rgba(239, 68, 68, 0.1); }
+  }
+}
+
+// ─── Back button inside modal header ─────────────────────────────────────────
+.variant-back-btn {
+  font-size: 0.78rem;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 2px;
+  display: block;
+
+  &:hover { text-decoration: underline; }
+}
+
