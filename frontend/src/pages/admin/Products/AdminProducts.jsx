@@ -7,10 +7,11 @@ import {
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 
-import Pagination      from '../../../components/Pagination/Pagination';
+import Pagination       from '../../../components/Pagination/Pagination';
 import ProductSearchBar from './components/ProductSearchBar';
 import ProductTable     from './components/ProductTable';
 import ProductModal     from './components/ProductModal';
+import VariantModal     from './components/VariantModal';
 import useProductForm   from './hooks/useProductForm';
 
 import { PRODUCTS_PER_PAGE } from './constants/productConstants';
@@ -44,28 +45,12 @@ const AdminProducts = () => {
   useGetCategoriesQuery(); // pre-load categories for form select
 
   // ── Redux selectors ───────────────────────────────────────────
-  const productList = useSelector((s) => s.product.products) || [];
-  const totalPages  = useSelector((s) => s.product.totalPages);
-  const totalItems  = useSelector((s) => s.product.total);
+  const productList   = useSelector((s) => s.product.products) || [];
+  const totalPages    = useSelector((s) => s.product.totalPages);
+  const totalItems    = useSelector((s) => s.product.total);
   const productsArray = Array.isArray(productList)
     ? productList
     : productList?.data || [];
-
-  // ── Frontend Live Filtering ────────────────────────────────────
-  const displayedProducts = productsArray.filter((product) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    
-    // Match how ProductTable derives these strings
-    const name = product?.productName || product?.name || '';
-    const cat = product?.category;
-    const catName = typeof cat === 'string' ? cat : cat?.catagoryName || cat?.name || '';
-    
-    return (
-      name.toLowerCase().includes(q) ||
-      catName.toLowerCase().includes(q)
-    );
-  });
 
   // ── Form / CRUD logic (custom hook) ──────────────────────────
   const {
@@ -77,6 +62,11 @@ const AdminProducts = () => {
     handleAddImages, handleRemoveImage,
     handleSubmit, handleDelete,
   } = useProductForm();
+
+  // ── Variant modal state ───────────────────────────────────────
+  const [variantProduct, setVariantProduct] = useState(null);
+  const openVariants  = useCallback((product) => setVariantProduct(product), []);
+  const closeVariants = useCallback(() => setVariantProduct(null), []);
 
   // ── Search handlers ───────────────────────────────────────────
   const handleSearchSubmit = (e) => {
@@ -126,11 +116,12 @@ const AdminProducts = () => {
       ) : (
         <div className="admin-products__table-wrap">
           <ProductTable
-            products={displayedProducts}
+            products={productsArray}
             searchQuery={searchQuery}
             deleting={deleting}
             onEdit={openEdit}
             onDelete={handleDelete}
+            onVariants={openVariants}
           />
 
           {/* ── Pagination ── */}
@@ -158,6 +149,14 @@ const AdminProducts = () => {
           onClose={closeModal}
           onAddImages={handleAddImages}
           onRemoveImage={handleRemoveImage}
+        />
+      )}
+
+      {/* ── Variants modal ── */}
+      {variantProduct && (
+        <VariantModal
+          product={variantProduct}
+          onClose={closeVariants}
         />
       )}
 

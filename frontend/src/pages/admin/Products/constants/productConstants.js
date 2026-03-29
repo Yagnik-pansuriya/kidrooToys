@@ -20,6 +20,8 @@ export const emptyForm = {
   ageRangeTo:         '',
   tags:               '',
   isActive:           true,
+  hasVariants:        false,
+  variants:           [],   // array of variant strings e.g. ['Red', 'Blue', 'XL']
   images:             [],   // File objects for new uploads
   previewUrls:        [],   // Blob / remote URLs for preview
 };

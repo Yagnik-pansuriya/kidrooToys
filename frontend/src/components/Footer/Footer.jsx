@@ -20,8 +20,14 @@ const Footer = () => {
             {/* Brand */}
             <div className="footer__brand">
               <div className="footer__logo">
-                <span className="footer__logo-icon">🧸</span>
-                <span className="footer__logo-name">{settings.siteName || 'Kidroo Toys'}</span>
+                {settings.logo ? (
+                  <img src={settings.logo} alt={settings.siteName || 'Kidroo Toys'} className="footer__logo-img" />
+                ) : (
+                  <>
+                    <span className="footer__logo-icon">🧸</span>
+                    <span className="footer__logo-name">{settings.siteName || 'Kidroo Toys'}</span>
+                  </>
+                )}
               </div>
               <p className="footer__tagline">{settings.tagline}</p>
               <div className="footer__social">
