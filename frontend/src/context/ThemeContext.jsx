@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { siteSettings as defaultSettings } from '../mock/users';
 import { useGetSettingsQuery } from '../store/ActionApi/settingsApi';
+import Loader from '../components/Loader/Loader';
 
 const ThemeContext = createContext();
 
@@ -75,68 +76,19 @@ const loadFromCache = () => {
 };
 
 // ─── Splash / Loading Screen ──────────────────────────────────────────────────
-const AppSplash = ({ cached }) => (
-  <div style={{
-    position:       'fixed',
-    inset:          0,
-    display:        'flex',
-    flexDirection:  'column',
-    alignItems:     'center',
-    justifyContent: 'center',
-    background:     '#ffffff',
-    zIndex:         9999,
-    gap:            '1rem',
-    fontFamily:     'Fredoka, Nunito, sans-serif',
-  }}>
-    {/* Logo or emoji */}
-    {cached.logo ? (
-      <img
-        src={cached.logo}
-        alt={cached.siteName}
-        style={{ height: 72, width: 'auto', objectFit: 'contain', borderRadius: 12 }}
-      />
-    ) : (
-      <span style={{ fontSize: '4.5rem', lineHeight: 1 }}>🧸</span>
-    )}
-
-    {/* Site name */}
-    <h1 style={{
-      margin:     0,
-      fontSize:   '1.8rem',
-      fontWeight: 700,
-      color:      cached.primaryColor || '#FF6B35',
-      letterSpacing: '-0.5px',
-    }}>
-      {cached.siteName || 'Kidroo Toys'}
-    </h1>
-
-    {/* Spinner dots */}
-    <div style={{ display: 'flex', gap: '6px', marginTop: '0.5rem' }}>
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          style={{
-            width:            10,
-            height:           10,
-            borderRadius:     '50%',
-            background:       cached.primaryColor || '#FF6B35',
-            display:          'inline-block',
-            animation:        `splashDot 1s ease-in-out ${i * 0.2}s infinite`,
-            opacity:          0.8,
-          }}
-        />
-      ))}
-    </div>
-
-    {/* keyframes injected once */}
-    <style>{`
-      @keyframes splashDot {
-        0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
-        40%            { transform: scale(1);   opacity: 1;   }
-      }
-    `}</style>
-  </div>
+const CachedSplash = ({ cached }) => (
+  <Loader
+    fullscreen
+    logo={cached.logo || null}
+    colors={{
+      primary: cached.primaryColor || '#FF6B35',
+      hover:   cached.hoverColor   || '#E55A25',
+      header:  cached.headerColor  || '#1A1D2E',
+      footer:  cached.footerColor  || '#1A1D2E',
+    }}
+  />
 );
+
 
 // ─── ThemeProvider ────────────────────────────────────────────────────────────
 export const ThemeProvider = ({ children }) => {
@@ -187,7 +139,7 @@ export const ThemeProvider = ({ children }) => {
 
   // ── Block rendering until API responds ───────────────────────────────────────
   if (!isReady) {
-    return <AppSplash cached={cached} />;
+    return <CachedSplash cached={cached} />;
   }
 
   return (

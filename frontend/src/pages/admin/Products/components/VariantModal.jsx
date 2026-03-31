@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { FiX, FiPlus, FiEdit2, FiTrash2, FiLoader, FiPackage, FiImage } from 'react-icons/fi';
+import Loader from '../../../../components/Loader/Loader';
 import {
   useGetVariantsQuery,
   useAddVariantMutation,
@@ -477,9 +478,7 @@ const VariantModal = ({ product, onClose }) => {
               </div>
 
               {isLoading || isFetching ? (
-                <div className="admin-loading">
-                  <FiLoader className="spin" /> Loading variants…
-                </div>
+                <Loader inline message="Loading variants…" />
               ) : variants.length === 0 ? (
                 <div className="variant-empty">
                   <FiPackage />

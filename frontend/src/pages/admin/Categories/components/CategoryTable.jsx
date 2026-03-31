@@ -1,9 +1,10 @@
 import React from 'react';
 import { FiEdit2, FiTrash2, FiImage, FiCheckCircle } from 'react-icons/fi';
+import Loader from '../../../../components/Loader/Loader';
 
 const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting }) => {
   if (loading) {
-    return <div className="admin-loading">Loading categories…</div>;
+    return <Loader inline message="Loading categories…" />;
   }
 
   return (

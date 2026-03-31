@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FiSave, FiImage, FiDroplet, FiLoader } from 'react-icons/fi';
+import Loader from '../../../components/Loader/Loader';
 import { useTheme } from '../../../context/ThemeContext';
 import { useGetSettingsQuery, useUpdateSettingsMutation } from '../../../store/ActionApi/settingsApi';
 import { useToast } from '../../../context/ToastContext';
@@ -124,11 +125,7 @@ const AdminSettings = () => {
   ];
 
   if (isLoading) {
-    return (
-      <div className="admin-loading" style={{ height: '50vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <FiLoader className="spin" /> <span style={{ marginLeft: 8 }}>Loading Settings...</span>
-      </div>
-    );
+    return <Loader inline message="Loading Settings…" />;
   }
 
   return (
