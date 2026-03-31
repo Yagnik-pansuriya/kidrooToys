@@ -97,37 +97,43 @@
 // 4-column grid for the 4 color fields
 .colors-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
+  grid-template-columns: 1fr;
   gap: $space-lg;
 
-  @include sm { grid-template-columns: repeat(2, 1fr); }
-  @include lg { grid-template-columns: repeat(4, 1fr); }
+  @include sm  { grid-template-columns: repeat(2, 1fr); }
+  @include lg  { grid-template-columns: repeat(4, 1fr); }
 }
 
 .color-field {
+  display: flex;
+  flex-direction: column;
+
   label {
     display: block;
     font-weight: 700;
     font-size: 0.85rem;
     color: var(--color-text-primary);
-    margin-bottom: $space-xxs;
+    margin-bottom: 2px;
+    white-space: nowrap;
   }
 
   &__desc {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: var(--color-text-muted);
     margin-bottom: $space-sm;
-    line-height: 1.4;
+    line-height: 1.35;
+    min-height: 2.1em;            // equal height for descriptions
   }
 
   &__input {
     display: flex;
-    gap: $space-xs;
-    align-items: center;
+    gap: $space-sm;
+    align-items: stretch;
+    margin-top: auto;              // push inputs to same baseline
 
     input[type="color"] {
-      width: 48px;
-      height: 48px;
+      width: 42px;
+      height: 42px;
       padding: 3px;
       border: 2px solid #E2E4EC;
       border-radius: $radius;
@@ -139,13 +145,17 @@
 
     input[type="text"] {
       flex: 1;
+      min-width: 0;
       padding: $space-sm $space-md;
       border: 2px solid #E2E4EC;
       border-radius: $radius;
       font-size: 0.85rem;
-      font-family: monospace;
+      font-family: 'Roboto Mono', monospace;
+      letter-spacing: 0.5px;
+      height: 42px;
+      box-sizing: border-box;
       transition: border-color $transition-base;
-      &:focus { border-color: var(--color-primary); }
+      &:focus { border-color: var(--color-primary); outline: none; }
     }
   }
 }
@@ -198,9 +208,17 @@
     flex-wrap: wrap;
     gap: $space-md;
     align-items: center;
+
+    // On mobile: stack buttons full-width
+    @media (max-width: $bp-sm) {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 
   &__demo-btn {
+    flex: 1;
+    min-width: 0;
     padding: $space-sm $space-xl;
     border-radius: $radius-lg;
     border: none;
@@ -208,6 +226,7 @@
     font-weight: 700;
     font-size: 0.9rem;
     cursor: pointer;
+    text-align: center;
     transition: background $transition-base, transform $transition-base;
     font-family: $font-body;
     &:hover { transform: translateY(-2px); }
@@ -215,11 +234,14 @@
 
   &__demo-header,
   &__demo-footer {
+    flex: 1;
+    min-width: 0;
     padding: $space-sm $space-xl;
     border-radius: $radius-lg;
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.85rem;
     font-weight: 600;
     letter-spacing: 0.3px;
+    text-align: center;
   }
 }
