@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
 import { useGetOffersQuery, useAddOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation } from '../../../store/ActionApi/offerApi';
 import { useToast } from '../../../context/ToastContext';
+import Loader from '../../../components/Loader/Loader';
 import OfferCard from './components/OfferCard';
 import OfferFormModal from './components/OfferFormModal';
 import OfferPreviewModal from './components/OfferPreviewModal';
@@ -93,7 +94,7 @@ const AdminOffers = () => {
       </div>
 
       {isOffersLoading ? (
-        <p>Loading offers...</p>
+        <Loader inline message="Loading offers…" />
       ) : (
         <div className="admin-offers__grid">
           {(Array.isArray(offerList) ? offerList : []).map(offer => (
