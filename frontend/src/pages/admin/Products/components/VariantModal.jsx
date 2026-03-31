@@ -445,12 +445,7 @@ const VariantModal = ({ product, onClose }) => {
       <div className="admin-modal admin-modal--wide" onClick={(e) => e.stopPropagation()}>
 
         <div className="admin-modal__header">
-          <div>
-            <h2>
-              {view === 'list' && <>Variants — <em>{product.productName || product.name}</em></>}
-              {view === 'add'  && 'Add Variant'}
-              {view === 'edit' && 'Edit Variant'}
-            </h2>
+          <div className="admin-modal__header-left">
             {view !== 'list' && (
               <button
                 type="button"
@@ -460,6 +455,11 @@ const VariantModal = ({ product, onClose }) => {
                 ← Back to list
               </button>
             )}
+            <h2>
+              {view === 'list' && <>Variants — <em>{product.productName || product.name}</em></>}
+              {view === 'add'  && 'Add Variant'}
+              {view === 'edit' && 'Edit Variant'}
+            </h2>
           </div>
           <button onClick={onClose} aria-label="Close modal"><FiX /></button>
         </div>
