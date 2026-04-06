@@ -25,6 +25,7 @@ import AdminProducts from './pages/admin/Products/AdminProducts';
 import AdminOrders from './pages/admin/Orders/AdminOrders';
 import AdminOffers from './pages/admin/Offers/AdminOffers';
 import AdminSettings from './pages/admin/Settings/AdminSettings';
+import AdminUsers from './pages/admin/Users/AdminUsers';
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
@@ -38,11 +39,30 @@ const UserLayout = ({ children }) => (
 
 import { useSelector } from 'react-redux';
 
-// Protected Route
+// Protected Route — checks auth
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useSelector((state) => state.auth);
   if (!isAuthenticated) return <Navigate to="/admin" replace />;
   return children;
+};
+
+// Permission Route — checks if user has access to a permission route
+// Admin role always has access; other roles check permissions.enabled
+const PermissionRoute = ({ permRoute, children }) => {
+  const { user, permissions } = useSelector((state) => state.auth);
+
+  // Admin role has full access
+  if (user?.role === 'admin') return children;
+
+  // No permRoute means always accessible (Dashboard, Orders)
+  if (!permRoute) return children;
+
+  // Check if user has this route enabled
+  const perm = permissions.find((p) => p.route === permRoute);
+  if (perm?.enabled) return children;
+
+  // Not allowed — redirect to dashboard
+  return <Navigate to="/admin/dashboard" replace />;
 };
 
 function App() {
@@ -64,11 +84,12 @@ function App() {
               <Route path="/admin" element={<AdminLogin />} />
               <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="categories" element={<AdminCategories />} />
-                <Route path="products" element={<AdminProducts />} />
+                <Route path="categories" element={<PermissionRoute permRoute="/categories"><AdminCategories /></PermissionRoute>} />
+                <Route path="products" element={<PermissionRoute permRoute="/products"><AdminProducts /></PermissionRoute>} />
                 <Route path="orders" element={<AdminOrders />} />
-                <Route path="offers" element={<AdminOffers />} />
-                <Route path="settings" element={<AdminSettings />} />
+                <Route path="offers" element={<PermissionRoute permRoute="/offers"><AdminOffers /></PermissionRoute>} />
+                <Route path="settings" element={<PermissionRoute permRoute="/site-settings"><AdminSettings /></PermissionRoute>} />
+                <Route path="users" element={<PermissionRoute permRoute="/users"><AdminUsers /></PermissionRoute>} />
               </Route>
             </Routes>
           </Router>

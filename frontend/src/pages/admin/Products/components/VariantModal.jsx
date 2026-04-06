@@ -177,7 +177,6 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="out_of_stock">Out of Stock</option>
-            <option value="discontinued">Discontinued</option>
           </select>
         </div>
 
