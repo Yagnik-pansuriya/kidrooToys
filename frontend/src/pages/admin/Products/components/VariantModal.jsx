@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { FiX, FiPlus, FiEdit2, FiTrash2, FiLoader, FiPackage, FiImage } from 'react-icons/fi';
+import Loader from '../../../../components/Loader/Loader';
 import {
   useGetVariantsQuery,
   useAddVariantMutation,
@@ -443,12 +444,7 @@ const VariantModal = ({ product, onClose }) => {
       <div className="admin-modal admin-modal--wide" onClick={(e) => e.stopPropagation()}>
 
         <div className="admin-modal__header">
-          <div>
-            <h2>
-              {view === 'list' && <>Variants — <em>{product.productName || product.name}</em></>}
-              {view === 'add'  && 'Add Variant'}
-              {view === 'edit' && 'Edit Variant'}
-            </h2>
+          <div className="admin-modal__header-left">
             {view !== 'list' && (
               <button
                 type="button"
@@ -458,6 +454,11 @@ const VariantModal = ({ product, onClose }) => {
                 ← Back to list
               </button>
             )}
+            <h2>
+              {view === 'list' && <>Variants — <em>{product.productName || product.name}</em></>}
+              {view === 'add'  && 'Add Variant'}
+              {view === 'edit' && 'Edit Variant'}
+            </h2>
           </div>
           <button onClick={onClose} aria-label="Close modal"><FiX /></button>
         </div>
@@ -476,9 +477,7 @@ const VariantModal = ({ product, onClose }) => {
               </div>
 
               {isLoading || isFetching ? (
-                <div className="admin-loading">
-                  <FiLoader className="spin" /> Loading variants…
-                </div>
+                <Loader inline message="Loading variants…" />
               ) : variants.length === 0 ? (
                 <div className="variant-empty">
                   <FiPackage />

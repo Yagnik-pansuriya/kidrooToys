@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FiPlus, FiLoader } from 'react-icons/fi';
+import { FiPlus } from 'react-icons/fi';
+import Loader from '../../../components/Loader/Loader';
 
 import {
   useGetProductsQuery,
@@ -110,9 +111,7 @@ const AdminProducts = () => {
 
       {/* ── Table area ── */}
       {loadingProducts ? (
-        <div className="admin-loading" role="status">
-          <FiLoader className="spin" aria-hidden="true" /> Loading products…
-        </div>
+        <Loader inline message="Loading products…" />
       ) : (
         <div className="admin-products__table-wrap">
           <ProductTable
