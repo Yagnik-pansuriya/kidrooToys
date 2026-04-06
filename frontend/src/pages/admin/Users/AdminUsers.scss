@@ -1,0 +1,248 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+// ─── Page header ──────────────────────────────────────────────────────────────
+.admin-users {
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+    margin-bottom: $space-xl;
+    h1 { font-family: $font-heading; font-size: 1.8rem; }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-md;
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  &__empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-sm;
+    padding: $space-2xl;
+    color: var(--color-text-muted);
+
+    svg { font-size: 2.5rem; opacity: 0.3; }
+    p  { font-size: 0.95rem; }
+  }
+}
+
+// ─── User Card ────────────────────────────────────────────────────────────────
+.user-card {
+  background: white;
+  border-radius: $radius-xl;
+  padding: $space-lg;
+  box-shadow: $shadow-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  transition: box-shadow $transition-base, transform $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-card;
+    transform: translateY(-2px);
+  }
+
+  &__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: $radius-full;
+    @include flex-center;
+    color: white;
+    font-weight: 800;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-family: $font-heading;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__email {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-bottom: $space-xs;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    flex-wrap: wrap;
+  }
+
+  &__username {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    font-family: 'Roboto Mono', monospace;
+    background: #F0F2F8;
+    padding: 2px 8px;
+    border-radius: $radius;
+  }
+
+  &__role {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 10px;
+    border-radius: $radius-full;
+    color: white;
+
+    &--admin {
+      background: #ef4444;
+    }
+    &--moderator {
+      background: #f59e0b;
+    }
+    &--user {
+      background: #3b82f6;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-xs;
+    padding-top: $space-sm;
+    border-top: 1px solid #F0F2F8;
+  }
+}
+
+// ─── Permissions Modal ────────────────────────────────────────────────────────
+.perm-modal__desc {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  margin-bottom: $space-lg;
+  line-height: 1.5;
+
+  strong {
+    color: var(--color-text-primary);
+  }
+}
+
+.perm-table-wrap {
+  overflow-x: auto;
+  margin-bottom: $space-lg;
+  border-radius: $radius-lg;
+  border: 1px solid #E2E4EC;
+}
+
+.perm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+
+  th, td {
+    padding: $space-sm $space-md;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead {
+    background: #F8F9FC;
+    border-bottom: 2px solid #E2E4EC;
+
+    th {
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-muted);
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #F0F2F8;
+    transition: background $transition-base;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #FAFBFE; }
+  }
+
+  &__route {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+// ─── Toggle Switch ────────────────────────────────────────────────────────────
+.perm-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  cursor: pointer;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .perm-toggle__slider {
+      background: var(--color-primary);
+    }
+
+    &:checked + .perm-toggle__slider::before {
+      transform: translateX(20px);
+    }
+
+    &:focus + .perm-toggle__slider {
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 107, 53), 0.25);
+    }
+  }
+
+  &__slider {
+    position: absolute;
+    inset: 0;
+    background: #D1D5DB;
+    border-radius: 24px;
+    transition: background $transition-base;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: $radius-full;
+      transition: transform $transition-base;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// ─── User form modal overrides ────────────────────────────────────────────────
+.admin-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $space-sm;
+  padding-top: $space-lg;
+  border-top: 1px solid #E2E4EC;
+  margin-top: $space-lg;
+}

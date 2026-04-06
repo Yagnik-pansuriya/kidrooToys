@@ -1,15 +1,26 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiGrid, FiBox, FiShoppingBag, FiTag, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiGrid, FiBox, FiShoppingBag, FiTag, FiSettings, FiLogOut, FiMenu, FiX, FiUsers } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../store/ReducerApi/authSlice';
 import { useTheme } from '../../../context/ThemeContext';
 import './AdminLayout.scss';
 
+// Map sidebar items to their backend permission route
+const allNavItems = [
+  { to: '/admin/dashboard', icon: <FiGrid />, label: 'Dashboard', permRoute: null },          // always visible
+  { to: '/admin/categories', icon: <FiGrid />, label: 'Categories', permRoute: '/categories' },
+  { to: '/admin/products', icon: <FiBox />, label: 'Products', permRoute: '/products' },
+  { to: '/admin/orders', icon: <FiShoppingBag />, label: 'Orders', permRoute: null },          // always visible
+  { to: '/admin/offers', icon: <FiTag />, label: 'Offers', permRoute: '/offers' },
+  { to: '/admin/users', icon: <FiUsers />, label: 'Users', permRoute: '/users' },
+  { to: '/admin/settings', icon: <FiSettings />, label: 'Settings', permRoute: '/site-settings' },
+];
+
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, permissions } = useSelector((state) => state.auth);
   const { settings } = useTheme();
   const navigate = useNavigate();
 
@@ -18,14 +29,18 @@ const AdminLayout = () => {
     navigate('/admin');
   };
 
-  const navItems = [
-    { to: '/admin/dashboard', icon: <FiGrid />, label: 'Dashboard' },
-    { to: '/admin/categories', icon: <FiGrid />, label: 'Categories' },
-    { to: '/admin/products', icon: <FiBox />, label: 'Products' },
-    { to: '/admin/orders', icon: <FiShoppingBag />, label: 'Orders' },
-    { to: '/admin/offers', icon: <FiTag />, label: 'Offers' },
-    { to: '/admin/settings', icon: <FiSettings />, label: 'Settings' },
-  ];
+  // Admin role sees everything; other roles see only permitted items
+  const isAdmin = user?.role === 'admin';
+
+  const navItems = isAdmin
+    ? allNavItems
+    : allNavItems.filter((item) => {
+        // Items with no permRoute are always visible (Dashboard, Orders)
+        if (!item.permRoute) return true;
+        // Check if user has this route as visible in their permissions
+        const perm = permissions.find((p) => p.route === item.permRoute);
+        return perm?.visible === true;
+      });
 
   return (
     <div className="admin-layout">
@@ -55,10 +70,10 @@ const AdminLayout = () => {
         </nav>
         <div className="admin-sidebar__footer">
           <div className="admin-sidebar__user">
-            <div className="admin-sidebar__avatar">A</div>
+            <div className="admin-sidebar__avatar">{(user?.name || 'A')[0].toUpperCase()}</div>
             <div>
               <span className="admin-sidebar__name">{user?.name || 'Admin'}</span>
-              <span className="admin-sidebar__role">Administrator</span>
+              <span className="admin-sidebar__role">{user?.role || 'Administrator'}</span>
             </div>
           </div>
           <button className="admin-sidebar__logout" onClick={handleLogout}>
