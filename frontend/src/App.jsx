@@ -48,11 +48,15 @@ const ProtectedRoute = ({ children }) => {
 
 // Permission Route — checks if user has access to a permission route
 // Admin role always has access; other roles check permissions.enabled
-const PermissionRoute = ({ permRoute, children }) => {
+// adminOnly = true means ONLY admin role can access (no permission override)
+const PermissionRoute = ({ permRoute, adminOnly, children }) => {
   const { user, permissions } = useSelector((state) => state.auth);
 
   // Admin role has full access
   if (user?.role === 'admin') return children;
+
+  // adminOnly routes block all non-admin roles
+  if (adminOnly) return <Navigate to="/admin/dashboard" replace />;
 
   // No permRoute means always accessible (Dashboard, Orders)
   if (!permRoute) return children;
@@ -89,7 +93,7 @@ function App() {
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="offers" element={<PermissionRoute permRoute="/offers"><AdminOffers /></PermissionRoute>} />
                 <Route path="settings" element={<PermissionRoute permRoute="/site-settings"><AdminSettings /></PermissionRoute>} />
-                <Route path="users" element={<PermissionRoute permRoute="/users"><AdminUsers /></PermissionRoute>} />
+                <Route path="users" element={<PermissionRoute permRoute="/users" adminOnly><AdminUsers /></PermissionRoute>} />
               </Route>
             </Routes>
           </Router>

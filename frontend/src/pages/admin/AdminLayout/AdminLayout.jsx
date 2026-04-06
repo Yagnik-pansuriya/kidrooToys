@@ -8,12 +8,12 @@ import './AdminLayout.scss';
 
 // Map sidebar items to their backend permission route
 const allNavItems = [
-  { to: '/admin/dashboard', icon: <FiGrid />, label: 'Dashboard', permRoute: null },          // always visible
+  { to: '/admin/dashboard', icon: <FiGrid />, label: 'Dashboard', permRoute: null },
   { to: '/admin/categories', icon: <FiGrid />, label: 'Categories', permRoute: '/categories' },
   { to: '/admin/products', icon: <FiBox />, label: 'Products', permRoute: '/products' },
-  { to: '/admin/orders', icon: <FiShoppingBag />, label: 'Orders', permRoute: null },          // always visible
+  { to: '/admin/orders', icon: <FiShoppingBag />, label: 'Orders', permRoute: null },
   { to: '/admin/offers', icon: <FiTag />, label: 'Offers', permRoute: '/offers' },
-  { to: '/admin/users', icon: <FiUsers />, label: 'Users', permRoute: '/users' },
+  { to: '/admin/users', icon: <FiUsers />, label: 'Users', permRoute: '/users', adminOnly: true },
   { to: '/admin/settings', icon: <FiSettings />, label: 'Settings', permRoute: '/site-settings' },
 ];
 
@@ -35,6 +35,8 @@ const AdminLayout = () => {
   const navItems = isAdmin
     ? allNavItems
     : allNavItems.filter((item) => {
+        // adminOnly items are hidden for non-admin roles
+        if (item.adminOnly) return false;
         // Items with no permRoute are always visible (Dashboard, Orders)
         if (!item.permRoute) return true;
         // Check if user has this route as visible in their permissions
