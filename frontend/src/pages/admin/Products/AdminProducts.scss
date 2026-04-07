@@ -128,6 +128,140 @@
   }
 }
 
+// ─── Product Filters ──────────────────────────────────────────────────────────
+.product-filters {
+  margin-bottom: $space-md;
+
+  &__toggle {
+    @include flex-center;
+    gap: $space-xs;
+    padding: $space-xs $space-md;
+    border-radius: $radius-lg;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    background: white;
+    border: 2px solid #E2E4EC;
+    cursor: pointer;
+    transition: all $transition-base;
+
+    &:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    &--active {
+      border-color: var(--color-primary);
+      background: rgba(var(--color-primary-rgb, 88, 28, 235), 0.05);
+      color: var(--color-primary);
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: $radius-full;
+    background: var(--color-primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  &__panel {
+    margin-top: $space-sm;
+    padding: $space-lg;
+    background: white;
+    border: 2px solid #E2E4EC;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+    animation: filterSlideDown 0.25s ease;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-md;
+
+    @include sm {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include lg {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  &__field {
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: $space-xxs;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: $space-xs $space-sm;
+      border: 2px solid #E2E4EC;
+      border-radius: $radius;
+      font-size: 0.88rem;
+      background: white;
+      transition: border-color $transition-base;
+      box-sizing: border-box;
+
+      &:focus {
+        border-color: var(--color-primary);
+        outline: none;
+      }
+    }
+
+    select {
+      cursor: pointer;
+      appearance: auto;
+    }
+  }
+
+  &__reset {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-xs;
+    margin-top: $space-lg;
+    padding: $space-xs $space-md;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: $radius;
+    cursor: pointer;
+    transition: all $transition-base;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+    }
+  }
+}
+
+@keyframes filterSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .admin-loading {
   text-align: center;
   padding: 3rem;

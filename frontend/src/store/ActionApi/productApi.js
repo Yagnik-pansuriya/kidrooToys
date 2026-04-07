@@ -4,26 +4,34 @@ import { setProducts, setPaginationMeta } from '../ReducerApi/productSlice';
 export const productApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
-    // GET /api/products?page=1&limit=10&search=...
+    // GET /api/products?page=1&limit=10&search=...&category=...&minPrice=...&maxPrice=...&featured=...&newArrival=...&bestSeller=...
     getProducts: builder.query({
-      query: ({ page = 1, limit = 10, search = '' } = {}) => {
+      query: ({ page = 1, limit = 10, search = '', category = '', minPrice = '', maxPrice = '', featured = '', newArrival = '', bestSeller = '' } = {}) => {
         const params = new URLSearchParams({ page, limit });
-        if (search.trim()) params.append('search', search.trim());
+        if (search.trim())   params.append('search', search.trim());
+        if (category)        params.append('category', category);
+        if (minPrice !== '')  params.append('minPrice', minPrice);
+        if (maxPrice !== '')  params.append('maxPrice', maxPrice);
+        if (featured !== '')  params.append('featured', featured);
+        if (newArrival !== '') params.append('newArrival', newArrival);
+        if (bestSeller !== '') params.append('bestSeller', bestSeller);
         return `${API_ENDPOINTS.PRODUCTS}?${params.toString()}`;
       },
       providesTags: ['Products'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
-          const { data } = await queryFulfilled;
-          // API shape: { data: [...], total, page, limit, totalPages }
-          const productsArray = data?.data || data;
+          const { data: resp } = await queryFulfilled;
+          // Backend sendSuccessResponse wraps as: { success, data: { data: [...], total, page, limit } }
+          const inner = resp?.data || resp;
+          const productsArray = Array.isArray(inner?.data) ? inner.data
+            : Array.isArray(inner) ? inner : [];
+          const total      = Number(inner?.total) || productsArray.length;
+          const limit      = Number(inner?.limit) || Number(arg?.limit) || 10;
+          const page       = Number(inner?.page)  || Number(arg?.page)  || 1;
+          const totalPages = Math.ceil(total / limit) || 1;
+
           dispatch(setProducts(productsArray));
-          dispatch(setPaginationMeta({
-            total:       data?.total      ?? (Array.isArray(data) ? data.length : 0),
-            totalPages:  data?.totalPages ?? 1,
-            currentPage: data?.page       ?? (arg?.page  ?? 1),
-            limit:       data?.limit      ?? (arg?.limit ?? 10),
-          }));
+          dispatch(setPaginationMeta({ total, totalPages, currentPage: page, limit }));
         } catch (err) {
           console.error('Failed to load products', err);
         }
