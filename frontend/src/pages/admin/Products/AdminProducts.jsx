@@ -10,6 +10,7 @@ import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 
 import Pagination       from '../../../components/Pagination/Pagination';
 import ProductSearchBar from './components/ProductSearchBar';
+import ProductFilters   from './components/ProductFilters';
 import ProductTable     from './components/ProductTable';
 import ProductModal     from './components/ProductModal';
 import VariantModal     from './components/VariantModal';
@@ -19,11 +20,24 @@ import useProductForm   from './hooks/useProductForm';
 import { PRODUCTS_PER_PAGE } from './constants/productConstants';
 import './AdminProducts.scss';
 
+// ── Default filter state ────────────────────────────────────────
+const defaultFilters = {
+  category:   '',
+  minPrice:   '',
+  maxPrice:   '',
+  featured:   '',
+  newArrival: '',
+  bestSeller: '',
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 const AdminProducts = () => {
   // ── Search state ─────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // ── Filter state ─────────────────────────────────────────────
+  const [filters, setFilters] = useState({ ...defaultFilters });
 
   // ── Live Search effect ───────────────────────────────────────
   useEffect(() => {
@@ -41,10 +55,15 @@ const AdminProducts = () => {
 
   // ── Data fetching ─────────────────────────────────────────────
   const { isLoading: loadingProducts } = useGetProductsQuery(
-    { page, limit: PRODUCTS_PER_PAGE, search: searchQuery },
+    {
+      page,
+      limit: PRODUCTS_PER_PAGE,
+      search: searchQuery,
+      ...filters,
+    },
     { refetchOnMountOrArgChange: true }
   );
-  useGetCategoriesQuery(); // pre-load categories for form select
+  useGetCategoriesQuery(); // pre-load categories for form select & filter dropdown
 
   // ── Redux selectors ───────────────────────────────────────────
   const productList   = useSelector((s) => s.product.products) || [];
@@ -53,6 +72,10 @@ const AdminProducts = () => {
   const productsArray = Array.isArray(productList)
     ? productList
     : productList?.data || [];
+
+  // ── Categories for filter dropdown ────────────────────────────
+  const categories = useSelector((s) => s.category.categories) || [];
+  const categoryList = Array.isArray(categories) ? categories : categories?.data || [];
 
   // ── Form / CRUD logic (custom hook) ──────────────────────────
   const {
@@ -84,6 +107,20 @@ const AdminProducts = () => {
     setPage(1);
   }, []);
 
+  // ── Filter handlers ───────────────────────────────────────────
+  const handleFiltersChange = useCallback((newFilters) => {
+    setFilters(newFilters);
+    setPage(1);
+  }, []);
+
+  const handleFiltersReset = useCallback(() => {
+    setFilters({ ...defaultFilters });
+    setPage(1);
+  }, []);
+
+  // Count active filters
+  const activeFilterCount = Object.values(filters).filter((v) => v !== '').length;
+
   // ── Pagination handler ────────────────────────────────────────
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage);
@@ -109,6 +146,15 @@ const AdminProducts = () => {
         onInputChange={setSearchInput}
         onSubmit={handleSearchSubmit}
         onClear={handleSearchClear}
+      />
+
+      {/* ── Filters ── */}
+      <ProductFilters
+        filters={filters}
+        categories={categoryList}
+        onChange={handleFiltersChange}
+        onReset={handleFiltersReset}
+        activeCount={activeFilterCount}
       />
 
       {/* ── Table area ── */}

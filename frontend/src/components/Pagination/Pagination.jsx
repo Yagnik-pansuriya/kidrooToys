@@ -20,7 +20,6 @@ const Pagination = ({
   onPageChange,
   className = '',
 }) => {
-  if (totalPages <= 1) return null;
 
   const goTo = (page) => {
     if (page < 1 || page > totalPages || page === currentPage) return;
@@ -62,74 +61,77 @@ const Pagination = ({
 
   return (
     <div className={`pagination-wrap ${className}`}>
-      {/* Item count info */}
+      {/* Item count info — always visible */}
       {totalItems != null && (
         <span className="pagination-info">
           Showing <strong>{startItem}–{endItem}</strong> of <strong>{totalItems}</strong> items
         </span>
       )}
 
-      <nav className="pagination" aria-label="Pagination">
-        {/* First page */}
-        <button
-          className="pagination__btn"
-          onClick={() => goTo(1)}
-          disabled={currentPage === 1}
-          title="First page"
-          aria-label="Go to first page"
-        >
-          <FiChevronsLeft />
-        </button>
+      {/* Page navigation — only when more than 1 page */}
+      {totalPages > 1 && (
+        <nav className="pagination" aria-label="Pagination">
+          {/* First page */}
+          <button
+            className="pagination__btn"
+            onClick={() => goTo(1)}
+            disabled={currentPage === 1}
+            title="First page"
+            aria-label="Go to first page"
+          >
+            <FiChevronsLeft />
+          </button>
 
-        {/* Previous */}
-        <button
-          className="pagination__btn"
-          onClick={() => goTo(currentPage - 1)}
-          disabled={currentPage === 1}
-          title="Previous page"
-          aria-label="Go to previous page"
-        >
-          <FiChevronLeft />
-        </button>
+          {/* Previous */}
+          <button
+            className="pagination__btn"
+            onClick={() => goTo(currentPage - 1)}
+            disabled={currentPage === 1}
+            title="Previous page"
+            aria-label="Go to previous page"
+          >
+            <FiChevronLeft />
+          </button>
 
-        {/* Page numbers */}
-        {pages.map((page, idx) =>
-          page === '...' ? (
-            <span key={`dots-${idx}`} className="pagination__dots">…</span>
-          ) : (
-            <button
-              key={page}
-              className={`pagination__btn pagination__btn--page ${page === currentPage ? 'pagination__btn--active' : ''}`}
-              onClick={() => goTo(page)}
-              aria-current={page === currentPage ? 'page' : undefined}
-            >
-              {page}
-            </button>
-          )
-        )}
+          {/* Page numbers */}
+          {pages.map((page, idx) =>
+            page === '...' ? (
+              <span key={`dots-${idx}`} className="pagination__dots">…</span>
+            ) : (
+              <button
+                key={page}
+                className={`pagination__btn pagination__btn--page ${page === currentPage ? 'pagination__btn--active' : ''}`}
+                onClick={() => goTo(page)}
+                aria-current={page === currentPage ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            )
+          )}
 
-        {/* Next */}
-        <button
-          className="pagination__btn"
-          onClick={() => goTo(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          title="Next page"
-          aria-label="Go to next page"
-        >
-          <FiChevronRight />
-        </button>
+          {/* Next */}
+          <button
+            className="pagination__btn"
+            onClick={() => goTo(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            title="Next page"
+            aria-label="Go to next page"
+          >
+            <FiChevronRight />
+          </button>
 
-        {/* Last page */}
-        <button
-          className="pagination__btn"
-          onClick={() => goTo(totalPages)}
-          disabled={currentPage === totalPages}
-          title="Last page"
-          aria-label="Go to last page"
-        >
-          <FiChevronsRight />
-        </button>
-      </nav>
+          {/* Last page */}
+          <button
+            className="pagination__btn"
+            onClick={() => goTo(totalPages)}
+            disabled={currentPage === totalPages}
+            title="Last page"
+            aria-label="Go to last page"
+          >
+            <FiChevronsRight />
+          </button>
+        </nav>
+      )}
     </div>
   );
 };
