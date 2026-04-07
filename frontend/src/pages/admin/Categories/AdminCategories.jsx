@@ -12,10 +12,12 @@ import { useToast } from '../../../context/ToastContext';
 // Components
 import CategoryTable from './components/CategoryTable';
 import CategoryFormModal from './components/CategoryFormModal';
+import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 
 const AdminCategories = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [catToDelete, setCatToDelete] = useState(null);
   const [apiError, setApiError] = useState('');
   const { showSuccess, showError } = useToast();
 
@@ -70,15 +72,20 @@ const AdminCategories = () => {
   };
 
   // Delete Handler
-  const handleDelete = async (category) => {
-    if (!window.confirm(`Delete "${category.catagoryName}"?`)) return;
+  const handleDelete = (category) => {
+    setCatToDelete(category);
+  };
+
+  const confirmDelete = async () => {
+    if (!catToDelete) return;
     try {
-      await deleteCategory(category._id || category.id).unwrap();
+      await deleteCategory(catToDelete._id || catToDelete.id).unwrap();
       showSuccess('Category deleted successfully');
     } catch (err) {
       const msg = err?.data?.message || 'Delete failed. Please try again.';
-      alert(msg);
       showError(msg);
+    } finally {
+      setCatToDelete(null);
     }
   };
 
@@ -109,6 +116,15 @@ const AdminCategories = () => {
         editingCategory={editingCategory}
         isSubmitting={isBusy}
         apiError={apiError}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!catToDelete}
+        onClose={() => setCatToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={catToDelete?.catagoryName}
+        title="Delete Category?"
       />
     </div>
   );

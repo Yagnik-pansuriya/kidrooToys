@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiGrid, FiBox, FiShoppingBag, FiTag, FiSettings, FiLogOut, FiMenu, FiX, FiUsers } from 'react-icons/fi';
+import { FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { 
+  MdDashboard, 
+  MdCategory, 
+  MdInventory, 
+  MdShoppingBag, 
+  MdLocalOffer, 
+  MdPeople, 
+  MdSettings 
+} from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../store/ReducerApi/authSlice';
 import { useTheme } from '../../../context/ThemeContext';
@@ -8,13 +17,13 @@ import './AdminLayout.scss';
 
 // Map sidebar items to their backend permission route
 const allNavItems = [
-  { to: '/admin/dashboard', icon: <FiGrid />, label: 'Dashboard', permRoute: null },
-  { to: '/admin/categories', icon: <FiGrid />, label: 'Categories', permRoute: '/categories' },
-  { to: '/admin/products', icon: <FiBox />, label: 'Products', permRoute: '/products' },
-  { to: '/admin/orders', icon: <FiShoppingBag />, label: 'Orders', permRoute: null },
-  { to: '/admin/offers', icon: <FiTag />, label: 'Offers', permRoute: '/offers' },
-  { to: '/admin/users', icon: <FiUsers />, label: 'Users', permRoute: '/users', adminOnly: true },
-  { to: '/admin/settings', icon: <FiSettings />, label: 'Settings', permRoute: '/site-settings' },
+  { to: '/admin/dashboard', icon: <MdDashboard />, label: 'Dashboard', permRoute: null },
+  { to: '/admin/categories', icon: <MdCategory />, label: 'Categories', permRoute: '/categories' },
+  { to: '/admin/products', icon: <MdInventory />, label: 'Products', permRoute: '/products' },
+  { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null },
+  { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers', permRoute: '/offers' },
+  { to: '/admin/users', icon: <MdPeople />, label: 'Users', permRoute: '/users', adminOnly: true },
+  { to: '/admin/settings', icon: <MdSettings />, label: 'Settings', permRoute: '/site-settings' },
 ];
 
 const AdminLayout = () => {
