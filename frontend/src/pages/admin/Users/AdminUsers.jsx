@@ -7,12 +7,9 @@ import {
   useUpdateUserMutation,
   useDeleteUserMutation,
 } from '../../../store/ActionApi/userApi';
-import {
-  useGetAvailableRoutesQuery,
-  useGetUserPermissionsQuery,
-  useUpdatePermissionsMutation,
-} from '../../../store/ActionApi/permissionApi';
+import { useGetAvailableRoutesQuery, useGetUserPermissionsQuery, useUpdatePermissionsMutation } from '../../../store/ActionApi/permissionApi';
 import { useToast } from '../../../context/ToastContext';
+import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import './AdminUsers.scss';
 
 // ─── Empty user form ──────────────────────────────────────────────────────────
@@ -294,6 +291,7 @@ const AdminUsers = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [permUser, setPermUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   const openAdd = () => { setEditing(null); setShowModal(true); };
   const openEdit = (user) => { setEditing(user); setShowModal(true); };
@@ -313,13 +311,19 @@ const AdminUsers = () => {
     }
   };
 
-  const handleDelete = async (user) => {
-    if (!window.confirm(`Delete user "${user.name}"? This will also delete their permissions.`)) return;
+  const handleDelete = (user) => {
+    setUserToDelete(user);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
     try {
-      await deleteUser(user._id || user.id).unwrap();
+      await deleteUser(userToDelete._id || userToDelete.id).unwrap();
       showSuccess('User deleted successfully');
     } catch (err) {
       showError(err?.data?.message || 'Failed to delete user');
+    } finally {
+      setUserToDelete(null);
     }
   };
 
@@ -375,6 +379,15 @@ const AdminUsers = () => {
           onClose={() => setPermUser(null)}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={userToDelete?.name}
+        title="Delete User?"
+      />
     </div>
   );
 };

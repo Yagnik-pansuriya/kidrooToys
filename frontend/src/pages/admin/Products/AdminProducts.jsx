@@ -13,6 +13,7 @@ import ProductSearchBar from './components/ProductSearchBar';
 import ProductTable     from './components/ProductTable';
 import ProductModal     from './components/ProductModal';
 import VariantModal     from './components/VariantModal';
+import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import useProductForm   from './hooks/useProductForm';
 
 import { PRODUCTS_PER_PAGE } from './constants/productConstants';
@@ -62,6 +63,7 @@ const AdminProducts = () => {
     openAdd, openEdit, closeModal,
     handleAddImages, handleRemoveImage,
     handleSubmit, handleDelete,
+    productToDelete, setProductToDelete, confirmDelete,
   } = useProductForm();
 
   // ── Variant modal state ───────────────────────────────────────
@@ -158,6 +160,15 @@ const AdminProducts = () => {
           onClose={closeVariants}
         />
       )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      <ConfirmDeleteModal
+        isOpen={!!productToDelete}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={productToDelete?.productName || productToDelete?.name}
+        title="Delete Product?"
+      />
 
     </div>
   );

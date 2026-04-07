@@ -6,6 +6,7 @@ import Loader from '../../../components/Loader/Loader';
 import OfferCard from './components/OfferCard';
 import OfferFormModal from './components/OfferFormModal';
 import OfferPreviewModal from './components/OfferPreviewModal';
+import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import './AdminOffers.scss';
 
 const AdminOffers = () => {
@@ -19,6 +20,7 @@ const AdminOffers = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingOffer, setEditingOffer] = useState(null);
+  const [offerToDelete, setOfferToDelete] = useState(null);
   const [preview, setPreview] = useState(null);
 
   const openAdd = () => {
@@ -31,16 +33,22 @@ const AdminOffers = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Delete this offer?')) {
-      try {
-        await deleteOfferApi(id).unwrap();
-        showSuccess('Offer deleted successfully');
-      } catch (err) {
-        const msg = err?.data?.message || err.message || 'Failed to delete offer';
-        console.error("Failed to delete", err);
-        showError(msg);
-      }
+  const handleDelete = (id) => {
+    const offer = offerList.find(o => (o._id || o.id) === id);
+    setOfferToDelete(offer || { _id: id, title: 'this offer' });
+  };
+
+  const confirmDelete = async () => {
+    if (!offerToDelete) return;
+    try {
+      await deleteOfferApi(offerToDelete._id || offerToDelete.id).unwrap();
+      showSuccess('Offer deleted successfully');
+    } catch (err) {
+      const msg = err?.data?.message || err.message || 'Failed to delete offer';
+      console.error("Failed to delete", err);
+      showError(msg);
+    } finally {
+      setOfferToDelete(null);
     }
   };
 
@@ -123,6 +131,15 @@ const AdminOffers = () => {
         onSubmit={handleSubmit}
         editingOffer={editingOffer}
         isSubmitting={isSubmitting}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!offerToDelete}
+        onClose={() => setOfferToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={offerToDelete?.title}
+        title="Delete Offer?"
       />
     </div>
   );
