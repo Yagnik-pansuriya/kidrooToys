@@ -22,6 +22,7 @@ const useProductForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing,   setEditing]   = useState(null);   // null = add mode
   const [form,      setForm]      = useState(emptyForm);
+  const [productToDelete, setProductToDelete] = useState(null);
   const [apiError,  setApiError]  = useState('');
 
   const { showSuccess, showError } = useToast();
@@ -136,15 +137,20 @@ const useProductForm = () => {
   };
 
   // ── Delete ───────────────────────────────────────────────────
-  const handleDelete = async (product) => {
-    const name = product.productName || product.name;
-    if (!window.confirm(`Delete "${name}"?`)) return;
+  const handleDelete = (product) => {
+    setProductToDelete(product);
+  };
+
+  const confirmDelete = async () => {
+    if (!productToDelete) return;
     try {
-      await deleteProduct(product._id || product.id).unwrap();
+      await deleteProduct(productToDelete._id || productToDelete.id).unwrap();
       showSuccess('Product deleted successfully');
     } catch (err) {
       const msg = err?.data?.message || 'Delete failed. Please try again.';
       showError(msg);
+    } finally {
+      setProductToDelete(null);
     }
   };
 
@@ -170,6 +176,9 @@ const useProductForm = () => {
     handleRemoveImage,
     handleSubmit,
     handleDelete,
+    productToDelete,
+    setProductToDelete,
+    confirmDelete,
   };
 };
 

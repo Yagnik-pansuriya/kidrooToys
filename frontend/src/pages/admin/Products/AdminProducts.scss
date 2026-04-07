@@ -293,8 +293,12 @@
 
 .admin-form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: $space-md;
+
+  @include md {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .admin-field {
@@ -669,9 +673,13 @@
 
   &__row {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr;
     gap: $space-sm;
     margin-bottom: $space-sm;
+
+    @include sm {
+      grid-template-columns: 1fr 1fr auto;
+    }
 
     input {
       padding: $space-xs $space-sm;

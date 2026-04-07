@@ -1,0 +1,68 @@
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.confirm-modal {
+  background-color: #ffffff;
+  color: #1f2937;
+  padding: 1.5rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+  &__title {
+    margin-top: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+  }
+
+  &__message {
+    color: #4b5563; /* Darker gray for readability on white */
+    margin-bottom: 1.75rem;
+    line-height: 1.5;
+
+    strong {
+      color: #111827; /* Near black for emphasis */
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    .admin-btn--secondary {
+      background-color: transparent;
+      color: #374151; /* Dark gray */
+      border: 1px solid #d1d5db; /* Light gray border */
+
+      &:hover {
+        background-color: #f3f4f6; /* Very light gray hover */
+        color: #111827;
+      }
+    }
+
+    .admin-btn--danger {
+      background-color: var(--error, #ef4444) !important;
+      color: white !important;
+      border: none;
+
+      &:hover {
+        background-color: #dc2626 !important; /* Slightly darker shade */
+      }
+    }
+  }
+}
