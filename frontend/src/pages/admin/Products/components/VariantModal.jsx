@@ -8,6 +8,7 @@ import {
   useDeleteVariantMutation,
 } from '../../../../store/ActionApi/variantApi';
 import { useToast } from '../../../../context/ToastContext';
+import ConfirmDeleteModal from '../../../../components/ConfirmModal/ConfirmDeleteModal';
 
 // ─── Empty variant form ───────────────────────────────────────────────────────
 const emptyVariant = {
@@ -366,6 +367,7 @@ const VariantModal = ({ product, onClose }) => {
 
   const [view, setView]                    = useState('list');
   const [editingVariant, setEditingVariant] = useState(null);
+  const [variantToDelete, setVariantToDelete] = useState(null);
 
   const variants = Array.isArray(variantsData)
     ? variantsData
@@ -427,13 +429,19 @@ const VariantModal = ({ product, onClose }) => {
     }
   };
 
-  const handleDelete = async (variant) => {
-    if (!window.confirm(`Delete variant "${variant.sku}"?`)) return;
+  const handleDelete = (variant) => {
+    setVariantToDelete(variant);
+  };
+
+  const confirmDelete = async () => {
+    if (!variantToDelete) return;
     try {
-      await deleteVariant({ variantId: variant._id || variant.id, productId }).unwrap();
+      await deleteVariant({ variantId: variantToDelete._id || variantToDelete.id, productId }).unwrap();
       showSuccess('Variant deleted');
     } catch (err) {
       showError(err?.data?.message || 'Failed to delete variant');
+    } finally {
+      setVariantToDelete(null);
     }
   };
 
@@ -519,6 +527,15 @@ const VariantModal = ({ product, onClose }) => {
 
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!variantToDelete}
+        onClose={() => setVariantToDelete(null)}
+        onConfirm={confirmDelete}
+        itemName={variantToDelete?.sku}
+        title="Delete Variant?"
+      />
     </div>
   );
 };

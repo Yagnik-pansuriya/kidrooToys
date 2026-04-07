@@ -100,8 +100,8 @@
   grid-template-columns: 1fr;
   gap: $space-lg;
 
-  @include sm  { grid-template-columns: repeat(2, 1fr); }
-  @include lg  { grid-template-columns: repeat(4, 1fr); }
+  @include md  { grid-template-columns: repeat(2, 1fr); }
+  @include xl  { grid-template-columns: repeat(4, 1fr); }
 }
 
 .color-field {
@@ -205,14 +205,15 @@
 
   &__demo {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
     gap: $space-md;
-    align-items: center;
 
-    // On mobile: stack buttons full-width
-    @media (max-width: $bp-sm) {
-      flex-direction: column;
-      align-items: stretch;
+    // On larger screens: row layout
+    @include sm {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
     }
   }
 

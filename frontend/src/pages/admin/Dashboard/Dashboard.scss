@@ -15,7 +15,7 @@
     margin-bottom: $space-2xl;
 
     @include sm { grid-template-columns: repeat(2, 1fr); }
-    @include lg { grid-template-columns: repeat(4, 1fr); }
+    @include xl { grid-template-columns: repeat(4, 1fr); }
   }
 
   &__section {
@@ -88,6 +88,7 @@
 
   &__info {
     flex: 1;
+    min-width: 0;
   }
 
   &__value {
