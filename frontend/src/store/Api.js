@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   OFFERS: 'offers',
   VARIANTS: 'products',   
   SITE_SETTINGS: 'site-settings',
+  BANNERS: 'banners',
 };
 
 const baseQuery = fetchBaseQuery({
@@ -48,6 +49,6 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Products', 'Categories', 'Offers', 'Variants', 'SiteSettings', 'Users', 'Permissions', 'PermissionRoutes'],
+  tagTypes: ['Products', 'Categories', 'Offers', 'Variants', 'SiteSettings', 'Users', 'Permissions', 'PermissionRoutes', 'Newsletter', 'Reviews', 'Banners'],
   endpoints: () => ({}),
 });

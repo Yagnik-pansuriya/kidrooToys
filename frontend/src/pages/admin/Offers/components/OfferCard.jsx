@@ -1,6 +1,6 @@
 import React from 'react';
-import { FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
-import { offerTypes } from '../constants/offerConstants';
+import { FiEdit2, FiTrash2, FiEye, FiStar } from 'react-icons/fi';
+import { offerTypes, offerCategories } from '../constants/offerConstants';
 
 const OfferCard = ({ offer, onPreview, onEdit, onDelete }) => {
   return (
@@ -13,6 +13,11 @@ const OfferCard = ({ offer, onPreview, onEdit, onDelete }) => {
           <span className={`admin-offer-card__status ${offer.isActive ? 'admin-offer-card__status--active' : ''}`}>
             {offer.isActive ? 'Active' : 'Inactive'}
           </span>
+          {offer.isFeatured && (
+            <span className="admin-offer-card__status admin-offer-card__status--featured">
+              <FiStar /> Featured
+            </span>
+          )}
         </div>
         <div className="admin-actions">
           <button className="admin-action-btn admin-action-btn--edit" onClick={() => onPreview(offer)} title="Preview"><FiEye /></button>
@@ -25,6 +30,12 @@ const OfferCard = ({ offer, onPreview, onEdit, onDelete }) => {
       <div className="admin-offer-card__meta">
         {offer.discountPercentage > 0 && <span className="admin-offer-card__discount">{offer.discountPercentage}% OFF</span>}
         {offer.couponCode && <span className="admin-offer-card__coupon">{offer.couponCode}</span>}
+        {offer.offerTag && <span className="admin-offer-card__coupon">{offer.offerTag}</span>}
+        {offer.offerCategory && (
+          <span className="admin-offer-card__date">
+            {offerCategories.find(c => c.value === offer.offerCategory)?.label || offer.offerCategory}
+          </span>
+        )}
         {offer.validity?.to && <span className="admin-offer-card__date">Until: {new Date(offer.validity.to).toLocaleDateString()}</span>}
       </div>
       <div className="admin-offer-card__colors">
