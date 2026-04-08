@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
-import { offerTypes, initialFormState } from '../constants/offerConstants';
+import { offerTypes, offerCategories, initialFormState } from '../constants/offerConstants';
 
 const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting }) => {
   const [form, setForm] = useState(initialFormState);
@@ -16,6 +16,10 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
           couponCode: editingOffer.couponCode || '', validFrom, validTo,
           isActive: editingOffer.isActive !== undefined ? editingOffer.isActive : true, bgColor: editingOffer.bgColor || '#FF6B35', textColor: editingOffer.textColor || '#FFFFFF',
           targetUrl: editingOffer.targetUrl || '',
+          offerTag: editingOffer.offerTag || '',
+          offerCategory: editingOffer.offerCategory || 'all-deals',
+          isFeatured: editingOffer.isFeatured || false,
+          couponDescription: editingOffer.couponDescription || '',
         });
       } else {
         setForm(initialFormState);
@@ -70,6 +74,23 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
               <label>Description</label>
               <textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={2} />
             </div>
+
+            {/* Offer Tag */}
+            <div className="admin-field">
+              <label>Badge Tag</label>
+              <input type="text" placeholder="e.g. LIMITED TIME ONLY" value={form.offerTag} onChange={(e) => setForm(p => ({ ...p, offerTag: e.target.value }))} />
+            </div>
+
+            {/* Offer Category */}
+            <div className="admin-field">
+              <label>Offer Category</label>
+              <select value={form.offerCategory} onChange={(e) => setForm(p => ({ ...p, offerCategory: e.target.value }))}>
+                {offerCategories.map(c => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="admin-field">
               <label>Discount %</label>
               <input type="number" value={form.discountPercentage} onChange={(e) => setForm(p => ({ ...p, discountPercentage: e.target.value }))} />
@@ -78,6 +99,13 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
               <label>Coupon Code</label>
               <input type="text" value={form.couponCode} onChange={(e) => setForm(p => ({ ...p, couponCode: e.target.value }))} />
             </div>
+
+            {/* Coupon Description */}
+            <div className="admin-field admin-field--full">
+              <label>Coupon Description</label>
+              <input type="text" placeholder="e.g. Apply this code at checkout for additional savings" value={form.couponDescription} onChange={(e) => setForm(p => ({ ...p, couponDescription: e.target.value }))} />
+            </div>
+
             <div className="admin-field">
               <label>Valid From *</label>
               <input type="date" value={form.validFrom} onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} required />
@@ -131,9 +159,15 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
               )}
             </div>
 
+            {/* Checkboxes */}
             <div className="admin-field">
               <label className="admin-checkbox">
                 <input type="checkbox" checked={form.isActive} onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} /> Active
+              </label>
+            </div>
+            <div className="admin-field">
+              <label className="admin-checkbox">
+                <input type="checkbox" checked={form.isFeatured} onChange={(e) => setForm(p => ({ ...p, isFeatured: e.target.checked }))} /> Featured (Hero Banner)
               </label>
             </div>
           </div>

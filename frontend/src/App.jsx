@@ -15,6 +15,8 @@ import Offers from './pages/user/Offers/Offers';
 import AboutUs from './pages/user/AboutUs/AboutUs';
 import UserProfile from './pages/user/UserProfile/UserProfile';
 import Cart from './pages/user/Cart/Cart';
+import ProductDetail from './pages/user/ProductDetail/ProductDetail';
+import Shop from './pages/user/Shop/Shop';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin/AdminLogin';
@@ -26,6 +28,9 @@ import AdminOrders from './pages/admin/Orders/AdminOrders';
 import AdminOffers from './pages/admin/Offers/AdminOffers';
 import AdminSettings from './pages/admin/Settings/AdminSettings';
 import AdminUsers from './pages/admin/Users/AdminUsers';
+import AdminNewsletter from './pages/admin/Newsletter/AdminNewsletter';
+import AdminReviews from './pages/admin/Reviews/AdminReviews';
+import AdminBanners from './pages/admin/Banners/AdminBanners';
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
@@ -79,10 +84,12 @@ function App() {
               <Routes>
                 {/* User Routes */}
               <Route path="/" element={<UserLayout><Home /></UserLayout>} />
+              <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
               <Route path="/offers" element={<UserLayout><Offers /></UserLayout>} />
               <Route path="/about" element={<UserLayout><AboutUs /></UserLayout>} />
               <Route path="/profile" element={<UserLayout><UserProfile /></UserLayout>} />
               <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
+              <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
 
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminLogin />} />
@@ -92,6 +99,9 @@ function App() {
                 <Route path="products" element={<PermissionRoute permRoute="/products"><AdminProducts /></PermissionRoute>} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="offers" element={<PermissionRoute permRoute="/offers"><AdminOffers /></PermissionRoute>} />
+                <Route path="newsletter" element={<PermissionRoute permRoute="/newsletter"><AdminNewsletter /></PermissionRoute>} />
+                <Route path="reviews" element={<PermissionRoute permRoute="/reviews"><AdminReviews /></PermissionRoute>} />
+                <Route path="banners" element={<PermissionRoute permRoute="/banners"><AdminBanners /></PermissionRoute>} />
                 <Route path="settings" element={<PermissionRoute permRoute="/site-settings"><AdminSettings /></PermissionRoute>} />
                 <Route path="users" element={<PermissionRoute permRoute="/users" adminOnly><AdminUsers /></PermissionRoute>} />
               </Route>

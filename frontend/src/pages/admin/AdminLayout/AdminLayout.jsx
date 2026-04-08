@@ -8,7 +8,10 @@ import {
   MdShoppingBag, 
   MdLocalOffer, 
   MdPeople, 
-  MdSettings 
+  MdSettings,
+  MdEmail,
+  MdRateReview,
+  MdViewCarousel
 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../../store/ReducerApi/authSlice';
@@ -22,6 +25,9 @@ const allNavItems = [
   { to: '/admin/products', icon: <MdInventory />, label: 'Products', permRoute: '/products' },
   { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null },
   { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers', permRoute: '/offers' },
+  { to: '/admin/banners', icon: <MdViewCarousel />, label: 'Banners', permRoute: '/banners' },
+  { to: '/admin/newsletter', icon: <MdEmail />, label: 'Newsletter', permRoute: '/newsletter' },
+  { to: '/admin/reviews', icon: <MdRateReview />, label: 'Reviews', permRoute: '/reviews' },
   { to: '/admin/users', icon: <MdPeople />, label: 'Users', permRoute: '/users', adminOnly: true },
   { to: '/admin/settings', icon: <MdSettings />, label: 'Settings', permRoute: '/site-settings' },
 ];

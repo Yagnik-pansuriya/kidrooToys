@@ -24,6 +24,7 @@ const Header = () => {
 
   const navLinks = [
     { to: '/', label: 'Home' },
+    { to: '/shop', label: 'Shop' },
     { to: '/offers', label: 'Offers', badge: '🔥' },
     { to: '/about', label: 'About Us' },
   ];
@@ -38,7 +39,7 @@ const Header = () => {
           ) : (
             <div className="header__logo-text">
               <span className="header__logo-icon">🧸</span>
-              <span className="header__logo-name">{settings.siteName || 'Kidroo Toys'}</span>
+              <span className="header__logo-name">{settings.siteName || 'Kidroo'}</span>
             </div>
           )}
         </Link>
