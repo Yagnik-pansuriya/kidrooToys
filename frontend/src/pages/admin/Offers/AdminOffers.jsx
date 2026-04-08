@@ -64,6 +64,10 @@ const AdminOffers = () => {
     formData.append('isActive', form.isActive);
     if (form.bgColor) formData.append('bgColor', form.bgColor);
     if (form.textColor) formData.append('textColor', form.textColor);
+    if (form.offerTag) formData.append('offerTag', form.offerTag);
+    if (form.offerCategory) formData.append('offerCategory', form.offerCategory);
+    formData.append('isFeatured', form.isFeatured);
+    if (form.couponDescription) formData.append('couponDescription', form.couponDescription);
     
     // validity
     if (form.validFrom && form.validTo) {

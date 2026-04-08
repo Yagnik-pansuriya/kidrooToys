@@ -69,11 +69,18 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: ['Products'],
     }),
 
+    // GET /api/products/:id (single product detail)
+    getProductById: builder.query({
+      query: (id) => `${API_ENDPOINTS.PRODUCTS}/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Products', id }],
+    }),
+
   }),
 });
 
 export const {
   useGetProductsQuery,
+  useGetProductByIdQuery,
   useAddProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
