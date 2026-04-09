@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight } from 'react-icons/fi';
+import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiShield, FiPackage } from 'react-icons/fi';
 import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
 import { useGetVariantsQuery } from '../../../store/ActionApi/variantApi';
 import { useGetProductReviewsQuery, useGetProductReviewStatsQuery, useAddReviewMutation } from '../../../store/ActionApi/reviewApi';
@@ -17,13 +17,21 @@ const ProductDetail = () => {
 
   // ── API data ──────────────────────────────────────────────────
   const { data: productResp, isLoading } = useGetProductByIdQuery(id);
-  const { data: variantsResp } = useGetVariantsQuery(id);
+  const { data: variantsResp, isLoading: isVariantsLoading } = useGetVariantsQuery(id, {
+    refetchOnMountOrArgChange: true,
+  });
+
   const { data: reviewsResp } = useGetProductReviewsQuery(id);
   const { data: statsResp } = useGetProductReviewStatsQuery(id);
   const [addReviewApi, { isLoading: submittingReview }] = useAddReviewMutation();
 
+
   const product = productResp?.data || productResp;
-  const variants = variantsResp?.data || variantsResp || [];
+
+  // Safely unwrap the variants response — API returns { success, data: [...] }
+  const rawVariants = variantsResp?.data ?? variantsResp;
+  const variants = Array.isArray(rawVariants) ? rawVariants : [];
+
   const reviews = reviewsResp?.data || reviewsResp || [];
   const stats = statsResp?.data || statsResp || {};
 
@@ -37,29 +45,142 @@ const ProductDetail = () => {
   const relatedProducts = (relatedInner?.data || relatedInner || [])
     .filter((p) => (p._id || p.id) !== id);
 
+  // ── Variant helpers ───────────────────────────────────────────
+  const variantList = useMemo(() => {
+    const list = Array.isArray(variants) ? variants : [];
+    return list.filter((v) => v.status !== 'inactive');
+  }, [variants]);
+
+  // Extract all unique attribute keys (e.g. ["Color", "Size"])
+  // Handle both plain objects and potential legacy Map-serialized formats
+  const attrKeys = useMemo(() => {
+    const keys = variantList.flatMap((v) => {
+      const attrs = v.attributes;
+      if (!attrs || typeof attrs !== 'object') return [];
+      return Object.keys(attrs);
+    });
+    return [...new Set(keys)];
+  }, [variantList]);
+
   // ── Local state ───────────────────────────────────────────────
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariant, setSelectedVariant] = useState(null);
+  // Track each attribute selection independently: { Color: 'Red', Size: 'Large' }
+  const [selectedAttrs, setSelectedAttrs] = useState({});
   const [activeTab, setActiveTab] = useState('description');
 
   // Review form
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, title: '', comment: '' });
 
+  // ── Auto-select default variant on load ───────────────────────
+  useEffect(() => {
+    if (variantList.length === 0) return;
+
+    const defaultVariant = variantList.find((v) => v.isDefault) || variantList[0];
+    if (defaultVariant) {
+      setSelectedVariant(defaultVariant);
+      // Populate selectedAttrs from the default variant's attributes
+      const attrs = {};
+      if (defaultVariant.attributes) {
+        Object.entries(defaultVariant.attributes).forEach(([key, val]) => {
+          attrs[key] = val;
+        });
+      }
+      setSelectedAttrs(attrs);
+    }
+  }, [variantList]);
+
+  // ── When selectedAttrs changes, find the matching variant ─────
+  useEffect(() => {
+    if (attrKeys.length === 0) return;
+
+    // Score each variant: count how many selected attributes it matches.
+    // The best (highest score) variant wins. This handles both full matches
+    // (all keys shared) and partial matches (variants with different key sets).
+    let bestVariant = null;
+    let bestScore = -1;
+
+    for (const v of variantList) {
+      let score = 0;
+      const vAttrs = v.attributes || {};
+      for (const [key, val] of Object.entries(selectedAttrs)) {
+        if (vAttrs[key] === val) score++;
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestVariant = v;
+      }
+    }
+
+    setSelectedVariant(bestVariant || null);
+    setSelectedImage(0);
+  }, [selectedAttrs, variantList, attrKeys]);
+
+  // ── Determine which attribute values are clickable given current selections ──
+  //
+  // A value is "available" if there exists at least one variant that:
+  //   (a) has this attribute key = this value, AND
+  //   (b) for every OTHER selected attribute, either matches it OR simply
+  //       doesn't have that key at all (it's a different variant type).
+  const getAvailableValues = (attrKey) => {
+    return variantList
+      .filter((v) => {
+        const vAttrs = v.attributes || {};
+        for (const [key, val] of Object.entries(selectedAttrs)) {
+          if (key === attrKey) continue;          // skip the key we're evaluating
+          if (!(key in vAttrs)) continue;          // variant doesn't have this key — OK
+          if (vAttrs[key] !== val) return false;   // has the key but different value — incompatible
+        }
+        return true;
+      })
+      .map((v) => (v.attributes || {})[attrKey])
+      .filter(Boolean);
+  };
+
   if (isLoading) return <Loader message="Loading product…" />;
   if (!product) return <div className="pdp-empty">Product not found.</div>;
 
   const name = product.productName || product.name;
-  const images = product.images?.length ? product.images : [product.image].filter(Boolean);
+
+  // Use variant images if variant has them, otherwise fall back to product images
+  const productImages = product.images?.length ? product.images : [product.image].filter(Boolean);
+  const variantImages = selectedVariant?.images?.length ? selectedVariant.images : [];
+  const images = variantImages.length > 0 ? variantImages : productImages;
+
   const price = selectedVariant ? Number(selectedVariant.price) : Number(product.price || 0);
   const originalPrice = selectedVariant ? Number(selectedVariant.originalPrice || 0) : Number(product.originalPrice || 0);
-  const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
+  const discount = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : (product.discountPercentage || 0);
   const categoryName = product.category?.catagoryName || product.category?.name || '';
-  const inStock = (selectedVariant ? selectedVariant.stock : product.stock) > 0;
+  const stock = selectedVariant ? selectedVariant.stock : product.stock;
+  const inStock = stock > 0;
+  const sku = selectedVariant?.sku || '';
 
-  // Extract unique attribute keys from variants for selection
-  const variantList = Array.isArray(variants) ? variants : [];
-  const attrKeys = [...new Set(variantList.flatMap((v) => Object.keys(v.attributes || {})))];
+  const handleSelectAttr = (key, val) => {
+    // Step 1: try to keep all existing selections + this new one
+    const merged = { ...selectedAttrs, [key]: val };
+
+    // Check if any variant matches all of merged
+    const exactMatch = variantList.find((v) => {
+      const vAttrs = v.attributes || {};
+      return Object.entries(merged).every(([k, v_]) => vAttrs[k] === v_);
+    });
+
+    if (exactMatch) {
+      // Perfect combo match — keep all current selections
+      setSelectedAttrs(merged);
+    } else {
+      // No exact match: find the best variant that has [key]=val
+      // and adopt its full attributes (clears incompatible selections)
+      const best = variantList.find((v) => (v.attributes || {})[key] === val);
+      if (best) {
+        setSelectedAttrs({ ...best.attributes });
+      } else {
+        setSelectedAttrs({ [key]: val });
+      }
+    }
+  };
+
 
   const handleAddToCart = () => {
     addToCart({ ...product, quantity, selectedVariant });
@@ -152,35 +273,68 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {/* Variant selectors */}
-          {attrKeys.length > 0 && attrKeys.map((key) => {
-            const values = [...new Set(variantList.map((v) => v.attributes?.[key]).filter(Boolean))];
-            return (
-              <div className="pdp__option-group" key={key}>
-                <label>{key}</label>
-                <div className="pdp__option-pills">
-                  {values.map((val) => {
-                    const isSelected = selectedVariant?.attributes?.[key] === val;
-                    return (
-                      <button
-                        key={val}
-                        className={`pdp__pill ${isSelected ? 'pdp__pill--active' : ''}`}
-                        onClick={() => {
-                          const match = variantList.find((v) => v.attributes?.[key] === val);
-                          setSelectedVariant(match || null);
-                        }}
-                      >
-                        {key.toLowerCase() === 'color' ? (
-                          <span className="pdp__color-dot" style={{ background: val }} />
-                        ) : null}
-                        {val}
-                      </button>
-                    );
-                  })}
+          {/* ── Variant selectors (multi-attribute) ── */}
+          {isVariantsLoading ? (
+            <div className="pdp__variants-loading">
+              <div className="pdp__variants-skeleton" />
+            </div>
+          ) : variantList.length > 0 ? (
+            attrKeys.length > 0 ? attrKeys.map((key) => {
+              const allValues = [...new Set(variantList.map((v) => v.attributes?.[key]).filter(Boolean))];
+              const availableValues = getAvailableValues(key);
+              return (
+                <div className="pdp__option-group" key={key}>
+                  <label>
+                    {key}
+                    {selectedAttrs[key] && (
+                      <span className="pdp__option-selected">: {selectedAttrs[key]}</span>
+                    )}
+                  </label>
+                  <div className="pdp__option-pills">
+                    {allValues.map((val) => {
+                      const isSelected = selectedAttrs[key] === val;
+                      const isAvailable = availableValues.includes(val);
+                      return (
+                        <button
+                          key={val}
+                          className={`pdp__pill ${isSelected ? 'pdp__pill--active' : ''} ${!isAvailable ? 'pdp__pill--disabled' : ''}`}
+                          onClick={() => isAvailable && handleSelectAttr(key, val)}
+                          disabled={!isAvailable}
+                          title={!isAvailable ? 'This combination is unavailable' : ''}
+                        >
+                          {key.toLowerCase() === 'color' ? (
+                            <span className="pdp__color-dot" style={{ background: val }} />
+                          ) : null}
+                          {val}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
+              );
+            }) : (
+              <div className="pdp__option-group">
+                <p className="pdp__no-attrs">This product has {variantList.length} variant(s) available.</p>
               </div>
-            );
-          })}
+            )
+          ) : null}
+
+          {/* Variant meta: SKU & Stock indicator */}
+          {selectedVariant && (
+            <div className="pdp__variant-meta">
+              {sku && (
+                <span className="pdp__sku">
+                  <FiPackage /> SKU: {sku}
+                </span>
+              )}
+              <span className={`pdp__stock-indicator ${inStock ? 'pdp__stock-indicator--in' : 'pdp__stock-indicator--out'}`}>
+                {inStock ? (
+                  stock <= 5 ? `Only ${stock} left!` : 'In Stock'
+                ) : 'Out of Stock'}
+              </span>
+            </div>
+          )}
+
 
           {/* Quantity */}
           <div className="pdp__option-group">
@@ -188,7 +342,7 @@ const ProductDetail = () => {
             <div className="pdp__qty">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))}><FiMinus /></button>
               <span>{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)}><FiPlus /></button>
+              <button onClick={() => setQuantity(Math.min(stock || 99, quantity + 1))}><FiPlus /></button>
             </div>
           </div>
 
@@ -206,6 +360,7 @@ const ProductDetail = () => {
           <div className="pdp__trust">
             <span><FiTruck /> Free Shipping</span>
             <span><FiRefreshCw /> 30-Day Returns</span>
+            <span><FiShield /> Secure Payment</span>
           </div>
         </div>
       </section>
@@ -246,7 +401,18 @@ const ProductDetail = () => {
                   <tr><td>Brand</td><td>Kidroo</td></tr>
                   <tr><td>Category</td><td>{categoryName}</td></tr>
                   {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange.from}–{product.ageRange.to} years</td></tr>}
-                  <tr><td>Stock</td><td>{product.stock} units</td></tr>
+                  <tr><td>Stock</td><td>{stock} units</td></tr>
+                  {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
+                  {selectedVariant?.weight && <tr><td>Weight</td><td>{selectedVariant.weight} g</td></tr>}
+                  {selectedVariant?.dimensions && (
+                    <tr>
+                      <td>Dimensions</td>
+                      <td>
+                        {[selectedVariant.dimensions.length, selectedVariant.dimensions.width, selectedVariant.dimensions.height]
+                          .filter(Boolean).join(' × ')} cm
+                      </td>
+                    </tr>
+                  )}
                   {product.tags?.length > 0 && <tr><td>Tags</td><td>{product.tags.join(', ')}</td></tr>}
                 </tbody>
               </table>

@@ -1,10 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null,
+  // Restore full session from localStorage on every page load / refresh
+  user: (() => {
+    try {
+      const saved = localStorage.getItem('kidroo_admin_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  })(),
   token: localStorage.getItem('token') || null,
   isAuthenticated: !!localStorage.getItem('token'),
-  permissions: JSON.parse(localStorage.getItem('permissions') || '[]'),
+  permissions: (() => {
+    try {
+      return JSON.parse(localStorage.getItem('permissions') || '[]');
+    } catch { return []; }
+  })(),
 };
 
 const authSlice = createSlice({
@@ -16,7 +26,10 @@ const authSlice = createSlice({
       state.user = user;
       state.token = accessToken;
       state.isAuthenticated = true;
+
+      // Persist to localStorage so refresh restores full session
       localStorage.setItem('token', accessToken);
+      localStorage.setItem('kidroo_admin_user', JSON.stringify(user));
 
       // Store permissions from login response if available
       if (user?.permissions) {
@@ -34,6 +47,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.permissions = [];
       localStorage.removeItem('token');
+      localStorage.removeItem('kidroo_admin_user');
       localStorage.removeItem('permissions');
     },
   },
