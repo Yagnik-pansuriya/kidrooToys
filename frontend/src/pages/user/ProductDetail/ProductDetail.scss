@@ -193,7 +193,9 @@
 // ─── Option Groups ────────────────────────────────────────────
 .pdp__option-group {
   label {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -201,6 +203,13 @@
     color: #8A8D9E;
     margin-bottom: $space-xs;
   }
+}
+
+.pdp__option-selected {
+  text-transform: none;
+  font-weight: 800;
+  color: var(--color-header);
+  letter-spacing: 0;
 }
 
 .pdp__age-tag {
@@ -231,26 +240,114 @@
   color: #4A4D5E;
   background: white;
   cursor: pointer;
-  transition: all $transition-base;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 
   &--active {
     border-color: var(--color-primary);
     color: var(--color-primary);
-    background: rgba(139, 115, 85, 0.05);
+    background: rgba(139, 115, 85, 0.08);
+    box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.12);
+    transform: scale(1.04);
+    font-weight: 700;
   }
 
-  &:hover {
+  &--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-style: dashed;
+    text-decoration: line-through;
+
+    &:hover {
+      border-color: #E2E4EC;
+    }
+  }
+
+  &:hover:not(&--disabled) {
     border-color: var(--color-primary);
+    transform: translateY(-1px);
   }
 }
 
 .pdp__color-dot {
   display: inline-block;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: 2px solid rgba(0,0,0,0.1);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.15);
 }
+
+// ─── Variant Meta ─────────────────────────────────────────────
+.pdp__variant-meta {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  flex-wrap: wrap;
+  padding: $space-sm $space-md;
+  background: #FAFAF8;
+  border-radius: $radius;
+  border: 1px solid #F0EDE8;
+  animation: fadeInUp 0.3s ease;
+}
+
+.pdp__sku {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #8A8D9E;
+  font-family: monospace;
+
+  svg {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+  }
+}
+
+.pdp__stock-indicator {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: $radius-full;
+
+  &--in {
+    color: #166534;
+    background: #DCFCE7;
+  }
+
+  &--out {
+    color: #991B1B;
+    background: #FEE2E2;
+  }
+}
+
+// ─── Variants loading skeleton ─────────────────────────────────
+.pdp__variants-loading {
+  padding: $space-xs 0;
+}
+
+.pdp__variants-skeleton {
+  width: 200px;
+  height: 38px;
+  border-radius: $radius-full;
+  background: linear-gradient(90deg, #f0ede8 25%, #e8e4de 50%, #f0ede8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.pdp__no-attrs {
+  font-size: 0.85rem;
+  color: #8A8D9E;
+  margin: 0;
+}
+
 
 .pdp__qty {
   display: inline-flex;

@@ -30,6 +30,12 @@ const buildVariantFormData = (body) => {
     body.imageFiles.forEach((file) => fd.append('images', file));
   }
 
+  // existingImages: remote CDN URLs to keep (JSON array of strings)
+  // The backend will merge: finalImages = existingImages + newly uploaded URLs
+  if (Array.isArray(body.existingImageUrls) && body.existingImageUrls.length > 0) {
+    fd.append('existingImages', JSON.stringify(body.existingImageUrls));
+  }
+
   // attributes → JSON string  e.g. { Color: 'Red', Size: 'XL' }
   if (body.attributes !== undefined) {
     fd.append('attributes', JSON.stringify(body.attributes));
@@ -44,7 +50,12 @@ export const variantApi = baseApi.injectEndpoints({
     // GET /api/products/:productId/variants
     getVariants: builder.query({
       query: (productId) => `products/${productId}/variants`,
-      providesTags: (result, error, productId) => [{ type: 'Variants', id: productId }],
+      // keepUnusedDataFor: 0 forces a fresh fetch every time the component mounts
+      keepUnusedDataFor: 0,
+      providesTags: (result, error, productId) => [
+        { type: 'Variants', id: productId },
+        { type: 'Variants', id: 'LIST' },
+      ],
     }),
 
     // POST /api/products/:productId/variants  (multipart/form-data)
@@ -53,9 +64,13 @@ export const variantApi = baseApi.injectEndpoints({
         url: `products/${productId}/variants`,
         method: 'POST',
         body: buildVariantFormData(body),
-        formData: true,
+        // NOTE: do NOT set Content-Type — the browser sets it automatically
+        // with the correct multipart boundary when body is FormData
       }),
-      invalidatesTags: (result, error, { productId }) => [{ type: 'Variants', id: productId }],
+      invalidatesTags: (result, error, { productId }) => [
+        { type: 'Variants', id: productId },
+        { type: 'Variants', id: 'LIST' },
+      ],
     }),
 
     // PUT /api/products/variants/:variantId  (multipart/form-data)
@@ -64,9 +79,11 @@ export const variantApi = baseApi.injectEndpoints({
         url: `products/variants/${variantId}`,
         method: 'PUT',
         body: buildVariantFormData(body),
-        formData: true,
       }),
-      invalidatesTags: (result, error, { productId }) => [{ type: 'Variants', id: productId }],
+      invalidatesTags: (result, error, { productId }) => [
+        { type: 'Variants', id: productId },
+        { type: 'Variants', id: 'LIST' },
+      ],
     }),
 
     // DELETE /api/products/variants/:variantId
@@ -75,7 +92,10 @@ export const variantApi = baseApi.injectEndpoints({
         url: `products/variants/${variantId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { productId }) => [{ type: 'Variants', id: productId }],
+      invalidatesTags: (result, error, { productId }) => [
+        { type: 'Variants', id: productId },
+        { type: 'Variants', id: 'LIST' },
+      ],
     }),
 
   }),
