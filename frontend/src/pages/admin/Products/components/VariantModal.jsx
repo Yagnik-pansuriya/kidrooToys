@@ -46,6 +46,13 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
   });
 
   // ── Image handlers ────────────────────────────────────────────────────────
+  // previewUrls: ALL previews (existing remote URLs + new blob: URLs)
+  // imageFiles: ONLY new File objects to upload
+  // existingUrls: ONLY the remote CDN URLs to keep (derived from previewUrls)
+
+  // Get existing (non-blob) URLs that should be kept
+  const existingImageUrls = form.previewUrls.filter(url => !url.startsWith('blob:'));
+
   const handleAddImages = (e) => {
     const incoming = Array.from(e.target.files);
     e.target.value = '';
@@ -63,11 +70,25 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
   };
 
   const handleRemoveImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      imageFiles:  prev.imageFiles.filter((_, i) => i !== index),
-      previewUrls: prev.previewUrls.filter((_, i) => i !== index),
-    }));
+    setForm((prev) => {
+      const urlToRemove = prev.previewUrls[index];
+      const isBlob = urlToRemove?.startsWith('blob:');
+
+      // Count blob URLs BEFORE this index to find the imageFiles index
+      const blobIndexBefore = prev.previewUrls
+        .slice(0, index)
+        .filter(u => u.startsWith('blob:'))
+        .length;
+
+      return {
+        ...prev,
+        // Remove the new File only if the removed preview is a blob (new upload)
+        imageFiles: isBlob
+          ? prev.imageFiles.filter((_, i) => i !== blobIndexBefore)
+          : prev.imageFiles,
+        previewUrls: prev.previewUrls.filter((_, i) => i !== index),
+      };
+    });
   };
 
   // ── Attributes helpers ────────────────────────────────────────────────────
@@ -97,25 +118,27 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
     });
 
     onSave({
-      sku:           form.sku,
-      barcode:       form.barcode,
-      price:         Number(form.price),
-      originalPrice: Number(form.originalPrice),
-      stock:         Number(form.stock),
-      lowStockAlert: form.lowStockAlert !== '' ? Number(form.lowStockAlert) : undefined,
-      weight:        form.weight        !== '' ? Number(form.weight)        : undefined,
-      dimensions:    {                          // serialised to JSON in buildVariantFormData
+      sku:              form.sku,
+      barcode:          form.barcode,
+      price:            Number(form.price),
+      originalPrice:    Number(form.originalPrice),
+      stock:            Number(form.stock),
+      lowStockAlert:    form.lowStockAlert !== '' ? Number(form.lowStockAlert) : undefined,
+      weight:           form.weight        !== '' ? Number(form.weight)        : undefined,
+      dimensions:       {
         length: Number(form.dimLength) || 0,
         width:  Number(form.dimWidth)  || 0,
         height: Number(form.dimHeight) || 0,
       },
-      status:        form.status,
-      isDefault:     form.isDefault,
-      isActive:      form.isActive,
-      imageFiles:    form.imageFiles,
-      previewUrls:   form.previewUrls,
-      attributes:    attrsObj,
+      status:           form.status,
+      isDefault:        form.isDefault,
+      isActive:         form.isActive,
+      imageFiles:       form.imageFiles,           // new File objects to upload
+      existingImageUrls: existingImageUrls,         // existing CDN URLs to keep
+      previewUrls:      form.previewUrls,
+      attributes:       attrsObj,
     });
+
   };
 
   return (
