@@ -864,3 +864,40 @@
   }
 }
 
+// ─── Drag-and-drop reorder styles ─────────────────────────────────────────────
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b0b3c0;
+  font-size: 1rem;
+  cursor: grab;
+  transition: color 0.2s;
+
+  &:hover { color: var(--color-primary); }
+  &:active { cursor: grabbing; }
+}
+
+// Row being dragged
+.admin-table tbody tr.dragging {
+  opacity: 0.4;
+
+  td {
+    background: #f0f2f8;
+    border: 1px dashed #c5c9d8;
+  }
+}
+
+// Row that is being hovered over as drop target
+.admin-table tbody tr.drag-over {
+  td {
+    border-top: 2.5px solid var(--color-primary, #ff6b35) !important;
+    background: rgba(255, 107, 53, 0.03);
+  }
+}
+
+.admin-table tbody tr[draggable="true"] {
+  transition: background 0.15s ease, opacity 0.15s ease;
+  user-select: none;
+}
+

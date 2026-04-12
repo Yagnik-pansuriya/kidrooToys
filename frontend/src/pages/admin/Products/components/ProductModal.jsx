@@ -179,6 +179,16 @@ const ProductModal = ({
               />
             </div>
 
+            {/* YouTube Video URL ─ full width */}
+            <div className="admin-field admin-field--full">
+              <label>YouTube Video URL (optional)</label>
+              <input
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                {...field('youtubeUrl')}
+              />
+            </div>
+
             {/* Images ─ full width */}
             <div className="admin-field admin-field--full">
               <label><FiImage aria-hidden="true" /> Product Images (up to 5)</label>

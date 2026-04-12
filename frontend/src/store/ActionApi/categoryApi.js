@@ -44,6 +44,15 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Categories'],
     }),
+
+    reorderCategories: builder.mutation({
+      query: (items) => ({
+        url: `${API_ENDPOINTS.CATEGORIES}/reorder`,
+        method: 'PUT',
+        body: { items },
+      }),
+      invalidatesTags: ['Categories'],
+    }),
   }),
 });
 
@@ -52,4 +61,5 @@ export const {
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useReorderCategoriesMutation,
 } = categoryApi;

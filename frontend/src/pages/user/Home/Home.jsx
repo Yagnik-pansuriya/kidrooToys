@@ -9,18 +9,22 @@ import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import './Home.scss';
 
 const Home = () => {
   // ── API data ──────────────────────────────────────────────────
   useGetCategoriesQuery();
-  useGetProductsQuery({ page: 1, limit: 8, featured: 'true' });
+  const { data: newArrivalResp } = useGetProductsQuery({ page: 1, limit: 8, newArrival: 'true' });
   const { data: bannerResp } = useGetBannersQuery({ activeOnly: true });
 
   const categories = useSelector((s) => s.category.categories) || [];
   const categoryList = Array.isArray(categories) ? categories : categories?.data || [];
-  const products = useSelector((s) => s.product.products) || [];
-  const productList = Array.isArray(products) ? products : products?.data || [];
+
+  // Parse new arrival products from RTK Query response directly
+  const newArrivalInner = newArrivalResp?.data || newArrivalResp;
+  const newArrivalList = Array.isArray(newArrivalInner?.data) ? newArrivalInner.data
+    : Array.isArray(newArrivalInner) ? newArrivalInner : [];
 
   // Parse banners from API response
   const bannersRaw = bannerResp?.data || bannerResp || [];
@@ -38,9 +42,11 @@ const Home = () => {
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const { showSuccess, showError } = useToast();
   const { addToCart } = useCart();
+  const { requireAuth } = useCustomerAuth();
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to subscribe to our newsletter')) return;
     if (!email.trim()) return;
     try {
       await subscribe(email.trim()).unwrap();
@@ -132,7 +138,7 @@ const Home = () => {
             <p>Browse our collections based on your child's interests and passions</p>
           </div>
           <div className="theme-section__grid">
-            {categoryList.slice(0, 4).map((cat) => {
+            {categoryList.map((cat) => {
               const name = cat.catagoryName || cat.name;
               const imgSrc = cat.image || cat.catagoryImage;
               return (
@@ -159,15 +165,15 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ═══════════════════ FEATURED FAVORITES ═══════════════════ */}
+      {/* ═══════════════════ NEW ARRIVALS ═══════════════════ */}
       <section className="featured-section">
         <div className="featured-section__container">
           <div className="featured-section__header">
-            <h2>Featured <span className="featured-section__accent">Favorites</span></h2>
-            <p>Our most loved toys picked by parents and kids alike</p>
+            <h2>New <span className="featured-section__accent">Arrivals</span></h2>
+            <p>Check out our latest additions to the toy collection</p>
           </div>
           <div className="featured-section__grid">
-            {productList.slice(0, 8).map((product) => {
+            {newArrivalList.slice(0, 8).map((product) => {
               const name = product.productName || product.name;
               const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
               const price = Number(product.price || 0);
@@ -180,9 +186,7 @@ const Home = () => {
                   {discount > 0 && (
                     <span className="product-card-v2__badge">-{discount}%</span>
                   )}
-                  {product.newArrival && (
-                    <span className="product-card-v2__badge product-card-v2__badge--new">NEW</span>
-                  )}
+                  <span className="product-card-v2__badge product-card-v2__badge--new">NEW</span>
                   <div className="product-card-v2__img-wrap">
                     {imgSrc ? (
                       <img src={imgSrc} alt={name} className="product-card-v2__img" loading="lazy" />
@@ -213,10 +217,10 @@ const Home = () => {
               );
             })}
           </div>
-          {productList.length > 0 && (
+          {newArrivalList.length > 0 && (
             <div className="featured-section__more">
               <Link to="/shop" className="featured-section__more-btn">
-                View All Products <FiArrowRight />
+                View All <FiArrowRight />
               </Link>
             </div>
           )}

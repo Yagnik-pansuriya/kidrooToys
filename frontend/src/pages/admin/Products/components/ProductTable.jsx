@@ -1,7 +1,8 @@
-import { FiEdit2, FiTrash2, FiImage, FiLayers } from 'react-icons/fi';
+import { useState, useRef } from 'react';
+import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove } from 'react-icons/fi';
 
 /**
- * ProductTable
+ * ProductTable with drag-and-drop reordering
  *
  * Props:
  *  products     {Array}    Current page's product list
@@ -10,119 +11,160 @@ import { FiEdit2, FiTrash2, FiImage, FiLayers } from 'react-icons/fi';
  *  onEdit       {fn}       Called with the product object to edit
  *  onDelete     {fn}       Called with the product object to delete
  *  onVariants   {fn}       Called with the product object to manage variants
+ *  onReorder    {fn}       Called with array of { id, position } after drag-drop
  */
-const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants }) => (
-  <table className="admin-table" aria-label="Products table">
-    <thead>
-      <tr>
-        <th>Image</th>
-        <th>Name</th>
-        <th>Category</th>
-        <th>Price</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants, onReorder }) => {
+  const [dragIdx, setDragIdx] = useState(null);
+  const [overIdx, setOverIdx] = useState(null);
 
-    <tbody>
-      {/* ── Empty state ── */}
-      {products.length === 0 && (
+  // Sort by position
+  const sorted = [...products].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+  const onDragStart = (e, idx) => {
+    setDragIdx(idx);
+    e.dataTransfer.effectAllowed = 'move';
+    e.currentTarget.style.opacity = '0.5';
+  };
+
+  const onDragEnd = (e) => {
+    e.currentTarget.style.opacity = '1';
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      const newOrder = [...sorted];
+      const [moved] = newOrder.splice(dragIdx, 1);
+      newOrder.splice(overIdx, 0, moved);
+
+      const items = newOrder.map((p, i) => ({
+        id: p._id || p.id,
+        position: i,
+      }));
+      onReorder?.(items);
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+  };
+
+  const onDragOver = (e, idx) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setOverIdx(idx);
+  };
+
+  return (
+    <table className="admin-table" aria-label="Products table">
+      <thead>
         <tr>
-          <td colSpan={6} className="admin-table__empty">
-            {searchQuery
-              ? `No products found for "${searchQuery}".`
-              : 'No products yet. Click "Add Product" to create one.'}
-          </td>
+          <th style={{ width: 40 }}>#</th>
+          <th>Image</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Pos</th>
+          <th>Status</th>
+          <th>Actions</th>
         </tr>
-      )}
+      </thead>
 
-      {/* ── Product rows ── */}
-      {products.map((product) => {
-        const imgSrc = Array.isArray(product.images)
-          ? product.images[0]
-          : product.image;
-
-        const name     = product.productName || product.name;
-        const category = product.category?.catagoryName || product.category;
-        const price    = Number(product.price || 0).toFixed(2);
-        const inStock  = product.stock > 0;
-
-        return (
-          <tr key={product._id || product.id}>
-            {/* Thumbnail */}
-            <td>
-              {imgSrc ? (
-                <img
-                  src={imgSrc}
-                  alt={name}
-                  className="admin-products__thumb"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="admin-products__thumb admin-products__thumb--placeholder">
-                  <FiImage aria-hidden="true" />
-                </div>
-              )}
-            </td>
-
-            {/* Name */}
-            <td className="td-bold">{name}</td>
-
-            {/* Category */}
-            <td>
-              <span className="admin-tag">{category}</span>
-            </td>
-
-            {/* Price */}
-            <td className="td-bold">${price}</td>
-
-            {/* Stock status */}
-            <td>
-              <span className={`status ${inStock ? 'status--delivered' : 'status--cancelled'}`}>
-                {inStock ? 'In Stock' : 'Out of Stock'}
-              </span>
-            </td>
-
-            {/* Actions */}
-            <td>
-              <div className="admin-actions">
-                {/* Variants */}
-                <button
-                  className="admin-action-btn admin-action-btn--variants"
-                  onClick={() => onVariants(product)}
-                  disabled={deleting}
-                  title="Manage variants"
-                  aria-label={`Manage variants for ${name}`}
-                >
-                  <FiLayers />
-                </button>
-
-                <button
-                  className="admin-action-btn admin-action-btn--edit"
-                  onClick={() => onEdit(product)}
-                  disabled={deleting}
-                  title="Edit product"
-                  aria-label={`Edit ${name}`}
-                >
-                  <FiEdit2 />
-                </button>
-
-                <button
-                  className="admin-action-btn admin-action-btn--delete"
-                  onClick={() => onDelete(product)}
-                  disabled={deleting}
-                  title="Delete product"
-                  aria-label={`Delete ${name}`}
-                >
-                  <FiTrash2 />
-                </button>
-              </div>
+      <tbody>
+        {sorted.length === 0 && (
+          <tr>
+            <td colSpan={8} className="admin-table__empty">
+              {searchQuery
+                ? `No products found for "${searchQuery}".`
+                : 'No products yet. Click "Add Product" to create one.'}
             </td>
           </tr>
-        );
-      })}
-    </tbody>
-  </table>
-);
+        )}
+
+        {sorted.map((product, idx) => {
+          const imgSrc = Array.isArray(product.images)
+            ? product.images[0]
+            : product.image;
+
+          const name     = product.productName || product.name;
+          const category = product.category?.catagoryName || product.category;
+          const price    = Number(product.price || 0).toFixed(2);
+          const inStock  = product.stock > 0;
+
+          return (
+            <tr
+              key={product._id || product.id}
+              draggable
+              onDragStart={(e) => onDragStart(e, idx)}
+              onDragEnd={onDragEnd}
+              onDragOver={(e) => onDragOver(e, idx)}
+              className={`${dragIdx === idx ? 'dragging' : ''} ${overIdx === idx && dragIdx !== idx ? 'drag-over' : ''}`}
+              style={{ cursor: 'grab' }}
+            >
+              {/* Drag handle */}
+              <td>
+                <span className="drag-handle" title="Drag to reorder"><FiMove /></span>
+              </td>
+
+              {/* Thumbnail */}
+              <td>
+                {imgSrc ? (
+                  <img src={imgSrc} alt={name} className="admin-products__thumb" loading="lazy" />
+                ) : (
+                  <div className="admin-products__thumb admin-products__thumb--placeholder">
+                    <FiImage aria-hidden="true" />
+                  </div>
+                )}
+              </td>
+
+              {/* Name */}
+              <td className="td-bold">{name}</td>
+
+              {/* Category */}
+              <td><span className="admin-tag">{category}</span></td>
+
+              {/* Price */}
+              <td className="td-bold">₹{price}</td>
+
+              {/* Position */}
+              <td><span className="admin-tag" style={{ minWidth: 32, textAlign: 'center' }}>{product.position ?? idx}</span></td>
+
+              {/* Stock status */}
+              <td>
+                <span className={`status ${inStock ? 'status--delivered' : 'status--cancelled'}`}>
+                  {inStock ? 'In Stock' : 'Out of Stock'}
+                </span>
+              </td>
+
+              {/* Actions */}
+              <td>
+                <div className="admin-actions">
+                  <button
+                    className="admin-action-btn admin-action-btn--variants"
+                    onClick={() => onVariants(product)}
+                    disabled={deleting}
+                    title="Manage variants"
+                  >
+                    <FiLayers />
+                  </button>
+                  <button
+                    className="admin-action-btn admin-action-btn--edit"
+                    onClick={() => onEdit(product)}
+                    disabled={deleting}
+                    title="Edit product"
+                  >
+                    <FiEdit2 />
+                  </button>
+                  <button
+                    className="admin-action-btn admin-action-btn--delete"
+                    onClick={() => onDelete(product)}
+                    disabled={deleting}
+                    title="Delete product"
+                  >
+                    <FiTrash2 />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+};
 
 export default ProductTable;

@@ -5,6 +5,7 @@ import Loader from '../../../components/Loader/Loader';
 
 import {
   useGetProductsQuery,
+  useReorderProductsMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 
@@ -89,6 +90,9 @@ const AdminProducts = () => {
     productToDelete, setProductToDelete, confirmDelete,
   } = useProductForm();
 
+  // ── Reorder mutation ─────────────────────────────────────────
+  const [reorderProducts] = useReorderProductsMutation();
+
   // ── Variant modal state ───────────────────────────────────────
   const [variantProduct, setVariantProduct] = useState(null);
   const openVariants  = useCallback((product) => setVariantProduct(product), []);
@@ -126,6 +130,15 @@ const AdminProducts = () => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
+
+  // ── Reorder handler (from drag-and-drop) ─────────────────────
+  const handleReorder = async (items) => {
+    try {
+      await reorderProducts(items).unwrap();
+    } catch (err) {
+      console.error('Reorder failed', err);
+    }
+  };
 
   // ─────────────────────────────────────────────────────────────
   return (
@@ -169,6 +182,7 @@ const AdminProducts = () => {
             onEdit={openEdit}
             onDelete={handleDelete}
             onVariants={openVariants}
+            onReorder={handleReorder}
           />
 
           {/* ── Pagination ── */}

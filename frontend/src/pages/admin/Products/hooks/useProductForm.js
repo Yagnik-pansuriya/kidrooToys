@@ -58,6 +58,7 @@ const useProductForm = () => {
                             ? product.tags.join(',')
                             : (product.tags || ''),
       isActive:           product.isActive ?? true,
+      youtubeUrl:         product.youtubeUrl || '',
       hasVariants:        product.hasVariants ?? false,
       variants:           Array.isArray(product.variants) ? product.variants : [],
       images:             [],
@@ -101,7 +102,7 @@ const useProductForm = () => {
     const fields = [
       'productName', 'slug', 'description', 'price', 'originalPrice',
       'discountPercentage', 'stock', 'category', 'ratings', 'numReviews',
-      'featured', 'newArrival', 'bestSeller', 'tags', 'isActive', 'hasVariants',
+      'featured', 'newArrival', 'bestSeller', 'tags', 'isActive', 'hasVariants', 'youtubeUrl',
     ];
     fields.forEach((key) => fd.append(key, form[key]));
     fd.append(

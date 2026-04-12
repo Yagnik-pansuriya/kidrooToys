@@ -1,11 +1,15 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FiSearch, FiX, FiShoppingCart, FiFilter, FiGrid, FiList, FiArrowRight, FiChevronRight } from 'react-icons/fi';
-import { useSelector } from 'react-redux';
+import { FiSearch, FiX, FiShoppingCart, FiFilter, FiGrid, FiList, FiArrowRight, FiChevronRight, FiHeart } from 'react-icons/fi';
+import { useSelector, useDispatch } from 'react-redux';
 
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
+import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCart } from '../../../context/CartContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import { useToast } from '../../../context/ToastContext';
+import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Pagination from '../../../components/Pagination/Pagination';
 import './Shop.scss';
 
@@ -48,6 +52,23 @@ const Shop = () => {
   const currentPage = Number(inner?.page) || page;
 
   const { addToCart } = useCart();
+  const dispatch = useDispatch();
+  const { requireAuth, isInWishlist } = useCustomerAuth();
+  const { showSuccess, showError } = useToast();
+  const [toggleWishlistApi] = useToggleWishlistMutation();
+
+  const handleToggleWishlist = async (e, productId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!requireAuth('Please login to save items to your wishlist')) return;
+    try {
+      await toggleWishlistApi(productId).unwrap();
+      dispatch(toggleWishlistId(productId));
+      showSuccess(isInWishlist(productId) ? 'Removed from wishlist' : 'Added to wishlist ❤️');
+    } catch (err) {
+      showError('Failed to update wishlist');
+    }
+  };
 
   // Find active category name for breadcrumb
   const activeCategoryName = useMemo(() => {
@@ -304,6 +325,13 @@ const Shop = () => {
                               <FiShoppingCart /> Add to Cart
                             </button>
                           </div>
+                          <button
+                            className={`shop-product-card__wish-btn ${isInWishlist(product._id || product.id) ? 'shop-product-card__wish-btn--active' : ''}`}
+                            onClick={(e) => handleToggleWishlist(e, product._id || product.id)}
+                            title="Add to wishlist"
+                          >
+                            <FiHeart />
+                          </button>
                         </div>
                         <Link to={`/product/${product._id || product.id}`} className="shop-product-card__info">
                           {category && <span className="shop-product-card__category">{category}</span>}

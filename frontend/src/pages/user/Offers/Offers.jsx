@@ -8,6 +8,7 @@ import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import './Offers.scss';
 
 const Offers = () => {
@@ -29,6 +30,7 @@ const Offers = () => {
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
+  const { requireAuth } = useCustomerAuth();
 
   // ── Derived data ────────────────────────────────────────────────
   const heroOffer = useMemo(() => activeOffers.find((o) => o.isFeatured) || activeOffers[0], [activeOffers]);
@@ -86,6 +88,7 @@ const Offers = () => {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to subscribe to our newsletter')) return;
     if (!email.trim()) return;
     try {
       await subscribe(email.trim()).unwrap();
