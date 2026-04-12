@@ -22,6 +22,7 @@ const emptyVariant = {
   dimLength:     '',   // ─┐ combined into dimensions JSON on submit
   dimWidth:      '',   //  │
   dimHeight:     '',   // ─┘
+  youtubeUrl:    '',
   status:        'active',
   isDefault:     false,
   isActive:      true,
@@ -130,6 +131,7 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
         width:  Number(form.dimWidth)  || 0,
         height: Number(form.dimHeight) || 0,
       },
+      youtubeUrl:       form.youtubeUrl,
       status:           form.status,
       isDefault:        form.isDefault,
       isActive:         form.isActive,
@@ -192,6 +194,16 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
             <input type="number" min="0" step="0.1" placeholder="W" {...field('dimWidth')}  style={{ flex: 1 }} />
             <input type="number" min="0" step="0.1" placeholder="H" {...field('dimHeight')} style={{ flex: 1 }} />
           </div>
+        </div>
+
+        {/* ── YouTube Video URL ── */}
+        <div className="admin-field admin-field--full">
+          <label>YouTube Video URL (optional)</label>
+          <input
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            {...field('youtubeUrl')}
+          />
         </div>
 
         {/* ── Status ── */}
@@ -421,6 +433,7 @@ const VariantModal = ({ product, onClose }) => {
       dimLength:     dim.length            ?? '',
       dimWidth:      dim.width             ?? '',
       dimHeight:     dim.height            ?? '',
+      youtubeUrl:    variant.youtubeUrl    || '',
       status:        variant.status        || 'active',
       isDefault:     variant.isDefault     ?? false,
       isActive:      variant.isActive      ?? true,

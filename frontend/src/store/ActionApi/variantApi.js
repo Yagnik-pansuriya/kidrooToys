@@ -13,6 +13,7 @@ const buildVariantFormData = (body) => {
     'stock', 'lowStockAlert',
     'weight',
     'status', 'isDefault', 'isActive',
+    'youtubeUrl',
   ];
   scalarFields.forEach((key) => {
     if (body[key] !== undefined && body[key] !== '') {

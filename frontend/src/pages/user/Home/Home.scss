@@ -203,6 +203,10 @@
     grid-template-columns: repeat(2, 1fr);
     gap: $space-lg;
 
+    @media (min-width: $bp-sm) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
     @media (min-width: $bp-md) {
       grid-template-columns: repeat(4, 1fr);
     }
@@ -279,7 +283,7 @@
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// FEATURED FAVORITES
+// NEW ARRIVALS
 // ═══════════════════════════════════════════════════════════════════════════════
 .featured-section {
   padding: $space-3xl 0;
