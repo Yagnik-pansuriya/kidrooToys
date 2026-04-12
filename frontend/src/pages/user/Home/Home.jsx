@@ -9,6 +9,7 @@ import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import './Home.scss';
 
 const Home = () => {
@@ -41,9 +42,11 @@ const Home = () => {
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const { showSuccess, showError } = useToast();
   const { addToCart } = useCart();
+  const { requireAuth } = useCustomerAuth();
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to subscribe to our newsletter')) return;
     if (!email.trim()) return;
     try {
       await subscribe(email.trim()).unwrap();

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { FiShoppingCart, FiUser, FiMenu, FiX, FiSearch } from 'react-icons/fi';
+import { FiShoppingCart, FiUser, FiMenu, FiX, FiHeart, FiLogOut } from 'react-icons/fi';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import './Header.scss';
 
 const Header = () => {
@@ -10,6 +11,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cartCount, setIsCartOpen } = useCart();
   const { settings } = useTheme();
+  const { customer, isCustomerAuthenticated, wishlistIds, openAuthModal, handleLogout } = useCustomerAuth();
   const location = useLocation();
 
   useEffect(() => {
@@ -28,6 +30,12 @@ const Header = () => {
     { to: '/offers', label: 'Offers', badge: '🔥' },
     { to: '/about', label: 'About Us' },
   ];
+
+  const handleUserIconClick = () => {
+    if (!isCustomerAuthenticated) {
+      openAuthModal('Login to access your profile');
+    }
+  };
 
   return (
     <header className={`header ${isScrolled ? 'header--scrolled' : ''}`}>
@@ -60,9 +68,27 @@ const Header = () => {
 
         {/* Actions */}
         <div className="header__actions">
-          <NavLink to="/profile" className="header__action-btn" title="Profile">
-            <FiUser />
+          {/* Wishlist */}
+          <NavLink to="/wishlist" className="header__action-btn" title="Wishlist">
+            <FiHeart />
+            {wishlistIds.length > 0 && (
+              <span className="header__wishlist-count">{wishlistIds.length}</span>
+            )}
           </NavLink>
+
+          {/* User / Profile */}
+          {isCustomerAuthenticated ? (
+            <NavLink to="/profile" className="header__action-btn header__user-btn" title={`Hi, ${customer?.firstName || 'User'}`}>
+              <FiUser />
+              <span className="header__user-name">{customer?.firstName || 'User'}</span>
+            </NavLink>
+          ) : (
+            <button className="header__action-btn" onClick={handleUserIconClick} title="Login">
+              <FiUser />
+            </button>
+          )}
+
+          {/* Cart */}
           <button
             className="header__action-btn header__cart-btn"
             onClick={() => setIsCartOpen(true)}
@@ -73,6 +99,14 @@ const Header = () => {
               <span className="header__cart-count">{cartCount}</span>
             )}
           </button>
+
+          {/* Logout (only when logged in) */}
+          {isCustomerAuthenticated && (
+            <button className="header__action-btn header__logout-btn" onClick={handleLogout} title="Logout">
+              <FiLogOut />
+            </button>
+          )}
+
           <button
             className="header__mobile-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -95,9 +129,23 @@ const Header = () => {
               {link.badge && <span className="header__nav-badge">{link.badge}</span>}
             </NavLink>
           ))}
-          <NavLink to="/profile" className="header__mobile-link">
-            <FiUser /> Profile
+          <NavLink to="/wishlist" className="header__mobile-link">
+            <FiHeart /> Wishlist {wishlistIds.length > 0 && `(${wishlistIds.length})`}
           </NavLink>
+          {isCustomerAuthenticated ? (
+            <>
+              <NavLink to="/profile" className="header__mobile-link">
+                <FiUser /> My Profile
+              </NavLink>
+              <button className="header__mobile-link" onClick={handleLogout}>
+                <FiLogOut /> Logout
+              </button>
+            </>
+          ) : (
+            <button className="header__mobile-link" onClick={() => { setIsMobileMenuOpen(false); openAuthModal(); }}>
+              <FiUser /> Login / Sign Up
+            </button>
+          )}
         </nav>
       </div>
     </header>
@@ -105,3 +153,4 @@ const Header = () => {
 };
 
 export default Header;
+

@@ -1,19 +1,26 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay } from 'react-icons/fi';
+import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart } from 'react-icons/fi';
+import { useDispatch } from 'react-redux';
 import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
 import { useGetVariantsQuery } from '../../../store/ActionApi/variantApi';
 import { useGetProductReviewsQuery, useGetProductReviewStatsQuery, useAddReviewMutation } from '../../../store/ActionApi/reviewApi';
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
+import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
 import './ProductDetail.scss';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const dispatch = useDispatch();
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
+  const { requireAuth, isCustomerAuthenticated, isInWishlist, customer } = useCustomerAuth();
+  const [toggleWishlistApi] = useToggleWishlistMutation();
 
   // ── API data ──────────────────────────────────────────────────
   const { data: productResp, isLoading } = useGetProductByIdQuery(id);
@@ -212,10 +219,35 @@ const ProductDetail = () => {
     showSuccess(`${name} added to cart!`);
   };
 
+  const handleBuyNow = () => {
+    if (!requireAuth('Please login to purchase this product')) return;
+    addToCart({ ...product, quantity, selectedVariant });
+    showSuccess(`${name} added to cart!`);
+    // Navigate to cart/checkout
+    window.location.href = '/cart';
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!requireAuth('Please login to save items to your wishlist')) return;
+    try {
+      await toggleWishlistApi(id).unwrap();
+      dispatch(toggleWishlistId(id));
+      showSuccess(isInWishlist(id) ? 'Removed from wishlist' : 'Added to wishlist ❤️');
+    } catch (err) {
+      showError('Failed to update wishlist');
+    }
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to write a review')) return;
     try {
-      await addReviewApi({ productId: id, body: reviewForm }).unwrap();
+      const body = { ...reviewForm };
+      // Auto-fill name from customer profile if available
+      if (customer && !body.name) {
+        body.name = `${customer.firstName} ${customer.lastName}`;
+      }
+      await addReviewApi({ productId: id, body }).unwrap();
       showSuccess('Review added successfully!');
       setReviewForm({ name: '', rating: 5, title: '', comment: '' });
     } catch (err) {
@@ -420,8 +452,15 @@ const ProductDetail = () => {
             <button className="pdp__add-btn" onClick={handleAddToCart} disabled={!inStock}>
               <FiShoppingCart /> {inStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
-            <button className="pdp__buy-btn" disabled={!inStock}>
+            <button className="pdp__buy-btn" onClick={handleBuyNow} disabled={!inStock}>
               Buy Now
+            </button>
+            <button
+              className={`pdp__wishlist-btn ${isInWishlist(id) ? 'pdp__wishlist-btn--active' : ''}`}
+              onClick={handleToggleWishlist}
+              title={isInWishlist(id) ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <FiHeart />
             </button>
           </div>
 

@@ -538,6 +538,43 @@
   }
 }
 
+.pdp__wishlist-btn {
+  @include flex-center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border: 2px solid #E2E4EC;
+  border-radius: $radius-xl;
+  background: white;
+  color: #ccc;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all 0.25s;
+
+  &:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+    transform: translateY(-2px);
+  }
+
+  &--active {
+    background: #fef2f2;
+    border-color: #e74c3c;
+    color: #e74c3c;
+
+    svg {
+      fill: #e74c3c;
+      animation: wishlistPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+  }
+}
+
+@keyframes wishlistPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
 .pdp__trust {
   display: flex;
   gap: $space-xl;
