@@ -6,6 +6,7 @@ import {
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useReorderCategoriesMutation,
 } from '../../../store/ActionApi/categoryApi';
 import { useToast } from '../../../context/ToastContext';
 
@@ -26,6 +27,7 @@ const AdminCategories = () => {
   const [addCategory, { isLoading: adding }] = useAddCategoryMutation();
   const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteCategoryMutation();
+  const [reorderCategories] = useReorderCategoriesMutation();
 
   const categoryList = useSelector((state) => state.category.categories) || [];
   const isBusy = adding || updating;
@@ -89,6 +91,16 @@ const AdminCategories = () => {
     }
   };
 
+  // Reorder Handler (from drag-and-drop)
+  const handleReorder = async (items) => {
+    try {
+      await reorderCategories(items).unwrap();
+      showSuccess('Categories reordered');
+    } catch (err) {
+      showError(err?.data?.message || 'Reorder failed');
+    }
+  };
+
   return (
     <div className="admin-products">
       {/* Header */}
@@ -99,13 +111,14 @@ const AdminCategories = () => {
         </button>
       </div>
 
-      {/* Table */}
+      {/* Table with drag-and-drop */}
       <CategoryTable
         categories={categoryList}
         loading={loadingCategories}
         onEdit={openEdit}
         onDelete={handleDelete}
         deleting={deleting}
+        onReorder={handleReorder}
       />
 
       {/* Add / Edit Modal */}

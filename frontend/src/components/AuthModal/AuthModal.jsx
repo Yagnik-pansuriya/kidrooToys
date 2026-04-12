@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { FiX, FiPhone, FiLock, FiUser, FiMail, FiEye, FiEyeOff, FiArrowRight, FiCheck, FiShield } from 'react-icons/fi';
+import { useDispatch } from 'react-redux';
+import { FiX, FiPhone, FiLock, FiUser, FiMail, FiEye, FiEyeOff, FiArrowRight, FiCheck, FiShield, FiArrowLeft } from 'react-icons/fi';
 import { useCustomerSignupMutation, useCustomerLoginMutation, useVerifyOTPMutation, useSendOTPMutation } from '../../store/ActionApi/customerAuthApi';
 import { useToast } from '../../context/ToastContext';
 import './AuthModal.scss';
 
 const STEPS = {
-  CHOICE: 'choice',       // Login or Signup
-  LOGIN: 'login',         // Mobile + Password
-  SIGNUP: 'signup',       // Name, mobile, password, email
-  OTP: 'otp',             // Enter OTP
-  SUCCESS: 'success',     // Welcome message
+  CHOICE: 'choice',
+  LOGIN: 'login',
+  SIGNUP: 'signup',
+  OTP: 'otp',
+  SUCCESS: 'success',
 };
 
 const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
@@ -28,7 +28,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(0);
-  const [signupData, setSignupData] = useState(null);
+  const [signupMobile, setSignupMobile] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
 
   // Form data
   const [form, setForm] = useState({
@@ -37,21 +38,22 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     mobile: '',
     password: '',
     email: '',
-    alternatePhone: '',
   });
 
   // Reset when modal opens
   useEffect(() => {
     if (isOpen) {
       setStep(STEPS.CHOICE);
-      setForm({ firstName: '', lastName: '', mobile: '', password: '', email: '', alternatePhone: '' });
+      setForm({ firstName: '', lastName: '', mobile: '', password: '', email: '' });
       setOtpValues(['', '', '', '', '', '']);
       setShowPassword(false);
       setCountdown(0);
+      setSignupMobile('');
+      setSignupEmail('');
     }
   }, [isOpen]);
 
-  // OTP countdown timer
+  // OTP countdown
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -59,11 +61,9 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     }
   }, [countdown]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // ── Handle OTP input ──────────────────────────────────────────
+  // ── OTP input handlers ────────────────────────────────────────
   const handleOtpChange = (index, value) => {
     if (value.length > 1) value = value.slice(-1);
     if (!/^\d*$/.test(value)) return;
@@ -72,17 +72,14 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     newValues[index] = value;
     setOtpValues(newValues);
 
-    // Auto-focus next input
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-input-${index + 1}`);
-      nextInput?.focus();
+      document.getElementById(`otp-input-${index + 1}`)?.focus();
     }
   };
 
   const handleOtpKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-input-${index - 1}`);
-      prevInput?.focus();
+      document.getElementById(`otp-input-${index - 1}`)?.focus();
     }
   };
 
@@ -97,43 +94,32 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
   // ── Signup ────────────────────────────────────────────────────
   const handleSignup = async (e) => {
     e.preventDefault();
-    const { firstName, lastName, mobile, password } = form;
+    const { firstName, lastName, mobile, password, email } = form;
 
-    if (!firstName || !lastName || !mobile || !password) {
+    if (!firstName || !lastName || !mobile || !password || !email) {
       showError('Please fill all required fields');
       return;
     }
-
     if (!/^[6-9]\d{9}$/.test(mobile)) {
-      showError('Please enter a valid 10-digit Indian mobile number');
+      showError('Please enter a valid 10-digit mobile number');
       return;
     }
-
     if (password.length < 6) {
       showError('Password must be at least 6 characters');
       return;
     }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      showError('Please enter a valid email address');
+      return;
+    }
 
     try {
-      const result = await customerSignup({
-        firstName,
-        lastName,
-        mobile,
-        password,
-        email: form.email || undefined,
-        alternatePhone: form.alternatePhone || undefined,
-      }).unwrap();
-
-      setSignupData({ mobile, otp: result?.data?.otp }); // OTP returned in dev mode
+      await customerSignup({ firstName, lastName, mobile, password, email }).unwrap();
+      setSignupMobile(mobile);
+      setSignupEmail(email);
       setStep(STEPS.OTP);
-      setCountdown(300); // 5 minutes
-      showSuccess('OTP sent to your mobile number');
-
-      // Auto-fill OTP in development
-      if (result?.data?.otp) {
-        const devOtp = result.data.otp.toString().split('');
-        setOtpValues(devOtp);
-      }
+      setCountdown(300);
+      showSuccess('OTP sent to your email!');
     } catch (err) {
       showError(err?.data?.message || 'Signup failed');
     }
@@ -153,10 +139,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
       await customerLogin({ mobile, password }).unwrap();
       setStep(STEPS.SUCCESS);
       showSuccess('Welcome back!');
-      setTimeout(() => {
-        onClose();
-        onSuccess?.();
-      }, 1500);
+      setTimeout(() => { onClose(); onSuccess?.(); }, 1500);
     } catch (err) {
       showError(err?.data?.message || 'Login failed');
     }
@@ -173,13 +156,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     }
 
     try {
-      await verifyOTP({ mobile: signupData?.mobile || form.mobile, otp }).unwrap();
+      await verifyOTP({ mobile: signupMobile || form.mobile, otp }).unwrap();
       setStep(STEPS.SUCCESS);
       showSuccess('Account verified! Welcome to Kidroo! 🎉');
-      setTimeout(() => {
-        onClose();
-        onSuccess?.();
-      }, 1500);
+      setTimeout(() => { onClose(); onSuccess?.(); }, 1500);
     } catch (err) {
       showError(err?.data?.message || 'OTP verification failed');
     }
@@ -188,17 +168,11 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
   // ── Resend OTP ────────────────────────────────────────────────
   const handleResendOTP = async () => {
     if (countdown > 0) return;
-
     try {
-      const result = await sendOTPApi({ mobile: signupData?.mobile || form.mobile }).unwrap();
+      await sendOTPApi({ mobile: signupMobile || form.mobile, email: signupEmail }).unwrap();
       setCountdown(300);
-      showSuccess('OTP resent successfully');
-
-      // Auto-fill in dev
-      if (result?.data?.otp) {
-        const devOtp = result.data.otp.toString().split('');
-        setOtpValues(devOtp);
-      }
+      setOtpValues(['', '', '', '', '', '']);
+      showSuccess('New OTP sent to your email');
     } catch (err) {
       showError(err?.data?.message || 'Failed to resend OTP');
     }
@@ -212,229 +186,189 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
+  // Mask email for display
+  const maskEmail = (email) => {
+    if (!email) return '';
+    const [user, domain] = email.split('@');
+    return `${user[0]}${'•'.repeat(Math.max(user.length - 2, 2))}${user.slice(-1)}@${domain}`;
+  };
+
   return (
-    <div className="auth-modal-overlay" onClick={onClose}>
+    <div className="auth-overlay" onClick={onClose}>
       <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="auth-modal__close" onClick={onClose}>
-          <FiX />
-        </button>
+        <button className="auth-modal__close" onClick={onClose}><FiX /></button>
 
-        {/* ═══ STEP: CHOICE ═══ */}
+        {/* ═══ CHOICE ═══ */}
         {step === STEPS.CHOICE && (
-          <div className="auth-modal__step auth-modal__step--choice">
-            <div className="auth-modal__logo">🧸</div>
-            <h2>Welcome to Kidroo</h2>
-            {message && <p className="auth-modal__message">{message}</p>}
-            <p className="auth-modal__subtitle">Sign in to your account or create a new one</p>
+          <div className="auth-step auth-step--choice">
+            <div className="auth-step__brand">
+              <span className="auth-step__emoji">🧸</span>
+              <h2>Welcome to <span>Kidroo</span></h2>
+            </div>
+            {message && <div className="auth-step__alert">{message}</div>}
+            <p className="auth-step__desc">Sign in to your account or create a new one to start shopping</p>
 
-            <div className="auth-modal__choice-btns">
-              <button
-                className="auth-modal__btn auth-modal__btn--primary"
-                onClick={() => setStep(STEPS.LOGIN)}
-              >
-                <FiUser /> Login
+            <div className="auth-step__actions">
+              <button className="auth-btn auth-btn--filled" onClick={() => setStep(STEPS.LOGIN)}>
+                <FiUser /> Login to Account
               </button>
-              <button
-                className="auth-modal__btn auth-modal__btn--outline"
-                onClick={() => setStep(STEPS.SIGNUP)}
-              >
-                <FiArrowRight /> Create Account
+              <button className="auth-btn auth-btn--ghost" onClick={() => setStep(STEPS.SIGNUP)}>
+                Create New Account <FiArrowRight />
               </button>
             </div>
 
-            <div className="auth-modal__divider">
-              <span>secure & encrypted</span>
-            </div>
-
-            <div className="auth-modal__trust">
-              <span><FiShield /> 100% Safe</span>
+            <div className="auth-step__footer">
+              <span><FiShield /> 100% Secure</span>
               <span><FiLock /> Data Protected</span>
             </div>
           </div>
         )}
 
-        {/* ═══ STEP: LOGIN ═══ */}
+        {/* ═══ LOGIN ═══ */}
         {step === STEPS.LOGIN && (
-          <div className="auth-modal__step auth-modal__step--login">
-            <h2>Welcome Back</h2>
-            <p className="auth-modal__subtitle">Login with your mobile number</p>
+          <div className="auth-step auth-step--form">
+            <button className="auth-step__back" onClick={() => setStep(STEPS.CHOICE)}>
+              <FiArrowLeft /> Back
+            </button>
+            <div className="auth-step__header">
+              <div className="auth-step__icon-circle"><FiUser /></div>
+              <h2>Welcome Back</h2>
+              <p>Enter your credentials to continue</p>
+            </div>
 
-            <form onSubmit={handleLogin}>
-              <div className="auth-modal__field">
-                <FiPhone className="auth-modal__field-icon" />
-                <div className="auth-modal__field-prefix">+91</div>
-                <input
-                  type="tel"
-                  name="mobile"
-                  placeholder="Mobile Number"
-                  value={form.mobile}
-                  onChange={handleChange}
-                  maxLength={10}
-                  autoFocus
-                  required
-                />
-              </div>
+            <form onSubmit={handleLogin} className="auth-form">
+              <label className="auth-input">
+                <span className="auth-input__label">Mobile Number</span>
+                <div className="auth-input__wrap">
+                  <span className="auth-input__prefix">+91</span>
+                  <input
+                    type="tel"
+                    name="mobile"
+                    placeholder="Enter 10-digit number"
+                    value={form.mobile}
+                    onChange={handleChange}
+                    maxLength={10}
+                    autoFocus
+                    required
+                  />
+                </div>
+              </label>
 
-              <div className="auth-modal__field">
-                <FiLock className="auth-modal__field-icon" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                />
-                <button
-                  type="button"
-                  className="auth-modal__field-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FiEyeOff /> : <FiEye />}
-                </button>
-              </div>
+              <label className="auth-input">
+                <span className="auth-input__label">Password</span>
+                <div className="auth-input__wrap">
+                  <FiLock className="auth-input__icon" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="Enter your password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button type="button" className="auth-input__eye" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </label>
 
-              <button
-                type="submit"
-                className="auth-modal__submit"
-                disabled={loggingIn}
-              >
-                {loggingIn ? (
-                  <span className="auth-modal__spinner" />
-                ) : (
-                  <>Login <FiArrowRight /></>
-                )}
+              <button type="submit" className="auth-submit" disabled={loggingIn}>
+                {loggingIn ? <span className="auth-spinner" /> : <>Login <FiArrowRight /></>}
               </button>
             </form>
 
-            <p className="auth-modal__switch">
-              Don't have an account?{' '}
-              <button onClick={() => setStep(STEPS.SIGNUP)}>Sign Up</button>
+            <p className="auth-switch">
+              Don't have an account? <button onClick={() => setStep(STEPS.SIGNUP)}>Sign Up</button>
             </p>
           </div>
         )}
 
-        {/* ═══ STEP: SIGNUP ═══ */}
+        {/* ═══ SIGNUP ═══ */}
         {step === STEPS.SIGNUP && (
-          <div className="auth-modal__step auth-modal__step--signup">
-            <h2>Create Account</h2>
-            <p className="auth-modal__subtitle">Join the Kidroo family today</p>
+          <div className="auth-step auth-step--form">
+            <button className="auth-step__back" onClick={() => setStep(STEPS.CHOICE)}>
+              <FiArrowLeft /> Back
+            </button>
+            <div className="auth-step__header">
+              <div className="auth-step__icon-circle auth-step__icon-circle--green"><FiArrowRight /></div>
+              <h2>Create Account</h2>
+              <p>Join the Kidroo family</p>
+            </div>
 
-            <form onSubmit={handleSignup}>
-              <div className="auth-modal__row">
-                <div className="auth-modal__field">
-                  <FiUser className="auth-modal__field-icon" />
-                  <input
-                    type="text"
-                    name="firstName"
-                    placeholder="First Name *"
-                    value={form.firstName}
-                    onChange={handleChange}
-                    required
-                  />
+            <form onSubmit={handleSignup} className="auth-form">
+              <div className="auth-form__row">
+                <label className="auth-input">
+                  <span className="auth-input__label">First Name *</span>
+                  <div className="auth-input__wrap">
+                    <FiUser className="auth-input__icon" />
+                    <input type="text" name="firstName" placeholder="First name" value={form.firstName} onChange={handleChange} required />
+                  </div>
+                </label>
+                <label className="auth-input">
+                  <span className="auth-input__label">Last Name *</span>
+                  <div className="auth-input__wrap">
+                    <FiUser className="auth-input__icon" />
+                    <input type="text" name="lastName" placeholder="Last name" value={form.lastName} onChange={handleChange} required />
+                  </div>
+                </label>
+              </div>
+
+              <label className="auth-input">
+                <span className="auth-input__label">Mobile Number *</span>
+                <div className="auth-input__wrap">
+                  <span className="auth-input__prefix">+91</span>
+                  <input type="tel" name="mobile" placeholder="10-digit mobile" value={form.mobile} onChange={handleChange} maxLength={10} required />
                 </div>
-                <div className="auth-modal__field">
-                  <FiUser className="auth-modal__field-icon" />
-                  <input
-                    type="text"
-                    name="lastName"
-                    placeholder="Last Name *"
-                    value={form.lastName}
-                    onChange={handleChange}
-                    required
-                  />
+              </label>
+
+              <label className="auth-input">
+                <span className="auth-input__label">Email Address *</span>
+                <div className="auth-input__wrap">
+                  <FiMail className="auth-input__icon" />
+                  <input type="email" name="email" placeholder="your@email.com — OTP will be sent here" value={form.email} onChange={handleChange} required />
                 </div>
-              </div>
+                <span className="auth-input__hint">📧 Verification OTP will be sent to this email</span>
+              </label>
 
-              <div className="auth-modal__field">
-                <FiPhone className="auth-modal__field-icon" />
-                <div className="auth-modal__field-prefix">+91</div>
-                <input
-                  type="tel"
-                  name="mobile"
-                  placeholder="Mobile Number *"
-                  value={form.mobile}
-                  onChange={handleChange}
-                  maxLength={10}
-                  required
-                />
-              </div>
+              <label className="auth-input">
+                <span className="auth-input__label">Password *</span>
+                <div className="auth-input__wrap">
+                  <FiLock className="auth-input__icon" />
+                  <input type={showPassword ? 'text' : 'password'} name="password" placeholder="Min 6 characters" value={form.password} onChange={handleChange} minLength={6} required />
+                  <button type="button" className="auth-input__eye" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </label>
 
-              <div className="auth-modal__field">
-                <FiLock className="auth-modal__field-icon" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  placeholder="Password * (min 6 chars)"
-                  value={form.password}
-                  onChange={handleChange}
-                  minLength={6}
-                  required
-                />
-                <button
-                  type="button"
-                  className="auth-modal__field-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FiEyeOff /> : <FiEye />}
-                </button>
-              </div>
-
-              <div className="auth-modal__field">
-                <FiMail className="auth-modal__field-icon" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email (optional)"
-                  value={form.email}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="auth-modal__field">
-                <FiPhone className="auth-modal__field-icon" />
-                <input
-                  type="tel"
-                  name="alternatePhone"
-                  placeholder="Alternate Phone (optional)"
-                  value={form.alternatePhone}
-                  onChange={handleChange}
-                  maxLength={10}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="auth-modal__submit"
-                disabled={signingUp}
-              >
-                {signingUp ? (
-                  <span className="auth-modal__spinner" />
-                ) : (
-                  <>Create Account <FiArrowRight /></>
-                )}
+              <button type="submit" className="auth-submit" disabled={signingUp}>
+                {signingUp ? <span className="auth-spinner" /> : <>Create Account <FiArrowRight /></>}
               </button>
             </form>
 
-            <p className="auth-modal__switch">
-              Already have an account?{' '}
-              <button onClick={() => setStep(STEPS.LOGIN)}>Login</button>
+            <p className="auth-switch">
+              Already have an account? <button onClick={() => setStep(STEPS.LOGIN)}>Login</button>
             </p>
           </div>
         )}
 
-        {/* ═══ STEP: OTP ═══ */}
+        {/* ═══ OTP ═══ */}
         {step === STEPS.OTP && (
-          <div className="auth-modal__step auth-modal__step--otp">
-            <div className="auth-modal__otp-icon">📱</div>
-            <h2>Verify Your Number</h2>
-            <p className="auth-modal__subtitle">
-              We've sent a 6-digit OTP to{' '}
-              <strong>+91 {signupData?.mobile || form.mobile}</strong>
-            </p>
+          <div className="auth-step auth-step--otp">
+            <button className="auth-step__back" onClick={() => setStep(STEPS.SIGNUP)}>
+              <FiArrowLeft /> Back
+            </button>
+            <div className="auth-step__header">
+              <div className="auth-step__icon-circle auth-step__icon-circle--blue">📧</div>
+              <h2>Check Your Email</h2>
+              <p>
+                We've sent a 6-digit code to<br />
+                <strong>{maskEmail(signupEmail)}</strong>
+              </p>
+            </div>
 
-            <form onSubmit={handleVerifyOTP}>
-              <div className="auth-modal__otp-inputs" onPaste={handleOtpPaste}>
+            <form onSubmit={handleVerifyOTP} className="auth-form">
+              <div className="auth-otp" onPaste={handleOtpPaste}>
                 {otpValues.map((val, i) => (
                   <input
                     key={i}
@@ -452,45 +386,32 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
               </div>
 
               {countdown > 0 && (
-                <p className="auth-modal__otp-timer">
-                  OTP expires in <strong>{formatTime(countdown)}</strong>
+                <p className="auth-otp__timer">
+                  Code expires in <strong>{formatTime(countdown)}</strong>
                 </p>
               )}
 
-              <button
-                type="submit"
-                className="auth-modal__submit"
-                disabled={verifyingOTP || otpValues.join('').length !== 6}
-              >
-                {verifyingOTP ? (
-                  <span className="auth-modal__spinner" />
-                ) : (
-                  <>Verify OTP <FiCheck /></>
-                )}
+              <button type="submit" className="auth-submit" disabled={verifyingOTP || otpValues.join('').length !== 6}>
+                {verifyingOTP ? <span className="auth-spinner" /> : <>Verify & Continue <FiCheck /></>}
               </button>
             </form>
 
-            <p className="auth-modal__switch">
-              Didn't receive OTP?{' '}
-              <button
-                onClick={handleResendOTP}
-                disabled={countdown > 0 || sendingOTP}
-              >
-                {sendingOTP ? 'Sending...' : countdown > 0 ? `Resend in ${formatTime(countdown)}` : 'Resend OTP'}
+            <p className="auth-switch">
+              Didn't receive the code?{' '}
+              <button onClick={handleResendOTP} disabled={countdown > 0 || sendingOTP}>
+                {sendingOTP ? 'Sending...' : countdown > 0 ? `Wait ${formatTime(countdown)}` : 'Resend Code'}
               </button>
             </p>
           </div>
         )}
 
-        {/* ═══ STEP: SUCCESS ═══ */}
+        {/* ═══ SUCCESS ═══ */}
         {step === STEPS.SUCCESS && (
-          <div className="auth-modal__step auth-modal__step--success">
-            <div className="auth-modal__success-icon">🎉</div>
+          <div className="auth-step auth-step--success">
+            <div className="auth-success__confetti">🎉</div>
             <h2>Welcome to Kidroo!</h2>
-            <p className="auth-modal__subtitle">Your account is ready. Happy shopping!</p>
-            <div className="auth-modal__success-check">
-              <FiCheck />
-            </div>
+            <p className="auth-step__desc">Your account is ready. Happy shopping!</p>
+            <div className="auth-success__check"><FiCheck /></div>
           </div>
         )}
       </div>
