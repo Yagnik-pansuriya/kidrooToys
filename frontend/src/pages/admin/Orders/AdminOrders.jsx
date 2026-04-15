@@ -49,7 +49,7 @@ const AdminOrders = () => {
                 <td className="td-bold">{order.id}</td>
                 <td>{order.customerName}</td>
                 <td>{order.items.length} item(s)</td>
-                <td className="td-bold">${order.total.toFixed(2)}</td>
+                <td className="td-bold">₹{order.total.toFixed(2)}</td>
                 <td>
                   <select className={`status-select status-select--${order.status}`} value={order.status} onChange={(e) => updateStatus(order.id, e.target.value)}>
                     <option value="pending">Pending</option>
@@ -92,17 +92,17 @@ const AdminOrders = () => {
                     <img src={item.image} alt={item.name} />
                     <div>
                       <span className="order-detail__item-name">{item.name}</span>
-                      <span className="order-detail__item-qty">Qty: {item.quantity} × ${item.price}</span>
+                      <span className="order-detail__item-qty">Qty: {item.quantity} × ₹{item.price}</span>
                     </div>
-                    <span className="order-detail__item-total">${(item.quantity * item.price).toFixed(2)}</span>
+                    <span className="order-detail__item-total">₹{(item.quantity * item.price).toFixed(2)}</span>
                   </div>               
                 ))}
               </div>
               <div className="order-detail__summary">
-                <div className="order-detail__row"><span>Subtotal</span><span>${selectedOrder.subtotal.toFixed(2)}</span></div>
-                <div className="order-detail__row"><span>Shipping</span><span>${selectedOrder.shipping.toFixed(2)}</span></div>
-                <div className="order-detail__row"><span>Discount</span><span>-${selectedOrder.discount.toFixed(2)}</span></div>
-                <div className="order-detail__row order-detail__row--total"><span>Total</span><span>${selectedOrder.total.toFixed(2)}</span></div>
+                <div className="order-detail__row"><span>Subtotal</span><span>₹{selectedOrder.subtotal.toFixed(2)}</span></div>
+                <div className="order-detail__row"><span>Shipping</span><span>₹{selectedOrder.shipping.toFixed(2)}</span></div>
+                <div className="order-detail__row"><span>Discount</span><span>-₹{selectedOrder.discount.toFixed(2)}</span></div>
+                <div className="order-detail__row order-detail__row--total"><span>Total</span><span>₹{selectedOrder.total.toFixed(2)}</span></div>
               </div>
             </div>
           </div>

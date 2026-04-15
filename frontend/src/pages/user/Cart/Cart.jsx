@@ -44,25 +44,25 @@ const Cart = () => {
                 <div className="cart-item__info">
                   <h4 className="cart-item__name">{item.name}</h4>
                   <span className="cart-item__category">{item.category}</span>
-                  <span className="cart-item__price">${item.price.toFixed(2)}</span>
+                  <span className="cart-item__price">₹{item.price.toFixed(2)}</span>
                 </div>
                 <div className="cart-item__qty">
                   <button onClick={() => updateQuantity(item.id, item.quantity - 1)}><FiMinus /></button>
                   <span>{item.quantity}</span>
                   <button onClick={() => updateQuantity(item.id, item.quantity + 1)}><FiPlus /></button>
                 </div>
-                <span className="cart-item__subtotal">${(item.price * item.quantity).toFixed(2)}</span>
+                <span className="cart-item__subtotal">₹{(item.price * item.quantity).toFixed(2)}</span>
                 <button className="cart-item__remove" onClick={() => removeFromCart(item.id)}><FiTrash2 /></button>
               </div>
             ))}
           </div>
           <div className="cart-summary">
             <h3 className="cart-summary__title">Order Summary</h3>
-            <div className="cart-summary__row"><span>Subtotal</span><span>${cartTotal.toFixed(2)}</span></div>
-            <div className="cart-summary__row"><span>Shipping</span><span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span></div>
+            <div className="cart-summary__row"><span>Subtotal</span><span>₹{cartTotal.toFixed(2)}</span></div>
+            <div className="cart-summary__row"><span>Shipping</span><span>{shipping === 0 ? 'FREE' : `₹${shipping.toFixed(2)}`}</span></div>
             <div className="cart-summary__divider" />
-            <div className="cart-summary__row cart-summary__row--total"><span>Total</span><span>${total.toFixed(2)}</span></div>
-            {cartTotal < 50 && <p className="cart-summary__note">Add ${(50 - cartTotal).toFixed(2)} more for free shipping!</p>}
+            <div className="cart-summary__row cart-summary__row--total"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
+            {cartTotal < 50 && <p className="cart-summary__note">Add ₹{(50 - cartTotal).toFixed(2)} more for free shipping!</p>}
             <button className="cart-summary__checkout">Proceed to Checkout</button>
             <Link to="/" className="cart-summary__continue"><FiArrowLeft /> Continue Shopping</Link>
           </div>
