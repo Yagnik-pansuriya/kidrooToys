@@ -33,9 +33,9 @@ const ProductCard = ({ product }) => {
           <span className="product-card__reviews">({product.reviews})</span>
         </div>
         <div className="product-card__pricing">
-          <span className="product-card__price">${product.price.toFixed(2)}</span>
+          <span className="product-card__price">₹{product.price.toFixed(2)}</span>
           {product.originalPrice && (
-            <span className="product-card__original">${product.originalPrice.toFixed(2)}</span>
+            <span className="product-card__original">₹{product.originalPrice.toFixed(2)}</span>
           )}
         </div>
       </div>

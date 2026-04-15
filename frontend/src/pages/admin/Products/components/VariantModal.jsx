@@ -353,9 +353,9 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
           ))}
         </div>
         <div className="variant-row__meta">
-          <span className="variant-row__price">${Number(variant.price || 0).toFixed(2)}</span>
+          <span className="variant-row__price">₹{Number(variant.price || 0).toFixed(2)}</span>
           {variant.originalPrice > 0 && (
-            <span className="variant-row__original">${Number(variant.originalPrice).toFixed(2)}</span>
+            <span className="variant-row__original">₹{Number(variant.originalPrice).toFixed(2)}</span>
           )}
           <span className={`status ${(variant.status === 'active' || (!variant.status && variant.isActive)) ? 'status--delivered' : 'status--cancelled'}`} style={{ textTransform: 'capitalize' }}>
             {variant.status ? variant.status.replace(/_/g, ' ') : (variant.isActive ? 'Active' : 'Inactive')}
@@ -365,25 +365,33 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
         </div>
       </div>
 
-      <div className="admin-actions">
-        <button
-          className="admin-action-btn admin-action-btn--edit"
-          onClick={() => onEditClick(variant)}
-          title="Edit variant"
-          aria-label={`Edit ${variant.sku}`}
-        >
-          <FiEdit2 />
-        </button>
-        <button
-          className="admin-action-btn admin-action-btn--delete"
-          onClick={() => onDelete(variant)}
-          disabled={deleting}
-          title="Delete variant"
-          aria-label={`Delete ${variant.sku}`}
-        >
-          <FiTrash2 />
-        </button>
-      </div>
+      {variant.isDefault ? (
+        <div className="admin-actions">
+          <span className="admin-tag" style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+            🔒 Synced with Product
+          </span>
+        </div>
+      ) : (
+        <div className="admin-actions">
+          <button
+            className="admin-action-btn admin-action-btn--edit"
+            onClick={() => onEditClick(variant)}
+            title="Edit variant"
+            aria-label={`Edit ${variant.sku}`}
+          >
+            <FiEdit2 />
+          </button>
+          <button
+            className="admin-action-btn admin-action-btn--delete"
+            onClick={() => onDelete(variant)}
+            disabled={deleting}
+            title="Delete variant"
+            aria-label={`Delete ${variant.sku}`}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

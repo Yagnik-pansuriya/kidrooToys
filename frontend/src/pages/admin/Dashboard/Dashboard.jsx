@@ -8,7 +8,7 @@ const Dashboard = () => {
   const stats = [
     { icon: <FiBox />, label: 'Total Products', value: products.length, color: 'var(--color-primary)' },
     { icon: <FiShoppingBag />, label: 'Total Orders', value: orders.length, color: 'var(--color-primary)' },
-    { icon: <FiDollarSign />, label: 'Revenue', value: `$${totalRevenue.toFixed(0)}`, color: 'var(--color-success)' },
+    { icon: <FiDollarSign />, label: 'Revenue', value: `₹${totalRevenue.toFixed(0)}`, color: 'var(--color-success)' },
     { icon: <FiUsers />, label: 'Customers', value: '1,250', color: 'var(--color-accent)' },
   ];
 
@@ -55,7 +55,7 @@ const Dashboard = () => {
                 <tr key={order.id}>
                   <td className="td-bold">{order.id}</td>
                   <td>{order.customerName}</td>
-                  <td className="td-bold">${order.total.toFixed(2)}</td>
+                  <td className="td-bold">₹{order.total.toFixed(2)}</td>
                   <td><span className={`status ${getStatusClass(order.status)}`}>{order.status}</span></td>
                   <td>{new Date(order.orderDate).toLocaleDateString()}</td>
                 </tr>

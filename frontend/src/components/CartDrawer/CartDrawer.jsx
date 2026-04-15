@@ -33,7 +33,7 @@ const CartDrawer = () => {
                   <img src={item.image} alt={item.name} className="cart-drawer__item-img" />
                   <div className="cart-drawer__item-info">
                     <h4 className="cart-drawer__item-name">{item.name}</h4>
-                    <span className="cart-drawer__item-price">${item.price.toFixed(2)}</span>
+                    <span className="cart-drawer__item-price">₹{item.price.toFixed(2)}</span>
                     <div className="cart-drawer__item-qty">
                       <button onClick={() => updateQuantity(item.id, item.quantity - 1)}><FiMinus /></button>
                       <span>{item.quantity}</span>
@@ -49,7 +49,7 @@ const CartDrawer = () => {
             <div className="cart-drawer__footer">
               <div className="cart-drawer__total">
                 <span>Total</span>
-                <span className="cart-drawer__total-amount">${cartTotal.toFixed(2)}</span>
+                <span className="cart-drawer__total-amount">₹{cartTotal.toFixed(2)}</span>
               </div>
               <Link to="/cart" className="cart-drawer__checkout-btn" onClick={() => setIsCartOpen(false)}>
                 View Cart & Checkout
