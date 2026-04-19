@@ -56,7 +56,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
           <th style={{ width: 40 }}>#</th>
           <th>Image</th>
           <th>Name</th>
-          <th>Category</th>
+          <th>Categories</th>
           <th>Price</th>
           <th>Pos</th>
           <th>Status</th>
@@ -81,9 +81,25 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
             : product.image;
 
           const name     = product.productName || product.name;
-          const category = product.category?.catagoryName || product.category;
           const price    = Number(product.price || 0).toFixed(2);
           const inStock  = product.stock > 0;
+
+          // Resolve categories: new multi-category array or legacy single
+          const categoryNames = (() => {
+            if (Array.isArray(product.categories) && product.categories.length > 0) {
+              return product.categories.map((c) =>
+                typeof c === 'object' ? (c.catagoryName || c.name || 'Unknown') : c
+              );
+            }
+            // Legacy fallback
+            if (product.category) {
+              const n = typeof product.category === 'object'
+                ? (product.category.catagoryName || product.category.name)
+                : product.category;
+              return n ? [n] : [];
+            }
+            return [];
+          })();
 
           return (
             <tr
@@ -114,8 +130,16 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
               {/* Name */}
               <td className="td-bold">{name}</td>
 
-              {/* Category */}
-              <td><span className="admin-tag">{category}</span></td>
+              {/* Categories */}
+              <td>
+                <div className="admin-tag-group">
+                  {categoryNames.length > 0 ? categoryNames.map((cn, i) => (
+                    <span key={i} className="admin-tag">{cn}</span>
+                  )) : (
+                    <span className="admin-tag admin-tag--muted">Uncategorized</span>
+                  )}
+                </div>
+              </td>
 
               {/* Price */}
               <td className="td-bold">₹{price}</td>

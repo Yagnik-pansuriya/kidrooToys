@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart } from 'react-icons/fi';
+import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart, FiZap } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
 import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
 import { useGetVariantsQuery } from '../../../store/ActionApi/variantApi';
@@ -42,11 +42,32 @@ const ProductDetail = () => {
   const reviews = reviewsResp?.data || reviewsResp || [];
   const stats = statsResp?.data || statsResp || {};
 
-  // Related products (same category)
-  const categoryId = product?.category?._id || product?.category;
+  // Resolve categories array (new multi-category schema)
+  const productCategories = useMemo(() => {
+    if (Array.isArray(product?.categories) && product.categories.length > 0) {
+      return product.categories.map((c) => ({
+        id: typeof c === 'object' ? (c._id || c.id) : c,
+        name: typeof c === 'object' ? (c.catagoryName || c.name || '') : '',
+      }));
+    }
+    // Legacy fallback
+    if (product?.category) {
+      const id = typeof product.category === 'object'
+        ? (product.category._id || product.category.id)
+        : product.category;
+      const name = typeof product.category === 'object'
+        ? (product.category.catagoryName || product.category.name || '')
+        : '';
+      return id ? [{ id, name }] : [];
+    }
+    return [];
+  }, [product]);
+
+  // Use first category for related products query
+  const primaryCategoryId = productCategories[0]?.id || '';
   const { data: relatedResp } = useGetProductsQuery(
-    { page: 1, limit: 4, category: categoryId || '' },
-    { skip: !categoryId }
+    { page: 1, limit: 4, category: primaryCategoryId },
+    { skip: !primaryCategoryId }
   );
   const relatedInner = relatedResp?.data || relatedResp;
   const relatedProducts = (relatedInner?.data || relatedInner || [])
@@ -183,7 +204,7 @@ const ProductDetail = () => {
   const price = selectedVariant ? Number(selectedVariant.price) : Number(product.price || 0);
   const originalPrice = selectedVariant ? Number(selectedVariant.originalPrice || 0) : Number(product.originalPrice || 0);
   const discount = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : (product.discountPercentage || 0);
-  const categoryName = product.category?.catagoryName || product.category?.name || '';
+  const categoryName = productCategories.map((c) => c.name).filter(Boolean).join(', ');
   const stock = selectedVariant ? selectedVariant.stock : product.stock;
   const inStock = stock > 0;
   const sku = selectedVariant?.sku || '';
@@ -261,9 +282,11 @@ const ProductDetail = () => {
       <nav className="pdp__breadcrumb">
         <Link to="/">Home</Link>
         <FiChevronRight />
-        {categoryName && (
+        {productCategories.length > 0 && (
           <>
-            <Link to={`/?category=${categoryId}`}>{categoryName}</Link>
+            <Link to={`/?category=${productCategories[0].id}`}>
+              {productCategories[0].name || 'Shop'}
+            </Link>
             <FiChevronRight />
           </>
         )}
@@ -364,6 +387,24 @@ const ProductDetail = () => {
 
           <p className="pdp__desc">{product.description}</p>
 
+          {/* Categories */}
+          {productCategories.length > 0 && (
+            <div className="pdp__option-group">
+              <label>Categories</label>
+              <div className="pdp__category-tags">
+                {productCategories.map((c) => (
+                  <Link
+                    key={c.id}
+                    to={`/shop?category=${c.id}`}
+                    className="pdp__category-tag"
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Age Range */}
           {product.ageRange && (
             <div className="pdp__option-group">
@@ -371,6 +412,36 @@ const ProductDetail = () => {
               <span className="pdp__age-tag">
                 {product.ageRange.from}–{product.ageRange.to} years
               </span>
+            </div>
+          )}
+
+          {/* ── Skills ── */}
+          {Array.isArray(product.skills) && product.skills.length > 0 && (
+            <div className="pdp__skills">
+              <label className="pdp__skills-label">
+                <FiZap /> Skills Developed
+              </label>
+              <div className="pdp__skills-grid">
+                {product.skills.map((skill) => {
+                  const sid = skill._id || skill.id || skill;
+                  const sName = skill.name || '';
+                  const sDesc = skill.description || '';
+                  const sImg = skill.image || '';
+                  return (
+                    <div key={sid} className="pdp__skill-card">
+                      {sImg && (
+                        <div className="pdp__skill-img">
+                          <img src={sImg} alt={sName} loading="lazy" />
+                        </div>
+                      )}
+                      <div className="pdp__skill-info">
+                        <strong>{sName}</strong>
+                        {sDesc && <span>{sDesc}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -464,6 +535,34 @@ const ProductDetail = () => {
             </button>
           </div>
 
+          {/* Warranty & Guarantee badges */}
+          {(product.hasWarranty || product.hasGuarantee) && (
+            <div className="pdp__warranty-badges">
+              {product.hasWarranty && (
+                <div className="pdp__warranty-badge">
+                  <FiShield className="pdp__warranty-icon" />
+                  <div>
+                    <strong>{product.warrantyPeriod ? `${product.warrantyPeriod} Month` : ''} Warranty</strong>
+                    {product.warrantyType && (
+                      <small>{product.warrantyType === 'manufacturer' ? 'Manufacturer' : 'Seller'} Warranty</small>
+                    )}
+                  </div>
+                </div>
+              )}
+              {product.hasGuarantee && (
+                <div className="pdp__warranty-badge">
+                  <FiShield className="pdp__warranty-icon" />
+                  <div>
+                    <strong>{product.guaranteePeriod ? `${product.guaranteePeriod} Month` : ''} Guarantee</strong>
+                    {product.guaranteeTerms && (
+                      <small>{product.guaranteeTerms}</small>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Trust badges */}
           <div className="pdp__trust">
             <span><FiTruck /> Free Shipping</span>
@@ -507,7 +606,9 @@ const ProductDetail = () => {
               <table>
                 <tbody>
                   <tr><td>Brand</td><td>Kidroo</td></tr>
-                  <tr><td>Category</td><td>{categoryName}</td></tr>
+                  <tr><td>Categories</td><td>{categoryName || 'Uncategorized'}</td></tr>
+                  {product.hasWarranty && <tr><td>Warranty</td><td>{product.warrantyPeriod ? `${product.warrantyPeriod} months` : 'Yes'} ({product.warrantyType || 'N/A'})</td></tr>}
+                  {product.hasGuarantee && <tr><td>Guarantee</td><td>{product.guaranteePeriod ? `${product.guaranteePeriod} months` : 'Yes'}</td></tr>}
                   {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange.from}–{product.ageRange.to} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
@@ -592,7 +693,11 @@ const ProductDetail = () => {
                     {pImg ? <img src={pImg} alt={pName} loading="lazy" /> : <span>📦</span>}
                   </div>
                   <div className="pdp__related-info">
-                    <span className="pdp__related-cat">{p.category?.catagoryName || ''}</span>
+                    <span className="pdp__related-cat">
+                      {Array.isArray(p.categories) && p.categories.length > 0
+                        ? (typeof p.categories[0] === 'object' ? (p.categories[0].catagoryName || p.categories[0].name || '') : '')
+                        : (p.category?.catagoryName || '')}
+                    </span>
                     <h4>{pName}</h4>
                     <span className="pdp__related-price">₹{pPrice.toFixed(0)}</span>
                   </div>

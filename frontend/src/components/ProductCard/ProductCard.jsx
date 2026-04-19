@@ -25,7 +25,15 @@ const ProductCard = ({ product }) => {
         </div>
       </div>
       <div className="product-card__info">
-        <span className="product-card__category">{product.category}</span>
+        <span className="product-card__category">
+          {Array.isArray(product.categories) && product.categories.length > 0
+            ? (typeof product.categories[0] === 'object'
+              ? (product.categories[0].catagoryName || product.categories[0].name || '')
+              : product.categories[0])
+            : (typeof product.category === 'object'
+              ? (product.category?.catagoryName || product.category?.name || '')
+              : (product.category || ''))}
+        </span>
         <h3 className="product-card__name">{product.name}</h3>
         <div className="product-card__rating">
           <FiStar className="product-card__star" />

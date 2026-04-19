@@ -33,6 +33,7 @@ import AdminUsers from './pages/admin/Users/AdminUsers';
 import AdminNewsletter from './pages/admin/Newsletter/AdminNewsletter';
 import AdminReviews from './pages/admin/Reviews/AdminReviews';
 import AdminBanners from './pages/admin/Banners/AdminBanners';
+import AdminSkills from './pages/admin/Skills/AdminSkills';
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
@@ -106,6 +107,7 @@ function App() {
                   <Route path="newsletter" element={<PermissionRoute permRoute="/newsletter"><AdminNewsletter /></PermissionRoute>} />
                   <Route path="reviews" element={<PermissionRoute permRoute="/reviews"><AdminReviews /></PermissionRoute>} />
                   <Route path="banners" element={<PermissionRoute permRoute="/banners"><AdminBanners /></PermissionRoute>} />
+                  <Route path="skills" element={<PermissionRoute permRoute="/skills"><AdminSkills /></PermissionRoute>} />
                   <Route path="settings" element={<PermissionRoute permRoute="/site-settings"><AdminSettings /></PermissionRoute>} />
                   <Route path="users" element={<PermissionRoute permRoute="/users" adminOnly><AdminUsers /></PermissionRoute>} />
                 </Route>
