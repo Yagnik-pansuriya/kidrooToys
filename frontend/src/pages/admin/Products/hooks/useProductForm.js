@@ -38,6 +38,25 @@ const useProductForm = () => {
 
   const openEdit = (product) => {
     setEditing(product);
+
+    // Resolve categories: backend now returns populated `categories` array
+    const resolvedCategories = (() => {
+      // If product has `categories` array (new multi-category schema)
+      if (Array.isArray(product.categories) && product.categories.length > 0) {
+        return product.categories.map((c) =>
+          typeof c === 'object' ? (c._id || c.id) : c
+        );
+      }
+      // Legacy fallback: single `category`
+      if (product.category) {
+        const id = typeof product.category === 'object'
+          ? (product.category._id || product.category.id)
+          : product.category;
+        return id ? [id] : [];
+      }
+      return [];
+    })();
+
     setForm({
       productName:        product.productName || product.name || '',
       slug:               product.slug || '',
@@ -46,7 +65,7 @@ const useProductForm = () => {
       originalPrice:      product.originalPrice ?? '',
       discountPercentage: product.discountPercentage ?? '',
       stock:              product.stock ?? '',
-      category:           product.category?._id || product.category || '',
+      categories:         resolvedCategories,
       ratings:            product.ratings ?? '',
       numReviews:         product.numReviews ?? '',
       featured:           product.featured ?? false,
@@ -63,6 +82,13 @@ const useProductForm = () => {
       variants:           Array.isArray(product.variants) ? product.variants : [],
       images:             [],
       previewUrls:        product.images || [],
+      // ── Warranty / Guarantee ──
+      hasWarranty:        product.hasWarranty ?? false,
+      warrantyPeriod:     product.warrantyPeriod ?? '',
+      warrantyType:       product.warrantyType || 'manufacturer',
+      hasGuarantee:       product.hasGuarantee ?? false,
+      guaranteePeriod:    product.guaranteePeriod ?? '',
+      guaranteeTerms:     product.guaranteeTerms || '',
     });
     setApiError('');
     setShowModal(true);
@@ -101,10 +127,19 @@ const useProductForm = () => {
     const fd = new FormData();
     const fields = [
       'productName', 'slug', 'description', 'price', 'originalPrice',
-      'discountPercentage', 'stock', 'category', 'ratings', 'numReviews',
+      'discountPercentage', 'stock', 'ratings', 'numReviews',
       'featured', 'newArrival', 'bestSeller', 'tags', 'isActive', 'hasVariants', 'youtubeUrl',
+      // Warranty / Guarantee fields
+      'hasWarranty', 'warrantyPeriod', 'warrantyType',
+      'hasGuarantee', 'guaranteePeriod', 'guaranteeTerms',
     ];
     fields.forEach((key) => fd.append(key, form[key]));
+
+    // Send categories as comma-separated string (backend parses both array and CSV)
+    if (Array.isArray(form.categories) && form.categories.length > 0) {
+      fd.append('categories', form.categories.join(','));
+    }
+
     fd.append(
       'ageRange',
       JSON.stringify({ from: Number(form.ageRangeFrom), to: Number(form.ageRangeTo) })

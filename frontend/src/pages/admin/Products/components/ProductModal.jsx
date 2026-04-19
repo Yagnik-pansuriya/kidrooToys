@@ -1,4 +1,4 @@
-import { FiX, FiImage, FiPlus, FiLoader } from 'react-icons/fi';
+import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiAward } from 'react-icons/fi';
 
 /**
  * SelectField — thin wrapper to keep inline JSX tidy.
@@ -13,6 +13,64 @@ const SelectField = ({ label, value, onChange, options }) => (
     </select>
   </div>
 );
+
+/**
+ * CategoryMultiSelect
+ * Renders a checkbox list of categories with chip-style selections.
+ */
+const CategoryMultiSelect = ({ selectedIds = [], categoryOptions = [], onChange }) => {
+  const toggle = (id) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((cid) => cid !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  return (
+    <div className="admin-field admin-field--full">
+      <label>Categories *</label>
+      {/* Selected chips */}
+      {selectedIds.length > 0 && (
+        <div className="admin-category-chips">
+          {selectedIds.map((id) => {
+            const cat = categoryOptions.find((c) => (c._id || c.id) === id);
+            const name = cat?.catagoryName || cat?.name || id;
+            return (
+              <span key={id} className="admin-category-chip">
+                {name}
+                <button type="button" onClick={() => toggle(id)} aria-label={`Remove ${name}`}>
+                  <FiX />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+      {/* Checkbox list */}
+      <div className="admin-category-grid">
+        {categoryOptions.map((c) => {
+          const id = c._id || c.id;
+          const name = c.catagoryName || c.name;
+          const checked = selectedIds.includes(id);
+          return (
+            <label key={id} className={`admin-category-option ${checked ? 'admin-category-option--checked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggle(id)}
+              />
+              <span>{name}</span>
+            </label>
+          );
+        })}
+      </div>
+      {categoryOptions.length === 0 && (
+        <p className="admin-field__hint">No categories available. Create one first.</p>
+      )}
+    </div>
+  );
+};
 
 /**
  * ProductModal
@@ -132,18 +190,12 @@ const ProductModal = ({
               <input type="number" min="0" placeholder="120" required {...field('numReviews')} />
             </div>
 
-            {/* Category */}
-            <div className="admin-field">
-              <label>Category *</label>
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} required>
-                <option value="">Select Category</option>
-                {categoryOptions.map((c) => (
-                  <option key={c._id || c.id} value={c._id || c.id}>
-                    {c.catagoryName}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Categories ─ Multi-select (full width) */}
+            <CategoryMultiSelect
+              selectedIds={form.categories}
+              categoryOptions={categoryOptions}
+              onChange={(ids) => setForm((p) => ({ ...p, categories: ids }))}
+            />
 
             {/* Tags */}
             <div className="admin-field">
@@ -188,6 +240,65 @@ const ProductModal = ({
                 {...field('youtubeUrl')}
               />
             </div>
+
+            {/* ═══════════ WARRANTY / GUARANTEE SECTION ═══════════ */}
+            <div className="admin-field admin-field--full admin-section-divider">
+              <h3 className="admin-section-title">
+                <FiShield /> Warranty & Guarantee
+              </h3>
+            </div>
+
+            {/* Has Warranty toggle */}
+            <SelectField label="Has Warranty" {...boolSelect('hasWarranty')} />
+
+            {/* Warranty details — shown only when hasWarranty is true */}
+            {form.hasWarranty && (
+              <>
+                <div className="admin-field">
+                  <label>Warranty Period (months)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="12"
+                    {...field('warrantyPeriod')}
+                  />
+                </div>
+                <div className="admin-field">
+                  <label>Warranty Type</label>
+                  <select value={form.warrantyType} onChange={(e) => setForm((p) => ({ ...p, warrantyType: e.target.value }))}>
+                    <option value="manufacturer">Manufacturer</option>
+                    <option value="seller">Seller</option>
+                  </select>
+                </div>
+              </>
+            )}
+
+            {/* Has Guarantee toggle */}
+            <SelectField label="Has Guarantee" {...boolSelect('hasGuarantee')} />
+
+            {/* Guarantee details — shown only when hasGuarantee is true */}
+            {form.hasGuarantee && (
+              <>
+                <div className="admin-field">
+                  <label>Guarantee Period (months)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="6"
+                    {...field('guaranteePeriod')}
+                  />
+                </div>
+                <div className="admin-field admin-field--full">
+                  <label>Guarantee Terms</label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. 100% money-back guarantee if not satisfied…"
+                    value={form.guaranteeTerms}
+                    onChange={(e) => setForm((p) => ({ ...p, guaranteeTerms: e.target.value }))}
+                  />
+                </div>
+              </>
+            )}
 
             {/* Images ─ full width */}
             <div className="admin-field admin-field--full">

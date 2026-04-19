@@ -10,7 +10,7 @@ export const emptyForm = {
   originalPrice:      '',
   discountPercentage: '',
   stock:              '',
-  category:           '',
+  categories:         [],   // array of category IDs (multi-select)
   ratings:            '',
   numReviews:         '',
   featured:           false,
@@ -25,4 +25,11 @@ export const emptyForm = {
   variants:           [],   // array of variant strings e.g. ['Red', 'Blue', 'XL']
   images:             [],   // File objects for new uploads
   previewUrls:        [],   // Blob / remote URLs for preview
+  // ── Warranty / Guarantee fields ──
+  hasWarranty:        false,
+  warrantyPeriod:     '',
+  warrantyType:       'manufacturer',
+  hasGuarantee:       false,
+  guaranteePeriod:    '',
+  guaranteeTerms:     '',
 };

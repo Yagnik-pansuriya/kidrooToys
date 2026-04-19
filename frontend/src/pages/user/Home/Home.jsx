@@ -179,7 +179,13 @@ const Home = () => {
               const price = Number(product.price || 0);
               const originalPrice = Number(product.originalPrice || 0);
               const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
-              const category = product.category?.catagoryName || product.category?.name || '';
+              const category = (() => {
+                if (Array.isArray(product.categories) && product.categories.length > 0) {
+                  const first = product.categories[0];
+                  return typeof first === 'object' ? (first.catagoryName || first.name || '') : '';
+                }
+                return product.category?.catagoryName || product.category?.name || '';
+              })();
 
               return (
                 <div className="product-card-v2" key={product._id || product.id}>

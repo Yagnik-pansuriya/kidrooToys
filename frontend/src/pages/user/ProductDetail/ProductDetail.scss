@@ -903,6 +903,72 @@
   color: var(--color-header);
 }
 
+// ─── Category Tags (on product info) ──────────────────────────
+.pdp__category-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pdp__category-tag {
+  display: inline-block;
+  padding: 5px 14px;
+  background: #F0EDE8;
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: $radius-full;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1.5px solid transparent;
+
+  &:hover {
+    background: rgba(139, 115, 85, 0.15);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+  }
+}
+
+// ─── Warranty & Guarantee Badges ──────────────────────────────
+.pdp__warranty-badges {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  padding: $space-md;
+  background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+  border: 1.5px solid #BBF7D0;
+  border-radius: $radius-xl;
+  animation: fadeInUp 0.3s ease;
+}
+
+.pdp__warranty-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: $space-sm;
+
+  strong {
+    display: block;
+    font-size: 0.88rem;
+    color: #166534;
+    line-height: 1.3;
+  }
+
+  small {
+    display: block;
+    font-size: 0.75rem;
+    color: #4ADE80;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+}
+
+.pdp__warranty-icon {
+  flex-shrink: 0;
+  font-size: 1.3rem;
+  color: #22C55E;
+  margin-top: 2px;
+}
+
 .pdp-empty {
   text-align: center;
   padding: 120px $space-lg;
