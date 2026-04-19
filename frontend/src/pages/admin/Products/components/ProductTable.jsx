@@ -82,7 +82,18 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
 
           const name     = product.productName || product.name;
           const price    = Number(product.price || 0).toFixed(2);
-          const inStock  = product.stock > 0;
+          // When hasVariants is true, product.stock is forced to 0 by backend.
+          // Check the default variant's stock for the real stock status.
+          const resolvedStock = (() => {
+            if (product.hasVariants && Array.isArray(product.variants) && product.variants.length > 0) {
+              const defV = product.variants.find((v) => typeof v === 'object' && v.isDefault);
+              if (defV) return defV.stock ?? 0;
+              // If no default variant found, sum all variant stocks
+              return product.variants.reduce((sum, v) => sum + (typeof v === 'object' ? (v.stock || 0) : 0), 0);
+            }
+            return product.stock || 0;
+          })();
+          const inStock  = resolvedStock > 0;
 
           // Resolve categories: new multi-category array or legacy single
           const categoryNames = (() => {

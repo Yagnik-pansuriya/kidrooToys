@@ -121,11 +121,11 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
     onSave({
       sku:              form.sku,
       barcode:          form.barcode,
-      price:            Number(form.price),
-      originalPrice:    Number(form.originalPrice),
-      stock:            Number(form.stock),
-      lowStockAlert:    form.lowStockAlert !== '' ? Number(form.lowStockAlert) : undefined,
-      weight:           form.weight        !== '' ? Number(form.weight)        : undefined,
+      price:            form.price === '' ? 0 : Number(form.price) || 0,
+      originalPrice:    form.originalPrice === '' ? 0 : Number(form.originalPrice) || 0,
+      stock:            form.stock === '' ? 0 : Number(form.stock) || 0,
+      lowStockAlert:    form.lowStockAlert === '' ? 0 : Number(form.lowStockAlert) || 0,
+      weight:           form.weight === '' ? 0 : Number(form.weight) || 0,
       dimensions:       {
         length: Number(form.dimLength) || 0,
         width:  Number(form.dimWidth)  || 0,

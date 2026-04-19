@@ -1,12 +1,20 @@
 import { FiTrash2, FiPlus, FiMinus, FiArrowLeft, FiShoppingBag } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../../context/CartContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import './Cart.scss';
 
 const Cart = () => {
   const { cartItems, updateQuantity, removeFromCart, clearCart, cartTotal } = useCart();
-  const shipping = cartTotal > 50 ? 0 : 5.99;
+  const { requireAuth } = useCustomerAuth();
+  const navigate = useNavigate();
+  const shipping = cartTotal >= 500 ? 0 : 50;
   const total = cartTotal + shipping;
+
+  const handleCheckout = () => {
+    if (!requireAuth('Please login to proceed to checkout', () => navigate('/checkout'))) return;
+    navigate('/checkout');
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -43,7 +51,9 @@ const Cart = () => {
                 <img src={item.image} alt={item.name} className="cart-item__img" />
                 <div className="cart-item__info">
                   <h4 className="cart-item__name">{item.name}</h4>
-                  <span className="cart-item__category">{item.category}</span>
+                  {item.variantName && (
+                    <span className="cart-item__variant">{item.variantName}</span>
+                  )}
                   <span className="cart-item__price">₹{item.price.toFixed(2)}</span>
                 </div>
                 <div className="cart-item__qty">
@@ -62,8 +72,8 @@ const Cart = () => {
             <div className="cart-summary__row"><span>Shipping</span><span>{shipping === 0 ? 'FREE' : `₹${shipping.toFixed(2)}`}</span></div>
             <div className="cart-summary__divider" />
             <div className="cart-summary__row cart-summary__row--total"><span>Total</span><span>₹{total.toFixed(2)}</span></div>
-            {cartTotal < 50 && <p className="cart-summary__note">Add ₹{(50 - cartTotal).toFixed(2)} more for free shipping!</p>}
-            <button className="cart-summary__checkout">Proceed to Checkout</button>
+            {cartTotal < 500 && <p className="cart-summary__note">Add ₹{(500 - cartTotal).toFixed(2)} more for free shipping!</p>}
+            <button className="cart-summary__checkout" onClick={handleCheckout}>Proceed to Checkout</button>
             <Link to="/" className="cart-summary__continue"><FiArrowLeft /> Continue Shopping</Link>
           </div>
         </div>

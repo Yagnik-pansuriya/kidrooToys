@@ -53,7 +53,7 @@ const AdminCategories = () => {
     const fd = new FormData();
     fd.append('catagoryName', form.catagoryName);
     fd.append('slug', form.slug);
-    fd.append('count', form.count);
+    fd.append('count', (form.count === '' || form.count === null || form.count === undefined) ? '0' : String(form.count));
     if (form.image) fd.append('image', form.image);
     if (form.icon) fd.append('icon', form.icon);
 

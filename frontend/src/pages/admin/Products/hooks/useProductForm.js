@@ -57,6 +57,18 @@ const useProductForm = () => {
       return [];
     })();
 
+    // When hasVariants is true, product.stock is always forced to 0 by the backend.
+    // The real stock lives on the default variant — use that for the edit form.
+    const resolvedStock = (() => {
+      if (product.hasVariants && Array.isArray(product.variants) && product.variants.length > 0) {
+        const defaultVariant = product.variants.find(
+          (v) => typeof v === 'object' && v.isDefault
+        );
+        if (defaultVariant) return defaultVariant.stock ?? 0;
+      }
+      return product.stock ?? '';
+    })();
+
     setForm({
       productName:        product.productName || product.name || '',
       slug:               product.slug || '',
@@ -64,7 +76,7 @@ const useProductForm = () => {
       price:              product.price ?? '',
       originalPrice:      product.originalPrice ?? '',
       discountPercentage: product.discountPercentage ?? '',
-      stock:              product.stock ?? '',
+      stock:              resolvedStock,
       categories:         resolvedCategories,
       ratings:            product.ratings ?? '',
       numReviews:         product.numReviews ?? '',
@@ -129,15 +141,32 @@ const useProductForm = () => {
   // ── Build FormData ───────────────────────────────────────────
   const buildFormData = () => {
     const fd = new FormData();
-    const fields = [
-      'productName', 'slug', 'description', 'price', 'originalPrice',
-      'discountPercentage', 'stock', 'ratings', 'numReviews',
-      'featured', 'newArrival', 'bestSeller', 'tags', 'isActive', 'hasVariants', 'youtubeUrl',
-      // Warranty / Guarantee fields
-      'hasWarranty', 'warrantyPeriod', 'warrantyType',
-      'hasGuarantee', 'guaranteePeriod', 'guaranteeTerms',
+
+    // String fields — always send
+    const stringFields = [
+      'productName', 'slug', 'description', 'tags', 'youtubeUrl',
+      'warrantyType', 'guaranteeTerms',
     ];
-    fields.forEach((key) => fd.append(key, form[key]));
+    stringFields.forEach((key) => fd.append(key, form[key] ?? ''));
+
+    // Numeric fields — convert empty string to '0' so the backend
+    // never receives a blank that might silently become NaN or get
+    // dropped.  The value '0' is a valid intentional value.
+    const numericFields = [
+      'price', 'originalPrice', 'discountPercentage', 'stock',
+      'ratings', 'numReviews', 'warrantyPeriod', 'guaranteePeriod',
+    ];
+    numericFields.forEach((key) => {
+      const v = form[key];
+      fd.append(key, (v === '' || v === null || v === undefined) ? '0' : String(v));
+    });
+
+    // Boolean fields — always send
+    const boolFields = [
+      'featured', 'newArrival', 'bestSeller', 'isActive', 'hasVariants',
+      'hasWarranty', 'hasGuarantee',
+    ];
+    boolFields.forEach((key) => fd.append(key, String(!!form[key])));
 
     if (Array.isArray(form.categories) && form.categories.length > 0) {
       fd.append('categories', form.categories.join(','));
@@ -150,10 +179,17 @@ const useProductForm = () => {
 
     fd.append(
       'ageRange',
-      JSON.stringify({ from: Number(form.ageRangeFrom), to: Number(form.ageRangeTo) })
+      JSON.stringify({
+        from: Number(form.ageRangeFrom) || 0,
+        to: Number(form.ageRangeTo) || 0,
+      })
     );
-    // variants: send as JSON array (backend expects array of strings)
-    fd.append('variants', JSON.stringify(form.hasVariants ? form.variants : []));
+    // variants: only send during create — during update, variants are managed
+    // by the variant CRUD endpoints and synced via syncDefaultVariant.
+    // Sending them here during edit could accidentally overwrite the variants array.
+    if (!editing) {
+      fd.append('variants', JSON.stringify(form.hasVariants ? form.variants : []));
+    }
     form.images.forEach((file) => fd.append('images', file));
     return fd;
   };

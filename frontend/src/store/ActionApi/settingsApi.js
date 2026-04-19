@@ -16,6 +16,19 @@ const buildSettingsFormData = (body) => {
     fd.append('themeColors', JSON.stringify(body.themeColors));
   }
 
+  // Payment methods as JSON stringified object
+  if (body.paymentMethods) {
+    fd.append('paymentMethods', JSON.stringify(body.paymentMethods));
+  }
+
+  // Razorpay config (sent as individual fields, not nested)
+  if (body.razorpayKeyId !== undefined) {
+    fd.append('razorpayKeyId', body.razorpayKeyId);
+  }
+  if (body.razorpayKeySecret !== undefined && body.razorpayKeySecret !== '') {
+    fd.append('razorpayKeySecret', body.razorpayKeySecret);
+  }
+
   // Logo file handling
   if (body.logoFile instanceof File) {
     fd.append('logo', body.logoFile);

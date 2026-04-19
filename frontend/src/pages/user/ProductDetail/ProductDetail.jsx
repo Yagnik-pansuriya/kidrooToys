@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart, FiZap } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
 import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
@@ -16,6 +16,7 @@ import './ProductDetail.scss';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
@@ -241,11 +242,13 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    if (!requireAuth('Please login to purchase this product')) return;
-    addToCart({ ...product, quantity, selectedVariant });
-    showSuccess(`${name} added to cart!`);
-    // Navigate to cart/checkout
-    window.location.href = '/cart';
+    const proceed = () => {
+      addToCart({ ...product, quantity, selectedVariant });
+      showSuccess(`${name} added to cart!`);
+      navigate('/checkout');
+    };
+    if (!requireAuth('Please login to purchase this product', proceed)) return;
+    proceed();
   };
 
   const handleToggleWishlist = async () => {

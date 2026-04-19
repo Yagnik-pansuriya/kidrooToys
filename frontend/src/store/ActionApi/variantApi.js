@@ -6,18 +6,28 @@ import { baseApi } from '../Api';
 const buildVariantFormData = (body) => {
   const fd = new FormData();
 
-  // scalar fields
-  const scalarFields = [
-    'sku', 'barcode',
-    'price', 'originalPrice',
-    'stock', 'lowStockAlert',
-    'weight',
-    'status', 'isDefault', 'isActive',
-    'youtubeUrl',
-  ];
-  scalarFields.forEach((key) => {
-    if (body[key] !== undefined && body[key] !== '') {
-      fd.append(key, body[key]);
+  // String fields — always send if present
+  const stringFields = ['sku', 'barcode', 'status', 'youtubeUrl'];
+  stringFields.forEach((key) => {
+    if (body[key] !== undefined) {
+      fd.append(key, body[key] ?? '');
+    }
+  });
+
+  // Numeric fields — empty string → '0' so the backend never gets NaN
+  const numericFields = ['price', 'originalPrice', 'stock', 'lowStockAlert', 'weight'];
+  numericFields.forEach((key) => {
+    if (body[key] !== undefined) {
+      const v = body[key];
+      fd.append(key, (v === '' || v === null || v === undefined) ? '0' : String(v));
+    }
+  });
+
+  // Boolean fields
+  const boolFields = ['isDefault', 'isActive'];
+  boolFields.forEach((key) => {
+    if (body[key] !== undefined) {
+      fd.append(key, String(!!body[key]));
     }
   });
 
