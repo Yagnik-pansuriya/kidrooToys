@@ -89,6 +89,10 @@ const useProductForm = () => {
       hasGuarantee:       product.hasGuarantee ?? false,
       guaranteePeriod:    product.guaranteePeriod ?? '',
       guaranteeTerms:     product.guaranteeTerms || '',
+      // ── Skills ──
+      skills: Array.isArray(product.skills)
+        ? product.skills.map((s) => typeof s === 'object' ? (s._id || s.id) : s)
+        : [],
     });
     setApiError('');
     setShowModal(true);
@@ -135,9 +139,13 @@ const useProductForm = () => {
     ];
     fields.forEach((key) => fd.append(key, form[key]));
 
-    // Send categories as comma-separated string (backend parses both array and CSV)
     if (Array.isArray(form.categories) && form.categories.length > 0) {
       fd.append('categories', form.categories.join(','));
+    }
+
+    // Send skills as comma-separated string
+    if (Array.isArray(form.skills) && form.skills.length > 0) {
+      fd.append('skills', form.skills.join(','));
     }
 
     fd.append(

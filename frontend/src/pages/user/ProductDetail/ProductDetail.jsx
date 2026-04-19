@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart } from 'react-icons/fi';
+import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart, FiZap } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
 import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
 import { useGetVariantsQuery } from '../../../store/ActionApi/variantApi';
@@ -412,6 +412,36 @@ const ProductDetail = () => {
               <span className="pdp__age-tag">
                 {product.ageRange.from}–{product.ageRange.to} years
               </span>
+            </div>
+          )}
+
+          {/* ── Skills ── */}
+          {Array.isArray(product.skills) && product.skills.length > 0 && (
+            <div className="pdp__skills">
+              <label className="pdp__skills-label">
+                <FiZap /> Skills Developed
+              </label>
+              <div className="pdp__skills-grid">
+                {product.skills.map((skill) => {
+                  const sid = skill._id || skill.id || skill;
+                  const sName = skill.name || '';
+                  const sDesc = skill.description || '';
+                  const sImg = skill.image || '';
+                  return (
+                    <div key={sid} className="pdp__skill-card">
+                      {sImg && (
+                        <div className="pdp__skill-img">
+                          <img src={sImg} alt={sName} loading="lazy" />
+                        </div>
+                      )}
+                      <div className="pdp__skill-info">
+                        <strong>{sName}</strong>
+                        {sDesc && <span>{sDesc}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 

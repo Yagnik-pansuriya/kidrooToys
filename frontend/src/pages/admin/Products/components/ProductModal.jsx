@@ -1,4 +1,4 @@
-import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiAward } from 'react-icons/fi';
+import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiAward, FiZap } from 'react-icons/fi';
 
 /**
  * SelectField — thin wrapper to keep inline JSX tidy.
@@ -94,6 +94,7 @@ const ProductModal = ({
   apiError,
   isBusy,
   categoryOptions,
+  skillOptions,
   fileInputRef,
   setForm,
   onSubmit,
@@ -240,6 +241,22 @@ const ProductModal = ({
                 {...field('youtubeUrl')}
               />
             </div>
+
+            {/* ═══════════ SKILLS SECTION ═══════════ */}
+            <div className="admin-field admin-field--full admin-section-divider">
+              <h3 className="admin-section-title">
+                <FiZap /> Skills
+              </h3>
+            </div>
+
+            <CategoryMultiSelect
+              selectedIds={form.skills}
+              categoryOptions={(skillOptions || []).map((s) => ({
+                ...s,
+                catagoryName: s.name,
+              }))}
+              onChange={(ids) => setForm((p) => ({ ...p, skills: ids }))}
+            />
 
             {/* ═══════════ WARRANTY / GUARANTEE SECTION ═══════════ */}
             <div className="admin-field admin-field--full admin-section-divider">

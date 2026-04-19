@@ -1,0 +1,147 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.admin-skills {
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+    margin-bottom: $space-lg;
+
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: $space-xs;
+      font-family: $font-heading;
+      font-size: 1.8rem;
+
+      svg { color: var(--color-primary); }
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    padding: 4rem $space-lg;
+    color: var(--color-text-muted);
+
+    svg {
+      font-size: 3rem;
+      margin-bottom: $space-md;
+      display: block;
+      margin-inline: auto;
+      opacity: 0.4;
+    }
+
+    p { font-size: 1rem; }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $space-lg;
+  }
+}
+
+// ─── Skill Card ───────────────────────────────────────────────
+.skill-card {
+  background: white;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  border: 2px solid #E2E4EC;
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+  }
+
+  &__img {
+    aspect-ratio: 16/10;
+    background: #F8F9FC;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  }
+
+  &__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: 2rem;
+    opacity: 0.3;
+  }
+
+  &__body {
+    padding: $space-md;
+
+    h3 {
+      font-family: $font-heading;
+      font-size: 1.05rem;
+      color: var(--color-text-primary);
+      margin-bottom: $space-xxs;
+    }
+
+    p {
+      font-size: 0.82rem;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-xs;
+    padding: 0 $space-md $space-md;
+  }
+}
+
+// ─── Skill Image Preview (in modal) ──────────────────────────
+.skill-preview {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 16/10;
+  border-radius: $radius;
+  overflow: hidden;
+  border: 2px solid #E2E4EC;
+  margin-top: $space-xs;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__change {
+    position: absolute;
+    bottom: $space-xs;
+    right: $space-xs;
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 0.72rem;
+    font-weight: 700;
+    border-radius: $radius-full;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover { background: rgba(0, 0, 0, 0.8); }
+  }
+}

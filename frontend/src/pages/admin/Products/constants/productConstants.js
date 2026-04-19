@@ -32,4 +32,6 @@ export const emptyForm = {
   hasGuarantee:       false,
   guaranteePeriod:    '',
   guaranteeTerms:     '',
+  // ── Skills ──
+  skills:             [],   // array of skill IDs (multi-select)
 };

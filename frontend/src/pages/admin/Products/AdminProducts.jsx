@@ -8,6 +8,7 @@ import {
   useReorderProductsMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
+import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
 
 import Pagination       from '../../../components/Pagination/Pagination';
 import ProductSearchBar from './components/ProductSearchBar';
@@ -89,6 +90,11 @@ const AdminProducts = () => {
     handleSubmit, handleDelete,
     productToDelete, setProductToDelete, confirmDelete,
   } = useProductForm();
+
+  // ── Skills ──────────────────────────────────────────────────
+  const { data: skillsResp } = useGetSkillsQuery();
+  const skillsRaw = skillsResp?.data || skillsResp || [];
+  const skillOptions = Array.isArray(skillsRaw) ? skillsRaw : [];
 
   // ── Reorder mutation ─────────────────────────────────────────
   const [reorderProducts] = useReorderProductsMutation();
@@ -204,6 +210,7 @@ const AdminProducts = () => {
           apiError={apiError}
           isBusy={isBusy}
           categoryOptions={categoryOptions}
+          skillOptions={skillOptions}
           fileInputRef={fileInputRef}
           setForm={setForm}
           onSubmit={handleSubmit}
