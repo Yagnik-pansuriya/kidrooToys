@@ -19,6 +19,8 @@ import Cart from './pages/user/Cart/Cart';
 import ProductDetail from './pages/user/ProductDetail/ProductDetail';
 import Shop from './pages/user/Shop/Shop';
 import Wishlist from './pages/user/Wishlist/Wishlist';
+import Checkout from './pages/user/Checkout/Checkout';
+import OrderConfirmation from './pages/user/OrderConfirmation/OrderConfirmation';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin/AdminLogin';
@@ -95,6 +97,8 @@ function App() {
                 <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
                 <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
                 <Route path="/wishlist" element={<UserLayout><Wishlist /></UserLayout>} />
+                <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
+                <Route path="/order-confirmation/:orderId" element={<UserLayout><OrderConfirmation /></UserLayout>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLogin />} />
