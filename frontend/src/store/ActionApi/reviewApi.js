@@ -28,9 +28,9 @@ export const reviewApi = baseApi.injectEndpoints({
       ],
     }),
 
-    // GET /api/reviews (admin)
+    // GET /api/reviews (admin — paginated)
     getAllReviews: builder.query({
-      query: () => 'reviews',
+      query: ({ page = 1, limit = 20 } = {}) => `reviews?page=${page}&limit=${limit}`,
       providesTags: ['Reviews'],
     }),
 
