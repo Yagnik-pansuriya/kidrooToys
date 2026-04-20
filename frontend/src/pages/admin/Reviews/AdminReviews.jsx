@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { FiStar, FiTrash2, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { MdRateReview } from 'react-icons/md';
 import {
@@ -8,17 +8,25 @@ import {
 } from '../../../store/ActionApi/reviewApi';
 import { useToast } from '../../../context/ToastContext';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
+import Pagination from '../../../components/Pagination/Pagination';
 import Loader from '../../../components/Loader/Loader';
 import './AdminReviews.scss';
 
+const REVIEWS_PER_PAGE = 20;
+
 const AdminReviews = () => {
-  const { data: reviewsResp, isLoading } = useGetAllReviewsQuery();
+  const [page, setPage] = useState(1);
+  const { data: reviewsResp, isLoading } = useGetAllReviewsQuery({ page, limit: REVIEWS_PER_PAGE });
   const [deleteReview] = useDeleteReviewMutation();
   const [toggleApproval] = useToggleReviewApprovalMutation();
   const { showSuccess, showError } = useToast();
   const [toDelete, setToDelete] = useState(null);
 
-  const reviews = reviewsResp?.data || reviewsResp || [];
+  // The API returns { data: { reviews, total, page, limit, pages } }
+  const reviewData = reviewsResp?.data || {};
+  const reviews = reviewData?.reviews || [];
+  const totalPages = reviewData?.pages || 1;
+  const totalItems = reviewData?.total || 0;
 
   const confirmDelete = async () => {
     if (!toDelete) return;
@@ -41,11 +49,16 @@ const AdminReviews = () => {
     }
   };
 
+  const handlePageChange = useCallback((newPage) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   return (
     <div className="admin-reviews">
       <div className="admin-reviews__header">
         <h1><MdRateReview /> Reviews</h1>
-        <span className="admin-reviews__count">{reviews.length} reviews</span>
+        <span className="admin-reviews__count">{totalItems} reviews</span>
       </div>
 
       {isLoading ? (
@@ -73,9 +86,9 @@ const AdminReviews = () => {
               ) : (
                 reviews.map((review, idx) => (
                   <tr key={review._id || review.id}>
-                    <td>{idx + 1}</td>
+                    <td>{(page - 1) * REVIEWS_PER_PAGE + idx + 1}</td>
                     <td className="td-bold">{review.product?.productName || '—'}</td>
-                    <td>{review.name}</td>
+                    <td>{review.user?.name || review.name || '—'}</td>
                     <td>
                       <span className="admin-reviews__rating">
                         <FiStar /> {review.rating}
@@ -111,6 +124,15 @@ const AdminReviews = () => {
               )}
             </tbody>
           </table>
+
+          {/* ── Pagination ── */}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            limit={REVIEWS_PER_PAGE}
+            onPageChange={handlePageChange}
+          />
         </div>
       )}
 
