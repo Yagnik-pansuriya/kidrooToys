@@ -6,6 +6,7 @@ import Loader from '../../../components/Loader/Loader';
 import {
   useGetProductsQuery,
   useReorderProductsMutation,
+  useMoveProductPositionMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
@@ -112,6 +113,10 @@ const AdminProducts = () => {
   // ── Reorder mutation ─────────────────────────────────────────
   const [reorderProducts] = useReorderProductsMutation();
 
+  // ── Move position mutation (cross-page) ─────────────────────
+  const [moveProductPosition, { isLoading: isMoving }] = useMoveProductPositionMutation();
+  const [movingProductId, setMovingProductId] = useState(null);
+
   // ── Variant modal state ───────────────────────────────────────
   const [variantProduct, setVariantProduct] = useState(null);
   const openVariants  = useCallback((product) => setVariantProduct(product), []);
@@ -159,6 +164,18 @@ const AdminProducts = () => {
     }
   };
 
+  // ── Move position handler (cross-page) ────────────────────────
+  const handleMovePosition = async ({ id, targetPosition }) => {
+    try {
+      setMovingProductId(id);
+      await moveProductPosition({ id, targetPosition }).unwrap();
+    } catch (err) {
+      console.error('Move position failed', err);
+    } finally {
+      setMovingProductId(null);
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────
   return (
     <div className="admin-products">
@@ -203,6 +220,9 @@ const AdminProducts = () => {
             onDelete={handleDelete}
             onVariants={openVariants}
             onReorder={handleReorder}
+            onMovePosition={handleMovePosition}
+            movingId={movingProductId}
+            totalItems={totalItems}
           />
 
           {/* ── Pagination ── */}
