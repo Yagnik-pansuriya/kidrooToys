@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
+import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
 import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCart } from '../../../context/CartContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
@@ -15,6 +16,21 @@ import './Shop.scss';
 
 const PRODUCTS_PER_PAGE = 12;
 
+// ── Fixed filter option lists ───────────────────────────────────
+const PRICE_RANGES = [
+  { value: 'under499',  label: 'Under ₹499',  minPrice: '',    maxPrice: '499'  },
+  { value: 'under999',  label: 'Under ₹999',  minPrice: '',    maxPrice: '999'  },
+  { value: 'above1000', label: 'Above ₹1000', minPrice: '1000', maxPrice: '' },
+];
+
+const AGE_GROUPS = [
+  { value: '0-2', label: '0–2 years' },
+  { value: '2-4', label: '2–4 years' },
+  { value: '4-6', label: '4–6 years' },
+  { value: '6-8', label: '6–8 years' },
+  { value: '8+',  label: '8+ years'  },
+];
+
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get('category') || '';
@@ -22,6 +38,9 @@ const Shop = () => {
   // ── Local state ─────────────────────────────────────────────────
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl);
+  const [selectedPriceRange, setSelectedPriceRange] = useState('');
+  const [selectedAgeGroup, setSelectedAgeGroup] = useState('');
+  const [selectedSkill, setSelectedSkill] = useState('');
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState('newest');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -32,13 +51,26 @@ const Shop = () => {
     setPage(1);
   }, [categoryFromUrl]);
 
+  // ── Expand priceRange → minPrice / maxPrice ─────────────────────
+  const priceFilter = useMemo(() => {
+    const found = PRICE_RANGES.find((p) => p.value === selectedPriceRange);
+    return found ? { minPrice: found.minPrice, maxPrice: found.maxPrice } : {};
+  }, [selectedPriceRange]);
+
   // ── API queries ─────────────────────────────────────────────────
   useGetCategoriesQuery();
+  const { data: skillsResp } = useGetSkillsQuery();
+  const skillsRaw = skillsResp?.data || skillsResp || [];
+  const skillOptions = Array.isArray(skillsRaw) ? skillsRaw : [];
+
   const { data: productsResponse, isFetching } = useGetProductsQuery({
     page,
     limit: PRODUCTS_PER_PAGE,
     search: search.trim(),
     category: selectedCategory,
+    ageRange: selectedAgeGroup,
+    skill: selectedSkill,
+    ...priceFilter,
   });
 
   const categories = useSelector((s) => s.category.categories) || [];
@@ -77,6 +109,25 @@ const Shop = () => {
     return cat?.catagoryName || cat?.name || '';
   }, [selectedCategory, categoryList]);
 
+  // Active skill name for filter tag
+  const activeSkillName = useMemo(() => {
+    if (!selectedSkill) return '';
+    const s = skillOptions.find((sk) => (sk._id || sk.id) === selectedSkill);
+    return s?.name || '';
+  }, [selectedSkill, skillOptions]);
+
+  // Active price label
+  const activePriceLabel = useMemo(() => {
+    const found = PRICE_RANGES.find((p) => p.value === selectedPriceRange);
+    return found?.label || '';
+  }, [selectedPriceRange]);
+
+  // Active age label
+  const activeAgeLabel = useMemo(() => {
+    const found = AGE_GROUPS.find((a) => a.value === selectedAgeGroup);
+    return found?.label || '';
+  }, [selectedAgeGroup]);
+
   // ── Handlers ────────────────────────────────────────────────────
   const handleCategoryClick = (catId) => {
     const newCat = catId === selectedCategory ? '' : catId;
@@ -98,11 +149,14 @@ const Shop = () => {
   const clearFilters = () => {
     setSearch('');
     setSelectedCategory('');
+    setSelectedPriceRange('');
+    setSelectedAgeGroup('');
+    setSelectedSkill('');
     setPage(1);
     setSearchParams({});
   };
 
-  const hasActiveFilters = selectedCategory || search.trim();
+  const hasActiveFilters = selectedCategory || search.trim() || selectedPriceRange || selectedAgeGroup || selectedSkill;
 
   return (
     <div className="shop-page">
@@ -212,6 +266,7 @@ const Shop = () => {
               </ul>
             </div>
 
+
             {hasActiveFilters && (
               <button className="shop-page__clear-btn" onClick={clearFilters}>
                 <FiX /> Clear All Filters
@@ -244,18 +299,45 @@ const Shop = () => {
                   ) : 'No products found'}
                 </span>
               </div>
-              <div className="shop-page__toolbar-right">
+
+            </div>
+
+            {/* ── Filter Dropdowns Row ── */}
+            <div className="shop-page__filter-bar">
+              <select
+                className="shop-page__filter-select"
+                value={selectedPriceRange}
+                onChange={(e) => { setSelectedPriceRange(e.target.value); setPage(1); }}
+              >
+                <option value="">All Prices</option>
+                {PRICE_RANGES.map((pr) => (
+                  <option key={pr.value} value={pr.value}>{pr.label}</option>
+                ))}
+              </select>
+
+              <select
+                className="shop-page__filter-select"
+                value={selectedAgeGroup}
+                onChange={(e) => { setSelectedAgeGroup(e.target.value); setPage(1); }}
+              >
+                <option value="">All Ages</option>
+                {AGE_GROUPS.map((ag) => (
+                  <option key={ag.value} value={ag.value}>{ag.label}</option>
+                ))}
+              </select>
+
+              {skillOptions.length > 0 && (
                 <select
-                  className="shop-page__sort-select"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
+                  className="shop-page__filter-select"
+                  value={selectedSkill}
+                  onChange={(e) => { setSelectedSkill(e.target.value); setPage(1); }}
                 >
-                  <option value="newest">Newest First</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="popular">Most Popular</option>
+                  <option value="">All Skills</option>
+                  {skillOptions.map((s) => (
+                    <option key={s._id || s.id} value={s._id || s.id}>{s.name}</option>
+                  ))}
                 </select>
-              </div>
+              )}
             </div>
 
             {/* Active Filter Tags */}
@@ -265,6 +347,24 @@ const Shop = () => {
                   <span className="shop-page__filter-tag">
                     {activeCategoryName}
                     <button onClick={() => handleCategoryClick('')}><FiX /></button>
+                  </span>
+                )}
+                {activePriceLabel && (
+                  <span className="shop-page__filter-tag">
+                    {activePriceLabel}
+                    <button onClick={() => { setSelectedPriceRange(''); setPage(1); }}><FiX /></button>
+                  </span>
+                )}
+                {activeAgeLabel && (
+                  <span className="shop-page__filter-tag">
+                    {activeAgeLabel}
+                    <button onClick={() => { setSelectedAgeGroup(''); setPage(1); }}><FiX /></button>
+                  </span>
+                )}
+                {activeSkillName && (
+                  <span className="shop-page__filter-tag">
+                    {activeSkillName}
+                    <button onClick={() => { setSelectedSkill(''); setPage(1); }}><FiX /></button>
                   </span>
                 )}
                 {search.trim() && (
@@ -313,9 +413,6 @@ const Shop = () => {
                         {discount > 0 && (
                           <span className="shop-product-card__badge">-{discount}%</span>
                         )}
-                        {product.newArrival && (
-                          <span className="shop-product-card__badge shop-product-card__badge--new">NEW</span>
-                        )}
                         <div className="shop-product-card__img-wrap">
                           {imgSrc ? (
                             <img src={imgSrc} alt={name} className="shop-product-card__img" loading="lazy" />
@@ -341,7 +438,12 @@ const Shop = () => {
                         </div>
                         <Link to={`/product/${product._id || product.id}`} className="shop-product-card__info">
                           {category && <span className="shop-product-card__category">{category}</span>}
-                          <h3 className="shop-product-card__name">{name}</h3>
+                          <div className="shop-product-card__name-row">
+                            <h3 className="shop-product-card__name">{name}</h3>
+                            {product.newArrival && (
+                              <span className="shop-product-card__new-tag">NEW</span>
+                            )}
+                          </div>
                           <div className="shop-product-card__pricing">
                             <span className="shop-product-card__price">₹{price.toFixed(0)}</span>
                             {originalPrice > price && (

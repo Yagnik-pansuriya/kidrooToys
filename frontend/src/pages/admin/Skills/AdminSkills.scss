@@ -145,3 +145,11 @@
     &:hover { background: rgba(0, 0, 0, 0.8); }
   }
 }
+
+// ─── Optional field hint ──────────────────────────────────────
+.admin-field__optional {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  margin-left: 2px;
+}

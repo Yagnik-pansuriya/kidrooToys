@@ -401,6 +401,48 @@
     }
   }
 
+  // ── Filter Dropdown Bar ────────────────────────────────────────────
+  &__filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm;
+    margin-bottom: $space-lg;
+    padding: $space-md;
+    background: #FFFFFF;
+    border-radius: $radius-xl;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  &__filter-select {
+    padding: 9px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4A4D5E;
+    background: #FAFBFE;
+    border: 1.5px solid #E2E4EC;
+    border-radius: $radius-lg;
+    cursor: pointer;
+    outline: none;
+    transition: all $transition-fast;
+    min-width: 140px;
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+    }
+
+    // Highlight when a non-default option is selected
+    &:not(:has(option[value=""]:checked)) {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(139, 115, 85, 0.05);
+    }
+
+    @media (max-width: 540px) {
+      flex: 1 1 100%;
+    }
+  }
+
   // ── Active Filter Tags ────────────────────────────────────────────
   &__active-filters {
     display: flex;
@@ -565,12 +607,6 @@
     background: #EF4444;
     color: white;
     letter-spacing: 0.5px;
-
-    &--new {
-      background: var(--color-primary);
-      left: auto;
-      right: $space-sm;
-    }
   }
 
   &__img-wrap {
@@ -652,17 +688,38 @@
     margin-bottom: 4px;
   }
 
+  &__name-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: $space-xs;
+  }
+
   &__name {
     font-family: $font-heading;
     font-size: 0.95rem;
     font-weight: 600;
     color: var(--color-header);
-    margin-bottom: $space-xs;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__new-tag {
+    flex-shrink: 0;
+    padding: 2px 8px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: #fff;
+    background: var(--color-primary);
+    border-radius: $radius-full;
+    line-height: 1.5;
+    margin-top: 2px;
   }
 
   &__pricing {

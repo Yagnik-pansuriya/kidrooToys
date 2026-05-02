@@ -413,7 +413,7 @@ const ProductDetail = () => {
             <div className="pdp__option-group">
               <label>Age Range</label>
               <span className="pdp__age-tag">
-                {product.ageRange.from}–{product.ageRange.to} years
+                {product.ageRange} years
               </span>
             </div>
           )}
@@ -612,7 +612,7 @@ const ProductDetail = () => {
                   <tr><td>Categories</td><td>{categoryName || 'Uncategorized'}</td></tr>
                   {product.hasWarranty && <tr><td>Warranty</td><td>{product.warrantyPeriod ? `${product.warrantyPeriod} months` : 'Yes'} ({product.warrantyType || 'N/A'})</td></tr>}
                   {product.hasGuarantee && <tr><td>Guarantee</td><td>{product.guaranteePeriod ? `${product.guaranteePeriod} months` : 'Yes'}</td></tr>}
-                  {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange.from}–{product.ageRange.to} years</td></tr>}
+                  {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
                   {selectedVariant?.weight && <tr><td>Weight</td><td>{selectedVariant.weight} g</td></tr>}

@@ -206,13 +206,15 @@ const ProductModal = ({
 
             {/* Age Range */}
             <div className="admin-field">
-              <label>Age From *</label>
-              <input type="number" min="0" placeholder="3" required {...field('ageRangeFrom')} />
-            </div>
-
-            <div className="admin-field">
-              <label>Age To *</label>
-              <input type="number" min="0" placeholder="8" required {...field('ageRangeTo')} />
+              <label>Age Range *</label>
+              <select required value={form.ageRange} onChange={(e) => setForm((p) => ({ ...p, ageRange: e.target.value }))}>
+                <option value="">Select Age Range</option>
+                <option value="0-2">0–2 years</option>
+                <option value="2-4">2–4 years</option>
+                <option value="4-6">4–6 years</option>
+                <option value="6-8">6–8 years</option>
+                <option value="8+">8+ years</option>
+              </select>
             </div>
 
             {/* Boolean selects */}
@@ -265,57 +267,71 @@ const ProductModal = ({
               </h3>
             </div>
 
-            {/* Has Warranty toggle */}
-            <SelectField label="Has Warranty" {...boolSelect('hasWarranty')} />
+            {/* Warranty — checkbox + inline fields */}
+            <div className="admin-field admin-field--full">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={!!form.hasWarranty}
+                  onChange={(e) => setForm((p) => ({ ...p, hasWarranty: e.target.checked }))}
+                />
+                Has Warranty
+              </label>
+              {form.hasWarranty && (
+                <div className="admin-inline-fields">
+                  <div className="admin-inline-field">
+                    <label>Period (months)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="12"
+                      {...field('warrantyPeriod')}
+                    />
+                  </div>
+                  <div className="admin-inline-field">
+                    <label>Type</label>
+                    <select value={form.warrantyType} onChange={(e) => setForm((p) => ({ ...p, warrantyType: e.target.value }))}>
+                      <option value="manufacturer">Manufacturer</option>
+                      <option value="seller">Seller</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Warranty details — shown only when hasWarranty is true */}
-            {form.hasWarranty && (
-              <>
-                <div className="admin-field">
-                  <label>Warranty Period (months)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="12"
-                    {...field('warrantyPeriod')}
-                  />
+            {/* Guarantee — checkbox + inline fields */}
+            <div className="admin-field admin-field--full">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={!!form.hasGuarantee}
+                  onChange={(e) => setForm((p) => ({ ...p, hasGuarantee: e.target.checked }))}
+                />
+                Has Guarantee
+              </label>
+              {form.hasGuarantee && (
+                <div className="admin-inline-fields">
+                  <div className="admin-inline-field">
+                    <label>Period (months)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="6"
+                      {...field('guaranteePeriod')}
+                    />
+                  </div>
+                  <div className="admin-inline-field admin-inline-field--grow">
+                    <label>Terms</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100% money-back if not satisfied…"
+                      value={form.guaranteeTerms}
+                      onChange={(e) => setForm((p) => ({ ...p, guaranteeTerms: e.target.value }))}
+                    />
+                  </div>
                 </div>
-                <div className="admin-field">
-                  <label>Warranty Type</label>
-                  <select value={form.warrantyType} onChange={(e) => setForm((p) => ({ ...p, warrantyType: e.target.value }))}>
-                    <option value="manufacturer">Manufacturer</option>
-                    <option value="seller">Seller</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            {/* Has Guarantee toggle */}
-            <SelectField label="Has Guarantee" {...boolSelect('hasGuarantee')} />
-
-            {/* Guarantee details — shown only when hasGuarantee is true */}
-            {form.hasGuarantee && (
-              <>
-                <div className="admin-field">
-                  <label>Guarantee Period (months)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="6"
-                    {...field('guaranteePeriod')}
-                  />
-                </div>
-                <div className="admin-field admin-field--full">
-                  <label>Guarantee Terms</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. 100% money-back guarantee if not satisfied…"
-                    value={form.guaranteeTerms}
-                    onChange={(e) => setForm((p) => ({ ...p, guaranteeTerms: e.target.value }))}
-                  />
-                </div>
-              </>
-            )}
+              )}
+            </div>
 
             {/* Images ─ full width */}
             <div className="admin-field admin-field--full">
