@@ -55,7 +55,7 @@ const AdminSkills = () => {
     e.preventDefault();
     const fd = new FormData();
     fd.append('name', form.name);
-    fd.append('description', form.description);
+    if (editing || form.description.trim()) fd.append('description', form.description);
     if (form.image) fd.append('image', form.image);
 
     try {
@@ -118,7 +118,7 @@ const AdminSkills = () => {
               </div>
               <div className="skill-card__body">
                 <h3>{skill.name}</h3>
-                <p>{skill.description}</p>
+                {skill.description && <p>{skill.description}</p>}
               </div>
               <div className="skill-card__actions">
                 <button className="admin-action-btn admin-action-btn--edit" onClick={() => openEdit(skill)} title="Edit">
@@ -155,11 +155,10 @@ const AdminSkills = () => {
                 </div>
 
                 <div className="admin-field admin-field--full">
-                  <label>Description *</label>
+                  <label>Description <span className="admin-field__optional">(optional)</span></label>
                   <textarea
                     rows={3}
                     placeholder="Describe what this skill develops…"
-                    required
                     value={form.description}
                     onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                   />

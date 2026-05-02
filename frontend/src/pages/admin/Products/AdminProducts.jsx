@@ -25,11 +25,22 @@ import './AdminProducts.scss';
 // ── Default filter state ────────────────────────────────────────
 const defaultFilters = {
   category:   '',
-  minPrice:   '',
-  maxPrice:   '',
+  priceRange: '',
+  ageRange:   '',
+  skill:      '',
   featured:   '',
   newArrival: '',
   bestSeller: '',
+};
+
+// ── Map preset priceRange to minPrice / maxPrice for the API ────
+const expandPriceRange = (priceRange) => {
+  switch (priceRange) {
+    case 'under499':  return { minPrice: '', maxPrice: '499' };
+    case 'under999':  return { minPrice: '', maxPrice: '999' };
+    case 'above1000': return { minPrice: '1000', maxPrice: '' };
+    default:          return { minPrice: '', maxPrice: '' };
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,12 +67,14 @@ const AdminProducts = () => {
   const [page, setPage] = useState(1);
 
   // ── Data fetching ─────────────────────────────────────────────
+  const { priceRange: _pr, ...restFilters } = filters;
   const { isLoading: loadingProducts } = useGetProductsQuery(
     {
       page,
       limit: PRODUCTS_PER_PAGE,
       search: searchQuery,
-      ...filters,
+      ...restFilters,
+      ...expandPriceRange(filters.priceRange),
     },
     { refetchOnMountOrArgChange: true }
   );
@@ -171,6 +184,7 @@ const AdminProducts = () => {
       <ProductFilters
         filters={filters}
         categories={categoryList}
+        skills={skillOptions}
         onChange={handleFiltersChange}
         onReset={handleFiltersReset}
         activeCount={activeFilterCount}

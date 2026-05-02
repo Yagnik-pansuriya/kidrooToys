@@ -83,8 +83,18 @@ const useProductForm = () => {
       featured:           product.featured ?? false,
       newArrival:         product.newArrival ?? false,
       bestSeller:         product.bestSeller ?? false,
-      ageRangeFrom:       product.ageRange?.from ?? '',
-      ageRangeTo:         product.ageRange?.to ?? '',
+      ageRange:            (() => {
+                              // New format: string like '0-2', '4-6', '8+'
+                              if (typeof product.ageRange === 'string') return product.ageRange;
+                              // Legacy format: { from, to } → map to closest option
+                              if (product.ageRange && typeof product.ageRange === 'object') {
+                                const f = product.ageRange.from ?? 0;
+                                const t = product.ageRange.to;
+                                if (t === undefined || t === null) return '8+';
+                                return `${f}-${t}`;
+                              }
+                              return '';
+                            })(),
       tags:               Array.isArray(product.tags)
                             ? product.tags.join(',')
                             : (product.tags || ''),
@@ -145,7 +155,7 @@ const useProductForm = () => {
     // String fields — always send
     const stringFields = [
       'productName', 'slug', 'description', 'tags', 'youtubeUrl',
-      'warrantyType', 'guaranteeTerms',
+      'warrantyType', 'guaranteeTerms', 'ageRange',
     ];
     stringFields.forEach((key) => fd.append(key, form[key] ?? ''));
 
@@ -177,13 +187,7 @@ const useProductForm = () => {
       fd.append('skills', form.skills.join(','));
     }
 
-    fd.append(
-      'ageRange',
-      JSON.stringify({
-        from: Number(form.ageRangeFrom) || 0,
-        to: Number(form.ageRangeTo) || 0,
-      })
-    );
+
     // variants: only send during create — during update, variants are managed
     // by the variant CRUD endpoints and synced via syncDefaultVariant.
     // Sending them here during edit could accidentally overwrite the variants array.
