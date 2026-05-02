@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { 
@@ -8,10 +8,15 @@ import {
   MdShoppingBag, 
   MdLocalOffer, 
   MdPeople, 
-  MdSettings 
+  MdSettings,
+  MdEmail,
+  MdRateReview,
+  MdViewCarousel,
+  MdExtension
 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout } from '../../../store/ReducerApi/authSlice';
+import { logout, setPermissions } from '../../../store/ReducerApi/authSlice';
+import { useGetUserPermissionsQuery } from '../../../store/ActionApi/permissionApi';
 import { useTheme } from '../../../context/ThemeContext';
 import './AdminLayout.scss';
 
@@ -22,6 +27,10 @@ const allNavItems = [
   { to: '/admin/products', icon: <MdInventory />, label: 'Products', permRoute: '/products' },
   { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null },
   { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers', permRoute: '/offers' },
+  { to: '/admin/banners', icon: <MdViewCarousel />, label: 'Banners', permRoute: '/banners' },
+  { to: '/admin/skills', icon: <MdExtension />, label: 'Skills', permRoute: '/skills' },
+  { to: '/admin/newsletter', icon: <MdEmail />, label: 'Newsletter', permRoute: '/newsletter' },
+  { to: '/admin/reviews', icon: <MdRateReview />, label: 'Reviews', permRoute: '/reviews' },
   { to: '/admin/users', icon: <MdPeople />, label: 'Users', permRoute: '/users', adminOnly: true },
   { to: '/admin/settings', icon: <MdSettings />, label: 'Settings', permRoute: '/site-settings' },
 ];
@@ -33,13 +42,31 @@ const AdminLayout = () => {
   const { settings } = useTheme();
   const navigate = useNavigate();
 
+  // Re-fetch permissions from backend on every load/refresh (for non-admin users)
+  // Admin role has all permissions so skip the call for them
+  const isAdmin = user?.role === 'admin';
+  const { data: permData } = useGetUserPermissionsQuery(user?._id || user?.id, {
+    skip: !user || isAdmin,
+    refetchOnMountOrArgChange: true,
+  });
+
+  // Sync fresh permissions into Redux store whenever they arrive
+  useEffect(() => {
+    if (permData?.data) {
+      dispatch(setPermissions(permData.data));
+    } else if (Array.isArray(permData)) {
+      dispatch(setPermissions(permData));
+    }
+  }, [permData, dispatch]);
+
   const handleLogout = () => {
     dispatch(logout());
     navigate('/admin');
   };
 
-  // Admin role sees everything; other roles see only permitted items
-  const isAdmin = user?.role === 'admin';
+
+  // navItems — admin sees all; other roles see only permitted items
+
 
   const navItems = isAdmin
     ? allNavItems

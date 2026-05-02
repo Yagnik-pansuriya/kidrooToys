@@ -1,4 +1,4 @@
-import { FiX, FiImage, FiPlus, FiLoader } from 'react-icons/fi';
+import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiAward, FiZap } from 'react-icons/fi';
 
 /**
  * SelectField — thin wrapper to keep inline JSX tidy.
@@ -13,6 +13,64 @@ const SelectField = ({ label, value, onChange, options }) => (
     </select>
   </div>
 );
+
+/**
+ * CategoryMultiSelect
+ * Renders a checkbox list of categories with chip-style selections.
+ */
+const CategoryMultiSelect = ({ selectedIds = [], categoryOptions = [], onChange }) => {
+  const toggle = (id) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((cid) => cid !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  return (
+    <div className="admin-field admin-field--full">
+      <label>Categories *</label>
+      {/* Selected chips */}
+      {selectedIds.length > 0 && (
+        <div className="admin-category-chips">
+          {selectedIds.map((id) => {
+            const cat = categoryOptions.find((c) => (c._id || c.id) === id);
+            const name = cat?.catagoryName || cat?.name || id;
+            return (
+              <span key={id} className="admin-category-chip">
+                {name}
+                <button type="button" onClick={() => toggle(id)} aria-label={`Remove ${name}`}>
+                  <FiX />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+      {/* Checkbox list */}
+      <div className="admin-category-grid">
+        {categoryOptions.map((c) => {
+          const id = c._id || c.id;
+          const name = c.catagoryName || c.name;
+          const checked = selectedIds.includes(id);
+          return (
+            <label key={id} className={`admin-category-option ${checked ? 'admin-category-option--checked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggle(id)}
+              />
+              <span>{name}</span>
+            </label>
+          );
+        })}
+      </div>
+      {categoryOptions.length === 0 && (
+        <p className="admin-field__hint">No categories available. Create one first.</p>
+      )}
+    </div>
+  );
+};
 
 /**
  * ProductModal
@@ -36,6 +94,7 @@ const ProductModal = ({
   apiError,
   isBusy,
   categoryOptions,
+  skillOptions,
   fileInputRef,
   setForm,
   onSubmit,
@@ -132,18 +191,12 @@ const ProductModal = ({
               <input type="number" min="0" placeholder="120" required {...field('numReviews')} />
             </div>
 
-            {/* Category */}
-            <div className="admin-field">
-              <label>Category *</label>
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} required>
-                <option value="">Select Category</option>
-                {categoryOptions.map((c) => (
-                  <option key={c._id || c.id} value={c._id || c.id}>
-                    {c.catagoryName}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Categories ─ Multi-select (full width) */}
+            <CategoryMultiSelect
+              selectedIds={form.categories}
+              categoryOptions={categoryOptions}
+              onChange={(ids) => setForm((p) => ({ ...p, categories: ids }))}
+            />
 
             {/* Tags */}
             <div className="admin-field">
@@ -153,13 +206,15 @@ const ProductModal = ({
 
             {/* Age Range */}
             <div className="admin-field">
-              <label>Age From *</label>
-              <input type="number" min="0" placeholder="3" required {...field('ageRangeFrom')} />
-            </div>
-
-            <div className="admin-field">
-              <label>Age To *</label>
-              <input type="number" min="0" placeholder="8" required {...field('ageRangeTo')} />
+              <label>Age Range *</label>
+              <select required value={form.ageRange} onChange={(e) => setForm((p) => ({ ...p, ageRange: e.target.value }))}>
+                <option value="">Select Age Range</option>
+                <option value="0-2">0–2 years</option>
+                <option value="2-4">2–4 years</option>
+                <option value="4-6">4–6 years</option>
+                <option value="6-8">6–8 years</option>
+                <option value="8+">8+ years</option>
+              </select>
             </div>
 
             {/* Boolean selects */}
@@ -177,6 +232,105 @@ const ProductModal = ({
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
               />
+            </div>
+
+            {/* YouTube Video URL ─ full width */}
+            <div className="admin-field admin-field--full">
+              <label>YouTube Video URL (optional)</label>
+              <input
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                {...field('youtubeUrl')}
+              />
+            </div>
+
+            {/* ═══════════ SKILLS SECTION ═══════════ */}
+            <div className="admin-field admin-field--full admin-section-divider">
+              <h3 className="admin-section-title">
+                <FiZap /> Skills
+              </h3>
+            </div>
+
+            <CategoryMultiSelect
+              selectedIds={form.skills}
+              categoryOptions={(skillOptions || []).map((s) => ({
+                ...s,
+                catagoryName: s.name,
+              }))}
+              onChange={(ids) => setForm((p) => ({ ...p, skills: ids }))}
+            />
+
+            {/* ═══════════ WARRANTY / GUARANTEE SECTION ═══════════ */}
+            <div className="admin-field admin-field--full admin-section-divider">
+              <h3 className="admin-section-title">
+                <FiShield /> Warranty & Guarantee
+              </h3>
+            </div>
+
+            {/* Warranty — checkbox + inline fields */}
+            <div className="admin-field admin-field--full">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={!!form.hasWarranty}
+                  onChange={(e) => setForm((p) => ({ ...p, hasWarranty: e.target.checked }))}
+                />
+                Has Warranty
+              </label>
+              {form.hasWarranty && (
+                <div className="admin-inline-fields">
+                  <div className="admin-inline-field">
+                    <label>Period (months)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="12"
+                      {...field('warrantyPeriod')}
+                    />
+                  </div>
+                  <div className="admin-inline-field">
+                    <label>Type</label>
+                    <select value={form.warrantyType} onChange={(e) => setForm((p) => ({ ...p, warrantyType: e.target.value }))}>
+                      <option value="manufacturer">Manufacturer</option>
+                      <option value="seller">Seller</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Guarantee — checkbox + inline fields */}
+            <div className="admin-field admin-field--full">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={!!form.hasGuarantee}
+                  onChange={(e) => setForm((p) => ({ ...p, hasGuarantee: e.target.checked }))}
+                />
+                Has Guarantee
+              </label>
+              {form.hasGuarantee && (
+                <div className="admin-inline-fields">
+                  <div className="admin-inline-field">
+                    <label>Period (months)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="6"
+                      {...field('guaranteePeriod')}
+                    />
+                  </div>
+                  <div className="admin-inline-field admin-inline-field--grow">
+                    <label>Terms</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100% money-back if not satisfied…"
+                      value={form.guaranteeTerms}
+                      onChange={(e) => setForm((p) => ({ ...p, guaranteeTerms: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Images ─ full width */}

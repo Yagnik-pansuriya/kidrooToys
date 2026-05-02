@@ -44,6 +44,24 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Categories'],
     }),
+
+    reorderCategories: builder.mutation({
+      query: (items) => ({
+        url: `${API_ENDPOINTS.CATEGORIES}/reorder`,
+        method: 'PUT',
+        body: { items },
+      }),
+      invalidatesTags: ['Categories'],
+    }),
+
+    moveCategoryPosition: builder.mutation({
+      query: ({ id, targetPosition }) => ({
+        url: `${API_ENDPOINTS.CATEGORIES}/move-position`,
+        method: 'PUT',
+        body: { id, targetPosition },
+      }),
+      invalidatesTags: ['Categories'],
+    }),
   }),
 });
 
@@ -52,4 +70,6 @@ export const {
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useReorderCategoriesMutation,
+  useMoveCategoryPositionMutation,
 } = categoryApi;

@@ -58,12 +58,16 @@ const AdminOffers = () => {
     if (form.subtitle) formData.append('subtitle', form.subtitle);
     if (form.description) formData.append('description', form.description);
     if (form.type) formData.append('type', form.type);
-    if (form.discountPercentage !== '') formData.append('discountPercentage', form.discountPercentage);
+    formData.append('discountPercentage', (form.discountPercentage === '' || form.discountPercentage === null || form.discountPercentage === undefined) ? '0' : String(form.discountPercentage));
     if (form.couponCode) formData.append('couponCode', form.couponCode);
     if (form.targetUrl) formData.append('targetUrl', form.targetUrl);
     formData.append('isActive', form.isActive);
     if (form.bgColor) formData.append('bgColor', form.bgColor);
     if (form.textColor) formData.append('textColor', form.textColor);
+    if (form.offerTag) formData.append('offerTag', form.offerTag);
+    if (form.offerCategory) formData.append('offerCategory', form.offerCategory);
+    formData.append('isFeatured', form.isFeatured);
+    if (form.couponDescription) formData.append('couponDescription', form.couponDescription);
     
     // validity
     if (form.validFrom && form.validTo) {

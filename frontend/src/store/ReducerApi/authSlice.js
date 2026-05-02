@@ -1,10 +1,20 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null,
+  // Restore full session from localStorage on every page load / refresh
+  user: (() => {
+    try {
+      const saved = localStorage.getItem('kidroo_admin_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  })(),
   token: localStorage.getItem('token') || null,
   isAuthenticated: !!localStorage.getItem('token'),
-  permissions: JSON.parse(localStorage.getItem('permissions') || '[]'),
+  permissions: (() => {
+    try {
+      return JSON.parse(localStorage.getItem('permissions') || '[]');
+    } catch { return []; }
+  })(),
 };
 
 const authSlice = createSlice({
@@ -12,11 +22,17 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { data: user, accessToken } = action.payload;
+      const { data: userData } = action.payload;
+      // accessToken is inside the data object from the API response
+      const { accessToken, ...user } = userData || {};
+      const accessTokenValue = accessToken || action.payload.accessToken;
       state.user = user;
-      state.token = accessToken;
+      state.token = accessTokenValue;
       state.isAuthenticated = true;
-      localStorage.setItem('token', accessToken);
+
+      // Persist to localStorage so refresh restores full session
+      localStorage.setItem('token', accessTokenValue);
+      localStorage.setItem('kidroo_admin_user', JSON.stringify(user));
 
       // Store permissions from login response if available
       if (user?.permissions) {
@@ -34,6 +50,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.permissions = [];
       localStorage.removeItem('token');
+      localStorage.removeItem('kidroo_admin_user');
       localStorage.removeItem('permissions');
     },
   },

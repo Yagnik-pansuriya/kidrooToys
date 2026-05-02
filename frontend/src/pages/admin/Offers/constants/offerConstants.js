@@ -5,9 +5,15 @@ export const offerTypes = [
   { value: 'buyable', label: '🛒 Buyable Product', desc: 'Product card with buy button' },
 ];
 
+export const offerCategories = [
+  { value: 'all-deals', label: 'All Deals' },
+  { value: 'flash-sale', label: 'Flash Sale' },
+  { value: 'clearance', label: 'Clearance' },
+];
+
 export const initialFormState = {
   title: '', subtitle: '', description: '', type: 'post',
   images: [], existingImages: [], discountPercentage: '', couponCode: '', validFrom: '', validTo: '',
   isActive: true, bgColor: '#FF6B35', textColor: '#FFFFFF',
-  targetUrl: ''
+  targetUrl: '', offerTag: '', offerCategory: 'all-deals', isFeatured: false, couponDescription: '',
 };

@@ -22,6 +22,7 @@ const emptyVariant = {
   dimLength:     '',   // ─┐ combined into dimensions JSON on submit
   dimWidth:      '',   //  │
   dimHeight:     '',   // ─┘
+  youtubeUrl:    '',
   status:        'active',
   isDefault:     false,
   isActive:      true,
@@ -46,6 +47,13 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
   });
 
   // ── Image handlers ────────────────────────────────────────────────────────
+  // previewUrls: ALL previews (existing remote URLs + new blob: URLs)
+  // imageFiles: ONLY new File objects to upload
+  // existingUrls: ONLY the remote CDN URLs to keep (derived from previewUrls)
+
+  // Get existing (non-blob) URLs that should be kept
+  const existingImageUrls = form.previewUrls.filter(url => !url.startsWith('blob:'));
+
   const handleAddImages = (e) => {
     const incoming = Array.from(e.target.files);
     e.target.value = '';
@@ -63,11 +71,25 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
   };
 
   const handleRemoveImage = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      imageFiles:  prev.imageFiles.filter((_, i) => i !== index),
-      previewUrls: prev.previewUrls.filter((_, i) => i !== index),
-    }));
+    setForm((prev) => {
+      const urlToRemove = prev.previewUrls[index];
+      const isBlob = urlToRemove?.startsWith('blob:');
+
+      // Count blob URLs BEFORE this index to find the imageFiles index
+      const blobIndexBefore = prev.previewUrls
+        .slice(0, index)
+        .filter(u => u.startsWith('blob:'))
+        .length;
+
+      return {
+        ...prev,
+        // Remove the new File only if the removed preview is a blob (new upload)
+        imageFiles: isBlob
+          ? prev.imageFiles.filter((_, i) => i !== blobIndexBefore)
+          : prev.imageFiles,
+        previewUrls: prev.previewUrls.filter((_, i) => i !== index),
+      };
+    });
   };
 
   // ── Attributes helpers ────────────────────────────────────────────────────
@@ -97,25 +119,28 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
     });
 
     onSave({
-      sku:           form.sku,
-      barcode:       form.barcode,
-      price:         Number(form.price),
-      originalPrice: Number(form.originalPrice),
-      stock:         Number(form.stock),
-      lowStockAlert: form.lowStockAlert !== '' ? Number(form.lowStockAlert) : undefined,
-      weight:        form.weight        !== '' ? Number(form.weight)        : undefined,
-      dimensions:    {                          // serialised to JSON in buildVariantFormData
+      sku:              form.sku,
+      barcode:          form.barcode,
+      price:            form.price === '' ? 0 : Number(form.price) || 0,
+      originalPrice:    form.originalPrice === '' ? 0 : Number(form.originalPrice) || 0,
+      stock:            form.stock === '' ? 0 : Number(form.stock) || 0,
+      lowStockAlert:    form.lowStockAlert === '' ? 0 : Number(form.lowStockAlert) || 0,
+      weight:           form.weight === '' ? 0 : Number(form.weight) || 0,
+      dimensions:       {
         length: Number(form.dimLength) || 0,
         width:  Number(form.dimWidth)  || 0,
         height: Number(form.dimHeight) || 0,
       },
-      status:        form.status,
-      isDefault:     form.isDefault,
-      isActive:      form.isActive,
-      imageFiles:    form.imageFiles,
-      previewUrls:   form.previewUrls,
-      attributes:    attrsObj,
+      youtubeUrl:       form.youtubeUrl,
+      status:           form.status,
+      isDefault:        form.isDefault,
+      isActive:         form.isActive,
+      imageFiles:       form.imageFiles,           // new File objects to upload
+      existingImageUrls: existingImageUrls,         // existing CDN URLs to keep
+      previewUrls:      form.previewUrls,
+      attributes:       attrsObj,
     });
+
   };
 
   return (
@@ -169,6 +194,16 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
             <input type="number" min="0" step="0.1" placeholder="W" {...field('dimWidth')}  style={{ flex: 1 }} />
             <input type="number" min="0" step="0.1" placeholder="H" {...field('dimHeight')} style={{ flex: 1 }} />
           </div>
+        </div>
+
+        {/* ── YouTube Video URL ── */}
+        <div className="admin-field admin-field--full">
+          <label>YouTube Video URL (optional)</label>
+          <input
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            {...field('youtubeUrl')}
+          />
         </div>
 
         {/* ── Status ── */}
@@ -318,9 +353,9 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
           ))}
         </div>
         <div className="variant-row__meta">
-          <span className="variant-row__price">${Number(variant.price || 0).toFixed(2)}</span>
+          <span className="variant-row__price">₹{Number(variant.price || 0).toFixed(2)}</span>
           {variant.originalPrice > 0 && (
-            <span className="variant-row__original">${Number(variant.originalPrice).toFixed(2)}</span>
+            <span className="variant-row__original">₹{Number(variant.originalPrice).toFixed(2)}</span>
           )}
           <span className={`status ${(variant.status === 'active' || (!variant.status && variant.isActive)) ? 'status--delivered' : 'status--cancelled'}`} style={{ textTransform: 'capitalize' }}>
             {variant.status ? variant.status.replace(/_/g, ' ') : (variant.isActive ? 'Active' : 'Inactive')}
@@ -330,25 +365,33 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
         </div>
       </div>
 
-      <div className="admin-actions">
-        <button
-          className="admin-action-btn admin-action-btn--edit"
-          onClick={() => onEditClick(variant)}
-          title="Edit variant"
-          aria-label={`Edit ${variant.sku}`}
-        >
-          <FiEdit2 />
-        </button>
-        <button
-          className="admin-action-btn admin-action-btn--delete"
-          onClick={() => onDelete(variant)}
-          disabled={deleting}
-          title="Delete variant"
-          aria-label={`Delete ${variant.sku}`}
-        >
-          <FiTrash2 />
-        </button>
-      </div>
+      {variant.isDefault ? (
+        <div className="admin-actions">
+          <span className="admin-tag" style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+            🔒 Synced with Product
+          </span>
+        </div>
+      ) : (
+        <div className="admin-actions">
+          <button
+            className="admin-action-btn admin-action-btn--edit"
+            onClick={() => onEditClick(variant)}
+            title="Edit variant"
+            aria-label={`Edit ${variant.sku}`}
+          >
+            <FiEdit2 />
+          </button>
+          <button
+            className="admin-action-btn admin-action-btn--delete"
+            onClick={() => onDelete(variant)}
+            disabled={deleting}
+            title="Delete variant"
+            aria-label={`Delete ${variant.sku}`}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -398,6 +441,7 @@ const VariantModal = ({ product, onClose }) => {
       dimLength:     dim.length            ?? '',
       dimWidth:      dim.width             ?? '',
       dimHeight:     dim.height            ?? '',
+      youtubeUrl:    variant.youtubeUrl    || '',
       status:        variant.status        || 'active',
       isDefault:     variant.isDefault     ?? false,
       isActive:      variant.isActive      ?? true,
