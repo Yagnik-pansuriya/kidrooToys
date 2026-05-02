@@ -53,6 +53,15 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Categories'],
     }),
+
+    moveCategoryPosition: builder.mutation({
+      query: ({ id, targetPosition }) => ({
+        url: `${API_ENDPOINTS.CATEGORIES}/move-position`,
+        method: 'PUT',
+        body: { id, targetPosition },
+      }),
+      invalidatesTags: ['Categories'],
+    }),
   }),
 });
 
@@ -62,4 +71,5 @@ export const {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useReorderCategoriesMutation,
+  useMoveCategoryPositionMutation,
 } = categoryApi;
