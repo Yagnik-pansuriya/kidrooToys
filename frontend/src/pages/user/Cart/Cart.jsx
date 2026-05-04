@@ -2,6 +2,7 @@ import { FiTrash2, FiPlus, FiMinus, FiArrowLeft, FiShoppingBag } from 'react-ico
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../../context/CartContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Cart.scss';
 
 const Cart = () => {
@@ -36,6 +37,11 @@ const Cart = () => {
 
   return (
     <div className="cart-page">
+      <SEOHead
+        title="Shopping Cart"
+        description="Review your shopping cart at Kidroo Toys. Manage items, update quantities, and proceed to checkout."
+        noIndex={true}
+      />
       <div className="cart-page__hero">
         <div className="container"><h1><FiShoppingBag /> Shopping Cart</h1></div>
       </div>

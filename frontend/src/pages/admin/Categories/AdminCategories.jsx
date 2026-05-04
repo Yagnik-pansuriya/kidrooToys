@@ -7,6 +7,7 @@ import {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useReorderCategoriesMutation,
+  useMoveCategoryPositionMutation,
 } from '../../../store/ActionApi/categoryApi';
 import { useToast } from '../../../context/ToastContext';
 
@@ -28,6 +29,8 @@ const AdminCategories = () => {
   const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteCategoryMutation();
   const [reorderCategories] = useReorderCategoriesMutation();
+  const [moveCategoryPosition, { isLoading: isMovingCategory }] = useMoveCategoryPositionMutation();
+  const [movingCategoryId, setMovingCategoryId] = useState(null);
 
   const categoryList = useSelector((state) => state.category.categories) || [];
   const isBusy = adding || updating;
@@ -101,6 +104,19 @@ const AdminCategories = () => {
     }
   };
 
+  // Move position handler (cross-page)
+  const handleMovePosition = async ({ id, targetPosition }) => {
+    try {
+      setMovingCategoryId(id);
+      await moveCategoryPosition({ id, targetPosition }).unwrap();
+      showSuccess('Category moved successfully');
+    } catch (err) {
+      showError(err?.data?.message || 'Move failed');
+    } finally {
+      setMovingCategoryId(null);
+    }
+  };
+
   return (
     <div className="admin-products">
       {/* Header */}
@@ -119,6 +135,8 @@ const AdminCategories = () => {
         onDelete={handleDelete}
         deleting={deleting}
         onReorder={handleReorder}
+        onMovePosition={handleMovePosition}
+        movingId={movingCategoryId}
       />
 
       {/* Add / Edit Modal */}

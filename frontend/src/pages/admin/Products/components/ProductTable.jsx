@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
-import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove, FiCheck } from 'react-icons/fi';
 
 /**
- * ProductTable with drag-and-drop reordering
+ * ProductTable with drag-and-drop reordering + inline position editing
  *
  * Props:
  *  products     {Array}    Current page's product list
@@ -12,10 +12,15 @@ import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove } from 'react-icons/fi';
  *  onDelete     {fn}       Called with the product object to delete
  *  onVariants   {fn}       Called with the product object to manage variants
  *  onReorder    {fn}       Called with array of { id, position } after drag-drop
+ *  onMovePosition {fn}     Called with { id, targetPosition } for cross-page move
+ *  movingId     {string|null}  ID of the product currently being moved (shows spinner)
  */
-const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants, onReorder }) => {
+const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants, onReorder, onMovePosition, movingId, totalItems }) => {
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
+  const [editingPosId, setEditingPosId] = useState(null);
+  const [editingPosValue, setEditingPosValue] = useState('');
+  const posInputRef = useRef(null);
 
   // Sort by position
   const sorted = [...products].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
@@ -33,9 +38,13 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
       const [moved] = newOrder.splice(dragIdx, 1);
       newOrder.splice(overIdx, 0, moved);
 
+      // Preserve the existing position values but redistribute them
+      // in the new order. This prevents page 2 from getting positions 0-9
+      // which would duplicate page 1 positions.
+      const existingPositions = sorted.map((p) => p.position ?? 0);
       const items = newOrder.map((p, i) => ({
         id: p._id || p.id,
-        position: i,
+        position: existingPositions[i],
       }));
       onReorder?.(items);
     }
@@ -47,6 +56,52 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setOverIdx(idx);
+  };
+
+  // ── Position editing handlers ──
+  const startEditPos = (product) => {
+    setEditingPosId(product._id || product.id);
+    setEditingPosValue(String(product.position ?? 0));
+    setTimeout(() => posInputRef.current?.select(), 50);
+  };
+
+  const cancelEditPos = () => {
+    setEditingPosId(null);
+    setEditingPosValue('');
+  };
+
+  const submitEditPos = (product) => {
+    const newPos = parseInt(editingPosValue, 10);
+    const currentPos = product.position ?? 0;
+    const maxPos = (totalItems || sorted.length) - 1;
+
+    if (isNaN(newPos) || newPos < 0) {
+      cancelEditPos();
+      return;
+    }
+
+    // Clamp to valid range: 0 to totalItems - 1
+    const clampedPos = Math.min(newPos, Math.max(maxPos, 0));
+
+    if (clampedPos === currentPos) {
+      cancelEditPos();
+      return;
+    }
+
+    onMovePosition?.({
+      id: product._id || product.id,
+      targetPosition: clampedPos,
+    });
+    cancelEditPos();
+  };
+
+  const handlePosKeyDown = (e, product) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitEditPos(product);
+    } else if (e.key === 'Escape') {
+      cancelEditPos();
+    }
   };
 
   return (
@@ -112,9 +167,13 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
             return [];
           })();
 
+          const productId = product._id || product.id;
+          const isMoving = movingId === productId;
+          const isEditingPos = editingPosId === productId;
+
           return (
             <tr
-              key={product._id || product.id}
+              key={productId}
               draggable
               onDragStart={(e) => onDragStart(e, idx)}
               onDragEnd={onDragEnd}
@@ -155,8 +214,42 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
               {/* Price */}
               <td className="td-bold">₹{price}</td>
 
-              {/* Position */}
-              <td><span className="admin-tag" style={{ minWidth: 32, textAlign: 'center' }}>{product.position ?? idx}</span></td>
+              {/* Position — editable */}
+              <td>
+                {isEditingPos ? (
+                  <div className="position-edit">
+                    <input
+                      ref={posInputRef}
+                      type="number"
+                      min="0"
+                      max={Math.max((totalItems || sorted.length) - 1, 0)}
+                      className="position-edit__input"
+                      value={editingPosValue}
+                      onChange={(e) => setEditingPosValue(e.target.value)}
+                      onKeyDown={(e) => handlePosKeyDown(e, product)}
+                      onBlur={() => cancelEditPos()}
+                      placeholder={`0–${Math.max((totalItems || sorted.length) - 1, 0)}`}
+                      autoFocus
+                    />
+                    <button
+                      className="position-edit__confirm"
+                      onMouseDown={(e) => { e.preventDefault(); submitEditPos(product); }}
+                      title="Set position"
+                    >
+                      <FiCheck />
+                    </button>
+                  </div>
+                ) : (
+                  <span
+                    className={`admin-tag position-tag ${isMoving ? 'position-tag--loading' : ''}`}
+                    style={{ minWidth: 32, textAlign: 'center', cursor: 'pointer' }}
+                    onClick={() => !isMoving && startEditPos(product)}
+                    title={`Click to set position (0–${Math.max((totalItems || sorted.length) - 1, 0)})`}
+                  >
+                    {isMoving ? '…' : (product.position ?? idx)}
+                  </span>
+                )}
+              </td>
 
               {/* Stock status */}
               <td>

@@ -12,6 +12,7 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Pagination from '../../../components/Pagination/Pagination';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Shop.scss';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -158,8 +159,31 @@ const Shop = () => {
 
   const hasActiveFilters = selectedCategory || search.trim() || selectedPriceRange || selectedAgeGroup || selectedSkill;
 
+  // ── SEO ──────────────────────────────────────────────────────────
+  const shopSeoTitle = activeCategoryName
+    ? `${activeCategoryName} Toys - Shop Online`
+    : 'Shop All Toys Online';
+  const shopSeoDescription = activeCategoryName
+    ? `Browse our curated collection of ${activeCategoryName.toLowerCase()} toys for kids. Safe, educational, and fun! Free shipping on orders over ₹500.`
+    : 'Explore our full collection of premium kids toys. Filter by category, age, price, and skills. Free shipping on orders over ₹500.';
+
   return (
     <div className="shop-page">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title={shopSeoTitle}
+        description={shopSeoDescription}
+        keywords={`shop toys, buy toys online, ${activeCategoryName ? activeCategoryName.toLowerCase() + ' toys, ' : ''}kids toys, children toys, educational toys India`}
+        canonicalUrl={`${window.location.origin}/shop${selectedCategory ? '?category=' + selectedCategory : ''}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: shopSeoTitle,
+          description: shopSeoDescription,
+          url: `${window.location.origin}/shop`,
+          isPartOf: { '@type': 'WebSite', name: 'Kidroo Toys', url: window.location.origin },
+        }}
+      />
       {/* ═══ Breadcrumb ═══ */}
       <div className="shop-page__breadcrumb-bar">
         <div className="shop-page__container">
