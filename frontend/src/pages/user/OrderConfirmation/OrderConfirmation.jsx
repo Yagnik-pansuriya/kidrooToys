@@ -2,6 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FiCheckCircle, FiPackage, FiArrowLeft, FiShoppingBag } from 'react-icons/fi';
 import { useGetMyOrderByIdQuery } from '../../../store/ActionApi/orderApi';
 import Loader from '../../../components/Loader/Loader';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './OrderConfirmation.scss';
 
 const OrderConfirmation = () => {
@@ -27,6 +28,7 @@ const OrderConfirmation = () => {
 
   return (
     <div className="order-confirm">
+      <SEOHead title="Order Confirmation" description="Your order has been placed successfully." noIndex={true} />
       <div className="container">
         <div className="order-confirm__card">
           {/* Success Header */}

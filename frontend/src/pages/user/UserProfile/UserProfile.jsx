@@ -8,6 +8,7 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { updateCustomerProfile } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './UserProfile.scss';
 
 const ADDRESS_TYPES = [
@@ -208,6 +209,7 @@ const UserProfile = () => {
 
   return (
     <div className="profile-page">
+      <SEOHead title="My Profile" description="Manage your Kidroo Toys account profile, addresses, and settings." noIndex={true} />
       <div className="profile-page__hero">
         <div className="container">
           <h1>My Profile</h1>

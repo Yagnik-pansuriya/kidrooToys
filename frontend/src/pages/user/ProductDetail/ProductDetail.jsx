@@ -12,6 +12,7 @@ import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './ProductDetail.scss';
 
 const ProductDetail = () => {
@@ -279,8 +280,87 @@ const ProductDetail = () => {
     }
   };
 
+  // ── SEO: Build JSON-LD Product structured data ────────────────
+  const seoTitle = product.seoTitle || `Buy ${name} Online`;
+  const seoDescription = product.seoDescription
+    || `${product.description?.substring(0, 150)}${product.description?.length > 150 ? '…' : ''}`;
+  const seoKeywords = Array.isArray(product.seoKeywords)
+    ? product.seoKeywords.join(', ')
+    : (product.tags?.join(', ') || '');
+  const productUrl = `${window.location.origin}/product/${id}`;
+  const productImage = productImages[0] || '';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      // ── Product Schema ──
+      {
+        '@type': 'Product',
+        name: name,
+        description: product.description,
+        image: productImages,
+        sku: sku || product.slug,
+        brand: { '@type': 'Brand', name: 'Kidroo Toys' },
+        category: categoryName || 'Toys',
+        url: productUrl,
+        offers: {
+          '@type': 'Offer',
+          url: productUrl,
+          priceCurrency: 'INR',
+          price: price.toFixed(2),
+          availability: inStock
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          seller: { '@type': 'Organization', name: 'Kidroo Toys' },
+          ...(originalPrice > price && {
+            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          }),
+        },
+        ...(product.ratings > 0 && {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.ratings,
+            reviewCount: product.numReviews || 1,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }),
+        ...(product.ageRange && {
+          audience: {
+            '@type': 'PeopleAudience',
+            suggestedMinAge: product.ageRange.split('-')[0] || '0',
+            suggestedMaxAge: product.ageRange.includes('+') ? '99' : (product.ageRange.split('-')[1] || '99'),
+          },
+        }),
+      },
+      // ── BreadcrumbList Schema ──
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: window.location.origin },
+          { '@type': 'ListItem', position: 2, name: 'Shop', item: `${window.location.origin}/shop` },
+          ...(categoryName ? [{ '@type': 'ListItem', position: 3, name: categoryName, item: `${window.location.origin}/shop?category=${product.categories?.[0]?._id || ''}` }] : []),
+          { '@type': 'ListItem', position: categoryName ? 4 : 3, name: name, item: productUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="pdp">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        canonicalUrl={productUrl}
+        ogType="product"
+        ogImage={productImage}
+        ogTitle={seoTitle}
+        ogDescription={seoDescription}
+        jsonLd={jsonLd}
+      />
+
       {/* ── Breadcrumb ── */}
       <nav className="pdp__breadcrumb">
         <Link to="/">Home</Link>

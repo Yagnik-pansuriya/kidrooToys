@@ -1,4 +1,5 @@
 import { FiHeart, FiUsers, FiAward, FiGlobe } from 'react-icons/fi';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './AboutUs.scss';
 
 const AboutUs = () => {
@@ -18,6 +19,21 @@ const AboutUs = () => {
 
   return (
     <div className="about-page">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title="About Us - Our Story & Mission"
+        description="Learn about Kidroo Toys - India's trusted online toy store. We provide safe, eco-friendly, and educational toys designed to spark joy, ignite imagination, and build lasting memories for kids."
+        keywords="about kidroo toys, kidroo story, kids toy store India, educational toys company, safe toys for children"
+        canonicalUrl={`${window.location.origin}/about`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'AboutPage',
+          name: 'About Kidroo Toys',
+          description: 'We believe every child deserves toys that spark joy, ignite imagination, and build lasting memories.',
+          url: `${window.location.origin}/about`,
+          isPartOf: { '@type': 'WebSite', name: 'Kidroo Toys', url: window.location.origin },
+        }}
+      />
       <div className="about-page__hero">
         <div className="container">
           <h1 className="about-page__title">About Kidroo Toys 🧸</h1>

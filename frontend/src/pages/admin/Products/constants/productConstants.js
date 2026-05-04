@@ -33,4 +33,8 @@ export const emptyForm = {
   guaranteeTerms:     '',
   // ── Skills ──
   skills:             [],   // array of skill IDs (multi-select)
+  // ── SEO ──
+  seoKeywords:        '',   // comma-separated SEO keywords
+  seoTitle:           '',   // custom SEO meta title
+  seoDescription:     '',   // custom SEO meta description
 };
