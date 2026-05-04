@@ -115,6 +115,12 @@ const useProductForm = () => {
       skills: Array.isArray(product.skills)
         ? product.skills.map((s) => typeof s === 'object' ? (s._id || s.id) : s)
         : [],
+      // ── SEO ──
+      seoKeywords: Array.isArray(product.seoKeywords)
+                     ? product.seoKeywords.join(',')
+                     : (product.seoKeywords || ''),
+      seoTitle: product.seoTitle || '',
+      seoDescription: product.seoDescription || '',
     });
     setApiError('');
     setShowModal(true);
@@ -155,7 +161,8 @@ const useProductForm = () => {
     // String fields — always send
     const stringFields = [
       'productName', 'slug', 'description', 'tags', 'youtubeUrl',
-      'warrantyType', 'guaranteeTerms', 'ageRange',
+      'warrantyType', 'guaranteeTerms', 'ageRange', 'seoKeywords',
+      'seoTitle', 'seoDescription',
     ];
     stringFields.forEach((key) => fd.append(key, form[key] ?? ''));
 

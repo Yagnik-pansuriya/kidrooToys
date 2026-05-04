@@ -7,6 +7,7 @@ import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { toggleWishlistId, setWishlistIds } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Wishlist.scss';
 
 const Wishlist = () => {
@@ -73,6 +74,11 @@ const Wishlist = () => {
 
   return (
     <div className="wishlist-page">
+      <SEOHead
+        title="My Wishlist"
+        description="Your saved toys and favorite items at Kidroo Toys."
+        noIndex={true}
+      />
       <div className="wishlist-page__hero">
         <h1>My <span className="wishlist-page__accent">Wishlist</span></h1>
         <p>{wishlistItems.length} item{wishlistItems.length !== 1 ? 's' : ''} saved</p>

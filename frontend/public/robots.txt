@@ -1,0 +1,22 @@
+# Kidroo Toys - Robots.txt
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+Allow: /shop
+Allow: /offers
+Allow: /about
+Allow: /product/
+
+# Block admin and user-specific pages
+Disallow: /admin
+Disallow: /admin/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /wishlist
+Disallow: /order-confirmation/
+
+# Sitemap (served from the backend API)
+# Update the domain below to match your production backend URL
+Sitemap: https://kidroo-backend.vercel.app/api/sitemap.xml

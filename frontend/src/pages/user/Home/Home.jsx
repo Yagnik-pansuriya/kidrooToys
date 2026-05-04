@@ -10,6 +10,7 @@ import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Home.scss';
 
 const Home = () => {
@@ -66,6 +67,28 @@ const Home = () => {
 
   return (
     <div className="home-v2">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title="Premium Kids Toys - Educational & Fun"
+        description="Kidroo Toys - Where Imagination Comes to Play! Shop premium quality toys, educational kits, action figures, building blocks, and more for kids of all ages. Free shipping on orders over ₹500."
+        keywords="kidroo toys, kids toys online, educational toys, wooden toys, baby toys, toys for children, buy toys online India, montessori toys, building blocks, action figures"
+        canonicalUrl={window.location.origin}
+        ogImage={heroBanner?.image || ''}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          name: 'Kidroo Toys',
+          url: window.location.origin,
+          logo: `${window.location.origin}/favicon.svg`,
+          description: 'Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!',
+          contactPoint: {
+            '@type': 'ContactPoint',
+            contactType: 'customer service',
+            availableLanguage: ['English', 'Hindi'],
+          },
+          sameAs: [],
+        }}
+      />
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="hero-v2">

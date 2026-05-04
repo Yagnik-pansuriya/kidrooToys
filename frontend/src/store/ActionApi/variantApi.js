@@ -7,7 +7,7 @@ const buildVariantFormData = (body) => {
   const fd = new FormData();
 
   // String fields — always send if present
-  const stringFields = ['sku', 'barcode', 'status', 'youtubeUrl'];
+  const stringFields = ['sku', 'barcode', 'status', 'youtubeUrl', 'seoKeywords'];
   stringFields.forEach((key) => {
     if (body[key] !== undefined) {
       fd.append(key, body[key] ?? '');

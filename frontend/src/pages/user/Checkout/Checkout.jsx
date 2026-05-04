@@ -8,6 +8,7 @@ import { useGetCustomerProfileQuery } from '../../../store/ActionApi/customerAut
 import { useAddAddressMutation, useSetDefaultAddressMutation } from '../../../store/ActionApi/customerApi';
 import { useCreateOrderMutation, useVerifyPaymentMutation } from '../../../store/ActionApi/orderApi';
 import { useToast } from '../../../context/ToastContext';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Checkout.scss';
 
 // Load Razorpay checkout script dynamically
@@ -286,6 +287,7 @@ const Checkout = () => {
 
   return (
     <div className="checkout-page">
+      <SEOHead title="Checkout" description="Complete your Kidroo Toys order." noIndex={true} />
       <div className="checkout-page__hero">
         <div className="container">
           <Link to="/cart" className="checkout-page__back"><FiArrowLeft /> Back to Cart</Link>
