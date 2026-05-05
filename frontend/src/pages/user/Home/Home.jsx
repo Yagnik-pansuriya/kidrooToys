@@ -189,6 +189,7 @@ const Home = () => {
           <div className="theme-section__grid">
             {categoryList.map((cat) => {
               const name = cat.catagoryName || cat.name;
+              const description = cat.description || '';
               const imgSrc = cat.image || cat.catagoryImage;
               const categoryUrl = cat.slug
                 ? `/category/${cat.slug}`
@@ -207,7 +208,12 @@ const Home = () => {
                     )}
                   </div>
                   <div className="theme-card__overlay">
-                    <span className="theme-card__name">{name}</span>
+                    <div className="theme-card__text">
+                      <span className="theme-card__name">{name}</span>
+                      {description && (
+                        <p className="theme-card__desc">{description}</p>
+                      )}
+                    </div>
                     <FiArrowRight className="theme-card__arrow" />
                   </div>
                 </Link>

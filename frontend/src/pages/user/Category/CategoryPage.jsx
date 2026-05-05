@@ -31,6 +31,7 @@ const CategoryPage = () => {
   const category = categoryResp?.data || categoryResp || null;
   const categoryId = category?._id || category?.id || '';
   const categoryName = category?.catagoryName || category?.name || '';
+  const categoryDescription = category?.description || '';
   const categoryImage = category?.image || '';
   const categorySlug = category?.slug || slug;
 
@@ -77,9 +78,11 @@ const CategoryPage = () => {
   const seoTitle = categoryName
     ? `${categoryName} Toys - Buy Online | Kidroo`
     : 'Category - Kidroo Toys';
-  const seoDescription = categoryName
-    ? `Shop the best ${categoryName.toLowerCase()} toys for kids at Kidroo. Safe, educational, and fun! Browse our curated ${categoryName.toLowerCase()} collection with free shipping on orders over ₹500.`
-    : 'Browse our curated toy categories at Kidroo Toys.';
+  const seoDescription = categoryDescription
+    ? categoryDescription
+    : categoryName
+      ? `Shop the best ${categoryName.toLowerCase()} toys for kids at Kidroo. Safe, educational, and fun! Browse our curated ${categoryName.toLowerCase()} collection with free shipping on orders over ₹500.`
+      : 'Browse our curated toy categories at Kidroo Toys.';
   const seoKeywords = categoryName
     ? `${categoryName.toLowerCase()} toys, buy ${categoryName.toLowerCase()} toys online, ${categoryName.toLowerCase()} for kids, kidroo ${categoryName.toLowerCase()}, educational ${categoryName.toLowerCase()} toys, kids toys India`
     : 'kids toys, buy toys online, kidroo toys';
@@ -168,7 +171,7 @@ const CategoryPage = () => {
           <div className="shop-page__hero-content">
             <h1 className="shop-page__hero-title">{categoryName}</h1>
             <p className="shop-page__hero-desc">
-              Explore our curated selection of {categoryName.toLowerCase()} toys
+              {categoryDescription || `Explore our curated selection of ${categoryName.toLowerCase()} toys`}
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { FiX, FiImage, FiCheckCircle, FiLoader } from 'react-icons/fi';
 const emptyForm = {
   catagoryName: '',
   slug: '',
+  description: '',
   count: 0,
   image: null,
   icon: null,
@@ -20,6 +21,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
         setForm({
           catagoryName: editingCategory.catagoryName || '',
           slug: editingCategory.slug || '',
+          description: editingCategory.description || '',
           count: editingCategory.count ?? 0,
           image: null,
           icon: null,
@@ -98,6 +100,18 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
                 value={form.count}
                 onChange={(e) => setForm((p) => ({ ...p, count: e.target.value }))}
                 required
+              />
+            </div>
+
+            {/* Description (Optional) */}
+            <div className="admin-field admin-field--full">
+              <label>Description <span style={{ fontWeight: 400, color: 'var(--text-muted, #888)' }}>(Optional)</span></label>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                placeholder="Brief description of this category for SEO and display..."
+                rows={3}
+                style={{ resize: 'vertical', minHeight: '70px' }}
               />
             </div>
 
