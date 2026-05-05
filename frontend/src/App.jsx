@@ -18,6 +18,7 @@ import UserProfile from './pages/user/UserProfile/UserProfile';
 import Cart from './pages/user/Cart/Cart';
 import ProductDetail from './pages/user/ProductDetail/ProductDetail';
 import Shop from './pages/user/Shop/Shop';
+import CategoryPage from './pages/user/Category/CategoryPage';
 import Wishlist from './pages/user/Wishlist/Wishlist';
 import Checkout from './pages/user/Checkout/Checkout';
 import OrderConfirmation from './pages/user/OrderConfirmation/OrderConfirmation';
@@ -91,6 +92,7 @@ function App() {
                   {/* User Routes */}
                 <Route path="/" element={<UserLayout><Home /></UserLayout>} />
                 <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
+                <Route path="/category/:slug" element={<UserLayout><CategoryPage /></UserLayout>} />
                 <Route path="/offers" element={<UserLayout><Offers /></UserLayout>} />
                 <Route path="/about" element={<UserLayout><AboutUs /></UserLayout>} />
                 <Route path="/profile" element={<UserLayout><UserProfile /></UserLayout>} />

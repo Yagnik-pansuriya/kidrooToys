@@ -74,20 +74,46 @@ const Home = () => {
         keywords="kidroo toys, kids toys online, educational toys, wooden toys, baby toys, toys for children, buy toys online India, montessori toys, building blocks, action figures"
         canonicalUrl={window.location.origin}
         ogImage={heroBanner?.image || ''}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'Organization',
-          name: 'Kidroo Toys',
-          url: window.location.origin,
-          logo: `${window.location.origin}/favicon.svg`,
-          description: 'Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!',
-          contactPoint: {
-            '@type': 'ContactPoint',
-            contactType: 'customer service',
-            availableLanguage: ['English', 'Hindi'],
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Kidroo Toys',
+            url: window.location.origin,
+            logo: `${window.location.origin}/favicon.svg`,
+            description: 'Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!',
+            contactPoint: {
+              '@type': 'ContactPoint',
+              contactType: 'customer service',
+              availableLanguage: ['English', 'Hindi'],
+            },
+            sameAs: [],
           },
-          sameAs: [],
-        }}
+          ...(categoryList.length > 0
+            ? [
+                {
+                  '@context': 'https://schema.org',
+                  '@type': 'ItemList',
+                  name: 'Toy Categories',
+                  description: 'Browse our toy categories',
+                  numberOfItems: categoryList.length,
+                  itemListElement: categoryList.map((cat, index) => {
+                    const name = cat.catagoryName || cat.name;
+                    const catUrl = cat.slug
+                      ? `${window.location.origin}/category/${cat.slug}`
+                      : `${window.location.origin}/shop?category=${cat._id || cat.id}`;
+                    return {
+                      '@type': 'ListItem',
+                      position: index + 1,
+                      name: name,
+                      url: catUrl,
+                      ...(cat.image && { image: cat.image }),
+                    };
+                  }),
+                },
+              ]
+            : []),
+        ]}
       />
 
       {/* ═══════════════════ HERO ═══════════════════ */}
@@ -164,9 +190,12 @@ const Home = () => {
             {categoryList.map((cat) => {
               const name = cat.catagoryName || cat.name;
               const imgSrc = cat.image || cat.catagoryImage;
+              const categoryUrl = cat.slug
+                ? `/category/${cat.slug}`
+                : `/shop?category=${cat._id || cat.id}`;
               return (
                 <Link
-                  to={`/shop?category=${cat._id || cat.id}`}
+                  to={categoryUrl}
                   className="theme-card"
                   key={cat._id || cat.id}
                 >
