@@ -160,12 +160,24 @@ const Shop = () => {
   const hasActiveFilters = selectedCategory || search.trim() || selectedPriceRange || selectedAgeGroup || selectedSkill;
 
   // ── SEO ──────────────────────────────────────────────────────────
+  // Find slug for active category (if any) for canonical URL
+  const activeCategorySlug = useMemo(() => {
+    if (!selectedCategory) return '';
+    const cat = categoryList.find((c) => (c._id || c.id) === selectedCategory);
+    return cat?.slug || '';
+  }, [selectedCategory, categoryList]);
+
   const shopSeoTitle = activeCategoryName
     ? `${activeCategoryName} Toys - Shop Online`
     : 'Shop All Toys Online';
   const shopSeoDescription = activeCategoryName
     ? `Browse our curated collection of ${activeCategoryName.toLowerCase()} toys for kids. Safe, educational, and fun! Free shipping on orders over ₹500.`
     : 'Explore our full collection of premium kids toys. Filter by category, age, price, and skills. Free shipping on orders over ₹500.';
+
+  // If the selected category has a slug, canonical should point to the clean category URL
+  const shopCanonicalUrl = activeCategorySlug
+    ? `${window.location.origin}/category/${activeCategorySlug}`
+    : `${window.location.origin}/shop`;
 
   return (
     <div className="shop-page">
@@ -174,7 +186,7 @@ const Shop = () => {
         title={shopSeoTitle}
         description={shopSeoDescription}
         keywords={`shop toys, buy toys online, ${activeCategoryName ? activeCategoryName.toLowerCase() + ' toys, ' : ''}kids toys, children toys, educational toys India`}
-        canonicalUrl={`${window.location.origin}/shop${selectedCategory ? '?category=' + selectedCategory : ''}`}
+        canonicalUrl={shopCanonicalUrl}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'CollectionPage',

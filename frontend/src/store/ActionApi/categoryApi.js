@@ -17,6 +17,11 @@ export const categoryApi = baseApi.injectEndpoints({
       },
     }),
 
+    getCategoryBySlug: builder.query({
+      query: (slug) => `${API_ENDPOINTS.CATEGORIES}/slug/${slug}`,
+      providesTags: (result, error, slug) => [{ type: 'Categories', id: slug }],
+    }),
+
     addCategory: builder.mutation({
       query: (formData) => ({
         url: API_ENDPOINTS.CATEGORIES,
@@ -67,6 +72,7 @@ export const categoryApi = baseApi.injectEndpoints({
 
 export const {
   useGetCategoriesQuery,
+  useGetCategoryBySlugQuery,
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
