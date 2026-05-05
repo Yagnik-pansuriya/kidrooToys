@@ -95,24 +95,30 @@ const SEOHead = ({
     setMeta('name', 'twitter:image', ogImage || '');
 
     // ── JSON-LD Structured Data ──
+    // Supports both a single object and an array of objects
     const JSONLD_ID = 'seo-jsonld';
-    let scriptEl = document.getElementById(JSONLD_ID);
+    // Remove any existing JSON-LD scripts
+    document.querySelectorAll(`script[data-seo-jsonld]`).forEach((el) => el.remove());
+    const oldScript = document.getElementById(JSONLD_ID);
+    if (oldScript) oldScript.remove();
+
     if (jsonLd) {
-      if (!scriptEl) {
-        scriptEl = document.createElement('script');
-        scriptEl.id = JSONLD_ID;
+      const items = Array.isArray(jsonLd) ? jsonLd : [jsonLd];
+      items.forEach((item, index) => {
+        if (!item || typeof item !== 'object') return;
+        const scriptEl = document.createElement('script');
         scriptEl.type = 'application/ld+json';
+        scriptEl.setAttribute('data-seo-jsonld', 'true');
+        scriptEl.id = `${JSONLD_ID}-${index}`;
+        scriptEl.textContent = JSON.stringify(item);
         document.head.appendChild(scriptEl);
-      }
-      scriptEl.textContent = JSON.stringify(jsonLd);
-    } else if (scriptEl) {
-      scriptEl.remove();
+      });
     }
 
     // ── Cleanup on unmount ──
     return () => {
-      // Reset title to default when leaving the page
-      // (the next page's SEOHead will override immediately)
+      // Clean up JSON-LD scripts
+      document.querySelectorAll(`script[data-seo-jsonld]`).forEach((el) => el.remove());
     };
   }, [title, description, keywords, canonicalUrl, ogType, ogImage, ogTitle, ogDescription, twitterCard, jsonLd, noIndex]);
 
