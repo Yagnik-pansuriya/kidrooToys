@@ -58,7 +58,7 @@ const AdminOffers = () => {
     if (form.subtitle) formData.append('subtitle', form.subtitle);
     if (form.description) formData.append('description', form.description);
     if (form.type) formData.append('type', form.type);
-    if (form.discountPercentage !== '') formData.append('discountPercentage', form.discountPercentage);
+    formData.append('discountPercentage', (form.discountPercentage === '' || form.discountPercentage === null || form.discountPercentage === undefined) ? '0' : String(form.discountPercentage));
     if (form.couponCode) formData.append('couponCode', form.couponCode);
     if (form.targetUrl) formData.append('targetUrl', form.targetUrl);
     formData.append('isActive', form.isActive);

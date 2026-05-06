@@ -9,18 +9,23 @@ import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Home.scss';
 
 const Home = () => {
   // ── API data ──────────────────────────────────────────────────
   useGetCategoriesQuery();
-  useGetProductsQuery({ page: 1, limit: 8, featured: 'true' });
+  const { data: newArrivalResp } = useGetProductsQuery({ page: 1, limit: 8, newArrival: 'true' });
   const { data: bannerResp } = useGetBannersQuery({ activeOnly: true });
 
   const categories = useSelector((s) => s.category.categories) || [];
   const categoryList = Array.isArray(categories) ? categories : categories?.data || [];
-  const products = useSelector((s) => s.product.products) || [];
-  const productList = Array.isArray(products) ? products : products?.data || [];
+
+  // Parse new arrival products from RTK Query response directly
+  const newArrivalInner = newArrivalResp?.data || newArrivalResp;
+  const newArrivalList = Array.isArray(newArrivalInner?.data) ? newArrivalInner.data
+    : Array.isArray(newArrivalInner) ? newArrivalInner : [];
 
   // Parse banners from API response
   const bannersRaw = bannerResp?.data || bannerResp || [];
@@ -38,9 +43,11 @@ const Home = () => {
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const { showSuccess, showError } = useToast();
   const { addToCart } = useCart();
+  const { requireAuth } = useCustomerAuth();
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to subscribe to our newsletter')) return;
     if (!email.trim()) return;
     try {
       await subscribe(email.trim()).unwrap();
@@ -60,6 +67,54 @@ const Home = () => {
 
   return (
     <div className="home-v2">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title="Premium Kids Toys - Educational & Fun"
+        description="Kidroo Toys - Where Imagination Comes to Play! Shop premium quality toys, educational kits, action figures, building blocks, and more for kids of all ages. Free shipping on orders over ₹500."
+        keywords="kidroo toys, kids toys online, educational toys, wooden toys, baby toys, toys for children, buy toys online India, montessori toys, building blocks, action figures"
+        canonicalUrl={window.location.origin}
+        ogImage={heroBanner?.image || ''}
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Kidroo Toys',
+            url: window.location.origin,
+            logo: `${window.location.origin}/favicon.svg`,
+            description: 'Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!',
+            contactPoint: {
+              '@type': 'ContactPoint',
+              contactType: 'customer service',
+              availableLanguage: ['English', 'Hindi'],
+            },
+            sameAs: [],
+          },
+          ...(categoryList.length > 0
+            ? [
+                {
+                  '@context': 'https://schema.org',
+                  '@type': 'ItemList',
+                  name: 'Toy Categories',
+                  description: 'Browse our toy categories',
+                  numberOfItems: categoryList.length,
+                  itemListElement: categoryList.map((cat, index) => {
+                    const name = cat.catagoryName || cat.name;
+                    const catUrl = cat.slug
+                      ? `${window.location.origin}/category/${cat.slug}`
+                      : `${window.location.origin}/shop?category=${cat._id || cat.id}`;
+                    return {
+                      '@type': 'ListItem',
+                      position: index + 1,
+                      name: name,
+                      url: catUrl,
+                      ...(cat.image && { image: cat.image }),
+                    };
+                  }),
+                },
+              ]
+            : []),
+        ]}
+      />
 
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="hero-v2">
@@ -132,12 +187,16 @@ const Home = () => {
             <p>Browse our collections based on your child's interests and passions</p>
           </div>
           <div className="theme-section__grid">
-            {categoryList.slice(0, 4).map((cat) => {
+            {categoryList.map((cat) => {
               const name = cat.catagoryName || cat.name;
+              const description = cat.description || '';
               const imgSrc = cat.image || cat.catagoryImage;
+              const categoryUrl = cat.slug
+                ? `/category/${cat.slug}`
+                : `/shop?category=${cat._id || cat.id}`;
               return (
                 <Link
-                  to={`/shop?category=${cat._id || cat.id}`}
+                  to={categoryUrl}
                   className="theme-card"
                   key={cat._id || cat.id}
                 >
@@ -149,7 +208,12 @@ const Home = () => {
                     )}
                   </div>
                   <div className="theme-card__overlay">
-                    <span className="theme-card__name">{name}</span>
+                    <div className="theme-card__text">
+                      <span className="theme-card__name">{name}</span>
+                      {description && (
+                        <p className="theme-card__desc">{description}</p>
+                      )}
+                    </div>
                     <FiArrowRight className="theme-card__arrow" />
                   </div>
                 </Link>
@@ -159,30 +223,34 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ═══════════════════ FEATURED FAVORITES ═══════════════════ */}
+      {/* ═══════════════════ NEW ARRIVALS ═══════════════════ */}
       <section className="featured-section">
         <div className="featured-section__container">
           <div className="featured-section__header">
-            <h2>Featured <span className="featured-section__accent">Favorites</span></h2>
-            <p>Our most loved toys picked by parents and kids alike</p>
+            <h2>New <span className="featured-section__accent">Arrivals</span></h2>
+            <p>Check out our latest additions to the toy collection</p>
           </div>
           <div className="featured-section__grid">
-            {productList.slice(0, 8).map((product) => {
+            {newArrivalList.slice(0, 8).map((product) => {
               const name = product.productName || product.name;
               const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
               const price = Number(product.price || 0);
               const originalPrice = Number(product.originalPrice || 0);
               const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
-              const category = product.category?.catagoryName || product.category?.name || '';
+              const category = (() => {
+                if (Array.isArray(product.categories) && product.categories.length > 0) {
+                  const first = product.categories[0];
+                  return typeof first === 'object' ? (first.catagoryName || first.name || '') : '';
+                }
+                return product.category?.catagoryName || product.category?.name || '';
+              })();
 
               return (
                 <div className="product-card-v2" key={product._id || product.id}>
                   {discount > 0 && (
                     <span className="product-card-v2__badge">-{discount}%</span>
                   )}
-                  {product.newArrival && (
-                    <span className="product-card-v2__badge product-card-v2__badge--new">NEW</span>
-                  )}
+                  <span className="product-card-v2__badge product-card-v2__badge--new">NEW</span>
                   <div className="product-card-v2__img-wrap">
                     {imgSrc ? (
                       <img src={imgSrc} alt={name} className="product-card-v2__img" loading="lazy" />
@@ -213,10 +281,10 @@ const Home = () => {
               );
             })}
           </div>
-          {productList.length > 0 && (
+          {newArrivalList.length > 0 && (
             <div className="featured-section__more">
               <Link to="/shop" className="featured-section__more-btn">
-                View All Products <FiArrowRight />
+                View All <FiArrowRight />
               </Link>
             </div>
           )}

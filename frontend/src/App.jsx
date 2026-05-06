@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { CustomerAuthProvider } from './context/CustomerAuthContext';
 
 // User Layout
 import Header from './components/Header/Header';
@@ -17,6 +18,10 @@ import UserProfile from './pages/user/UserProfile/UserProfile';
 import Cart from './pages/user/Cart/Cart';
 import ProductDetail from './pages/user/ProductDetail/ProductDetail';
 import Shop from './pages/user/Shop/Shop';
+import CategoryPage from './pages/user/Category/CategoryPage';
+import Wishlist from './pages/user/Wishlist/Wishlist';
+import Checkout from './pages/user/Checkout/Checkout';
+import OrderConfirmation from './pages/user/OrderConfirmation/OrderConfirmation';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin/AdminLogin';
@@ -31,6 +36,7 @@ import AdminUsers from './pages/admin/Users/AdminUsers';
 import AdminNewsletter from './pages/admin/Newsletter/AdminNewsletter';
 import AdminReviews from './pages/admin/Reviews/AdminReviews';
 import AdminBanners from './pages/admin/Banners/AdminBanners';
+import AdminSkills from './pages/admin/Skills/AdminSkills';
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
@@ -80,38 +86,46 @@ function App() {
       <ToastProvider>
         <AuthProvider>
           <CartProvider>
-            <Router>
-              <Routes>
-                {/* User Routes */}
-              <Route path="/" element={<UserLayout><Home /></UserLayout>} />
-              <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
-              <Route path="/offers" element={<UserLayout><Offers /></UserLayout>} />
-              <Route path="/about" element={<UserLayout><AboutUs /></UserLayout>} />
-              <Route path="/profile" element={<UserLayout><UserProfile /></UserLayout>} />
-              <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
-              <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
+            <CustomerAuthProvider>
+              <Router>
+                <Routes>
+                  {/* User Routes */}
+                <Route path="/" element={<UserLayout><Home /></UserLayout>} />
+                <Route path="/shop" element={<UserLayout><Shop /></UserLayout>} />
+                <Route path="/category/:slug" element={<UserLayout><CategoryPage /></UserLayout>} />
+                <Route path="/offers" element={<UserLayout><Offers /></UserLayout>} />
+                <Route path="/about" element={<UserLayout><AboutUs /></UserLayout>} />
+                <Route path="/profile" element={<UserLayout><UserProfile /></UserLayout>} />
+                <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
+                <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
+                <Route path="/wishlist" element={<UserLayout><Wishlist /></UserLayout>} />
+                <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
+                <Route path="/order-confirmation/:orderId" element={<UserLayout><OrderConfirmation /></UserLayout>} />
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLogin />} />
-              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="categories" element={<PermissionRoute permRoute="/categories"><AdminCategories /></PermissionRoute>} />
-                <Route path="products" element={<PermissionRoute permRoute="/products"><AdminProducts /></PermissionRoute>} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="offers" element={<PermissionRoute permRoute="/offers"><AdminOffers /></PermissionRoute>} />
-                <Route path="newsletter" element={<PermissionRoute permRoute="/newsletter"><AdminNewsletter /></PermissionRoute>} />
-                <Route path="reviews" element={<PermissionRoute permRoute="/reviews"><AdminReviews /></PermissionRoute>} />
-                <Route path="banners" element={<PermissionRoute permRoute="/banners"><AdminBanners /></PermissionRoute>} />
-                <Route path="settings" element={<PermissionRoute permRoute="/site-settings"><AdminSettings /></PermissionRoute>} />
-                <Route path="users" element={<PermissionRoute permRoute="/users" adminOnly><AdminUsers /></PermissionRoute>} />
-              </Route>
-            </Routes>
-          </Router>
-        </CartProvider>
-      </AuthProvider>
-    </ToastProvider>
-  </ThemeProvider>
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLogin />} />
+                <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="categories" element={<PermissionRoute permRoute="/categories"><AdminCategories /></PermissionRoute>} />
+                  <Route path="products" element={<PermissionRoute permRoute="/products"><AdminProducts /></PermissionRoute>} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="offers" element={<PermissionRoute permRoute="/offers"><AdminOffers /></PermissionRoute>} />
+                  <Route path="newsletter" element={<PermissionRoute permRoute="/newsletter"><AdminNewsletter /></PermissionRoute>} />
+                  <Route path="reviews" element={<PermissionRoute permRoute="/reviews"><AdminReviews /></PermissionRoute>} />
+                  <Route path="banners" element={<PermissionRoute permRoute="/banners"><AdminBanners /></PermissionRoute>} />
+                  <Route path="skills" element={<PermissionRoute permRoute="/skills"><AdminSkills /></PermissionRoute>} />
+                  <Route path="settings" element={<PermissionRoute permRoute="/site-settings"><AdminSettings /></PermissionRoute>} />
+                  <Route path="users" element={<PermissionRoute permRoute="/users" adminOnly><AdminUsers /></PermissionRoute>} />
+                </Route>
+              </Routes>
+            </Router>
+            </CustomerAuthProvider>
+          </CartProvider>
+        </AuthProvider>
+      </ToastProvider>
+    </ThemeProvider>
   );
 }
 
 export default App;
+

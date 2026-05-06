@@ -6,6 +6,8 @@ import {
   useAddCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useReorderCategoriesMutation,
+  useMoveCategoryPositionMutation,
 } from '../../../store/ActionApi/categoryApi';
 import { useToast } from '../../../context/ToastContext';
 
@@ -26,6 +28,9 @@ const AdminCategories = () => {
   const [addCategory, { isLoading: adding }] = useAddCategoryMutation();
   const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteCategoryMutation();
+  const [reorderCategories] = useReorderCategoriesMutation();
+  const [moveCategoryPosition, { isLoading: isMovingCategory }] = useMoveCategoryPositionMutation();
+  const [movingCategoryId, setMovingCategoryId] = useState(null);
 
   const categoryList = useSelector((state) => state.category.categories) || [];
   const isBusy = adding || updating;
@@ -51,7 +56,8 @@ const AdminCategories = () => {
     const fd = new FormData();
     fd.append('catagoryName', form.catagoryName);
     fd.append('slug', form.slug);
-    fd.append('count', form.count);
+    if (form.description !== undefined) fd.append('description', form.description || '');
+    fd.append('count', (form.count === '' || form.count === null || form.count === undefined) ? '0' : String(form.count));
     if (form.image) fd.append('image', form.image);
     if (form.icon) fd.append('icon', form.icon);
 
@@ -89,6 +95,29 @@ const AdminCategories = () => {
     }
   };
 
+  // Reorder Handler (from drag-and-drop)
+  const handleReorder = async (items) => {
+    try {
+      await reorderCategories(items).unwrap();
+      showSuccess('Categories reordered');
+    } catch (err) {
+      showError(err?.data?.message || 'Reorder failed');
+    }
+  };
+
+  // Move position handler (cross-page)
+  const handleMovePosition = async ({ id, targetPosition }) => {
+    try {
+      setMovingCategoryId(id);
+      await moveCategoryPosition({ id, targetPosition }).unwrap();
+      showSuccess('Category moved successfully');
+    } catch (err) {
+      showError(err?.data?.message || 'Move failed');
+    } finally {
+      setMovingCategoryId(null);
+    }
+  };
+
   return (
     <div className="admin-products">
       {/* Header */}
@@ -99,13 +128,16 @@ const AdminCategories = () => {
         </button>
       </div>
 
-      {/* Table */}
+      {/* Table with drag-and-drop */}
       <CategoryTable
         categories={categoryList}
         loading={loadingCategories}
         onEdit={openEdit}
         onDelete={handleDelete}
         deleting={deleting}
+        onReorder={handleReorder}
+        onMovePosition={handleMovePosition}
+        movingId={movingCategoryId}
       />
 
       {/* Add / Edit Modal */}

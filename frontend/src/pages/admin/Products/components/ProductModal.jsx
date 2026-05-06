@@ -1,4 +1,5 @@
-import { FiX, FiImage, FiPlus, FiLoader } from 'react-icons/fi';
+import { useState } from 'react';
+import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiZap, FiChevronDown, FiChevronUp, FiBox, FiDollarSign, FiFilter, FiCamera, FiSearch } from 'react-icons/fi';
 
 /**
  * SelectField — thin wrapper to keep inline JSX tidy.
@@ -13,6 +14,100 @@ const SelectField = ({ label, value, onChange, options }) => (
     </select>
   </div>
 );
+
+/**
+ * CategoryMultiSelect
+ * Renders a checkbox list of categories with chip-style selections.
+ */
+const CategoryMultiSelect = ({ selectedIds = [], categoryOptions = [], onChange, label = 'Categories *' }) => {
+  const toggle = (id) => {
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((cid) => cid !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  return (
+    <div className="admin-field admin-field--full">
+      <label>{label}</label>
+      {/* Selected chips */}
+      {selectedIds.length > 0 && (
+        <div className="admin-category-chips">
+          {selectedIds.map((id) => {
+            const cat = categoryOptions.find((c) => (c._id || c.id) === id);
+            const name = cat?.catagoryName || cat?.name || id;
+            return (
+              <span key={id} className="admin-category-chip">
+                {name}
+                <button type="button" onClick={() => toggle(id)} aria-label={`Remove ${name}`}>
+                  <FiX />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+      {/* Checkbox list */}
+      <div className="admin-category-grid">
+        {categoryOptions.map((c) => {
+          const id = c._id || c.id;
+          const name = c.catagoryName || c.name;
+          const checked = selectedIds.includes(id);
+          return (
+            <label key={id} className={`admin-category-option ${checked ? 'admin-category-option--checked' : ''}`}>
+              <input
+                type="checkbox"
+                checked={checked}
+                onChange={() => toggle(id)}
+              />
+              <span>{name}</span>
+            </label>
+          );
+        })}
+      </div>
+      {categoryOptions.length === 0 && (
+        <p className="admin-field__hint">No categories available. Create one first.</p>
+      )}
+    </div>
+  );
+};
+
+/**
+ * FormGroup — collapsible card section for grouping related fields.
+ */
+const FormGroup = ({ icon, title, defaultOpen = true, children, count }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className={`form-group ${isOpen ? 'form-group--open' : 'form-group--closed'}`}>
+      <button
+        type="button"
+        className="form-group__header"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <div className="form-group__title">
+          <span className="form-group__icon">{icon}</span>
+          <span>{title}</span>
+          {count !== undefined && (
+            <span className="form-group__count">{count}</span>
+          )}
+        </div>
+        <span className="form-group__chevron">
+          {isOpen ? <FiChevronUp /> : <FiChevronDown />}
+        </span>
+      </button>
+      {isOpen && (
+        <div className="form-group__body">
+          <div className="admin-form-grid">
+            {children}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 /**
  * ProductModal
@@ -36,6 +131,7 @@ const ProductModal = ({
   apiError,
   isBusy,
   categoryOptions,
+  skillOptions,
   fileInputRef,
   setForm,
   onSubmit,
@@ -82,7 +178,8 @@ const ProductModal = ({
             </div>
           )}
 
-          <div className="admin-form-grid">
+          {/* ═══════════ GROUP 1: Product Details ═══════════ */}
+          <FormGroup icon={<FiBox />} title="Product Details" defaultOpen={true}>
 
             {/* Product Name ─ full width */}
             <div className="admin-field admin-field--full">
@@ -95,6 +192,52 @@ const ProductModal = ({
               <label>Slug *</label>
               <input type="text" placeholder="e.g. wooden-toy-car" required {...field('slug')} />
             </div>
+
+            {/* Age Range */}
+            <div className="admin-field">
+              <label>Age Range *</label>
+              <select required value={form.ageRange} onChange={(e) => setForm((p) => ({ ...p, ageRange: e.target.value }))}>
+                <option value="">Select Age Range</option>
+                <option value="0-2">0–2 years</option>
+                <option value="2-4">2–4 years</option>
+                <option value="4-6">4–6 years</option>
+                <option value="6-8">6–8 years</option>
+                <option value="8+">8+ years</option>
+              </select>
+            </div>
+
+            {/* Description ─ full width */}
+            <div className="admin-field admin-field--full">
+              <label>Description *</label>
+              <textarea
+                rows={3}
+                placeholder="High-quality wooden toy car…"
+                required
+                value={form.description}
+                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              />
+            </div>
+
+            {/* Tags */}
+            <div className="admin-field admin-field--full">
+              <label>Tags * (comma separated)</label>
+              <input type="text" placeholder="wooden,car,toy" required {...field('tags')} />
+            </div>
+
+            {/* YouTube Video URL ─ full width */}
+            <div className="admin-field admin-field--full">
+              <label>YouTube Video URL (optional)</label>
+              <input
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                {...field('youtubeUrl')}
+              />
+            </div>
+
+          </FormGroup>
+
+          {/* ═══════════ GROUP 2: Pricing & Inventory ═══════════ */}
+          <FormGroup icon={<FiDollarSign />} title="Pricing & Inventory" defaultOpen={true}>
 
             {/* Price */}
             <div className="admin-field">
@@ -132,52 +275,48 @@ const ProductModal = ({
               <input type="number" min="0" placeholder="120" required {...field('numReviews')} />
             </div>
 
-            {/* Category */}
-            <div className="admin-field">
-              <label>Category *</label>
-              <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))} required>
-                <option value="">Select Category</option>
-                {categoryOptions.map((c) => (
-                  <option key={c._id || c.id} value={c._id || c.id}>
-                    {c.catagoryName}
-                  </option>
-                ))}
-              </select>
-            </div>
+          </FormGroup>
 
-            {/* Tags */}
-            <div className="admin-field">
-              <label>Tags * (comma separated)</label>
-              <input type="text" placeholder="wooden,car,toy" required {...field('tags')} />
-            </div>
+          {/* ═══════════ GROUP 3: Categorization & Filters ═══════════ */}
+          <FormGroup
+            icon={<FiFilter />}
+            title="Categorization & Filters"
+            defaultOpen={true}
+            count={form.categories.length + (form.skills?.length || 0)}
+          >
 
-            {/* Age Range */}
-            <div className="admin-field">
-              <label>Age From *</label>
-              <input type="number" min="0" placeholder="3" required {...field('ageRangeFrom')} />
-            </div>
+            {/* Categories ─ Multi-select (full width) */}
+            <CategoryMultiSelect
+              selectedIds={form.categories}
+              categoryOptions={categoryOptions}
+              onChange={(ids) => setForm((p) => ({ ...p, categories: ids }))}
+            />
 
-            <div className="admin-field">
-              <label>Age To *</label>
-              <input type="number" min="0" placeholder="8" required {...field('ageRangeTo')} />
-            </div>
+            {/* Skills */}
+            <CategoryMultiSelect
+              label="Skills"
+              selectedIds={form.skills}
+              categoryOptions={(skillOptions || []).map((s) => ({
+                ...s,
+                catagoryName: s.name,
+              }))}
+              onChange={(ids) => setForm((p) => ({ ...p, skills: ids }))}
+            />
 
             {/* Boolean selects */}
             {BOOL_FIELDS.map(({ key, label }) => (
               <SelectField key={key} label={label} {...boolSelect(key)} />
             ))}
 
-            {/* Description ─ full width */}
-            <div className="admin-field admin-field--full">
-              <label>Description *</label>
-              <textarea
-                rows={3}
-                placeholder="High-quality wooden toy car…"
-                required
-                value={form.description}
-                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              />
-            </div>
+          </FormGroup>
+
+          {/* ═══════════ GROUP 4: Media & Images ═══════════ */}
+          <FormGroup
+            icon={<FiCamera />}
+            title="Media & Images"
+            defaultOpen={false}
+            count={form.previewUrls.length}
+          >
 
             {/* Images ─ full width */}
             <div className="admin-field admin-field--full">
@@ -226,7 +365,135 @@ const ProductModal = ({
               </div>
             </div>
 
-          </div>{/* /admin-form-grid */}
+          </FormGroup>
+
+          {/* ═══════════ GROUP 5: SEO ═══════════ */}
+          <FormGroup icon={<FiSearch />} title="SEO (Search Engine Optimization)" defaultOpen={false}>
+
+            {/* SEO Title */}
+            <div className="admin-field admin-field--full">
+              <label>SEO Title</label>
+              <input
+                type="text"
+                placeholder="e.g. Buy Wooden Toy Car for Kids | Kidroo Toys"
+                maxLength={70}
+                {...field('seoTitle')}
+              />
+              <p className="admin-field__hint">
+                Custom title for search engine results. Keep it under 60 characters for best display.
+                {form.seoTitle && (
+                  <span style={{ marginLeft: 8, color: form.seoTitle.length > 60 ? '#e74c3c' : '#27ae60' }}>
+                    ({form.seoTitle.length}/60)
+                  </span>
+                )}
+              </p>
+            </div>
+
+            {/* SEO Description */}
+            <div className="admin-field admin-field--full">
+              <label>SEO Description</label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Shop premium quality wooden toy car for kids aged 2-6. Safe, eco-friendly, and educational. Free shipping over ₹500."
+                maxLength={170}
+                value={form.seoDescription}
+                onChange={(e) => setForm((p) => ({ ...p, seoDescription: e.target.value }))}
+              />
+              <p className="admin-field__hint">
+                Custom description for search engine results. Keep it under 155 characters for best display.
+                {form.seoDescription && (
+                  <span style={{ marginLeft: 8, color: form.seoDescription.length > 155 ? '#e74c3c' : '#27ae60' }}>
+                    ({form.seoDescription.length}/155)
+                  </span>
+                )}
+              </p>
+            </div>
+
+            {/* SEO Keywords */}
+            <div className="admin-field admin-field--full">
+              <label>SEO Keywords (comma separated)</label>
+              <input
+                type="text"
+                placeholder="e.g. wooden toys, kids toys, educational, montessori"
+                {...field('seoKeywords')}
+              />
+              <p className="admin-field__hint">
+                These keywords help your product appear in search engine results. Add relevant words customers might search for.
+              </p>
+            </div>
+
+          </FormGroup>
+
+          {/* ═══════════ GROUP 6: Warranty & Guarantee ═══════════ */}
+          <FormGroup icon={<FiShield />} title="Warranty & Guarantee" defaultOpen={false}>
+
+            {/* Warranty — checkbox + inline fields */}
+            <div className="admin-field admin-field--full">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={!!form.hasWarranty}
+                  onChange={(e) => setForm((p) => ({ ...p, hasWarranty: e.target.checked }))}
+                />
+                Has Warranty
+              </label>
+              {form.hasWarranty && (
+                <div className="admin-inline-fields">
+                  <div className="admin-inline-field">
+                    <label>Period (months)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="12"
+                      {...field('warrantyPeriod')}
+                    />
+                  </div>
+                  <div className="admin-inline-field">
+                    <label>Type</label>
+                    <select value={form.warrantyType} onChange={(e) => setForm((p) => ({ ...p, warrantyType: e.target.value }))}>
+                      <option value="manufacturer">Manufacturer</option>
+                      <option value="seller">Seller</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Guarantee — checkbox + inline fields */}
+            <div className="admin-field admin-field--full">
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={!!form.hasGuarantee}
+                  onChange={(e) => setForm((p) => ({ ...p, hasGuarantee: e.target.checked }))}
+                />
+                Has Guarantee
+              </label>
+              {form.hasGuarantee && (
+                <div className="admin-inline-fields">
+                  <div className="admin-inline-field">
+                    <label>Period (months)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="6"
+                      {...field('guaranteePeriod')}
+                    />
+                  </div>
+                  <div className="admin-inline-field admin-inline-field--grow">
+                    <label>Terms</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 100% money-back if not satisfied…"
+                      value={form.guaranteeTerms}
+                      onChange={(e) => setForm((p) => ({ ...p, guaranteeTerms: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+          </FormGroup>
 
           {/* ── Actions ── */}
           <div className="admin-modal__actions">

@@ -5,8 +5,11 @@ import Loader from '../../../components/Loader/Loader';
 
 import {
   useGetProductsQuery,
+  useReorderProductsMutation,
+  useMoveProductPositionMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
+import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
 
 import Pagination       from '../../../components/Pagination/Pagination';
 import ProductSearchBar from './components/ProductSearchBar';
@@ -23,11 +26,22 @@ import './AdminProducts.scss';
 // ── Default filter state ────────────────────────────────────────
 const defaultFilters = {
   category:   '',
-  minPrice:   '',
-  maxPrice:   '',
+  priceRange: '',
+  ageRange:   '',
+  skill:      '',
   featured:   '',
   newArrival: '',
   bestSeller: '',
+};
+
+// ── Map preset priceRange to minPrice / maxPrice for the API ────
+const expandPriceRange = (priceRange) => {
+  switch (priceRange) {
+    case 'under499':  return { minPrice: '', maxPrice: '499' };
+    case 'under999':  return { minPrice: '', maxPrice: '999' };
+    case 'above1000': return { minPrice: '1000', maxPrice: '' };
+    default:          return { minPrice: '', maxPrice: '' };
+  }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,12 +68,14 @@ const AdminProducts = () => {
   const [page, setPage] = useState(1);
 
   // ── Data fetching ─────────────────────────────────────────────
+  const { priceRange: _pr, ...restFilters } = filters;
   const { isLoading: loadingProducts } = useGetProductsQuery(
     {
       page,
       limit: PRODUCTS_PER_PAGE,
       search: searchQuery,
-      ...filters,
+      ...restFilters,
+      ...expandPriceRange(filters.priceRange),
     },
     { refetchOnMountOrArgChange: true }
   );
@@ -88,6 +104,18 @@ const AdminProducts = () => {
     handleSubmit, handleDelete,
     productToDelete, setProductToDelete, confirmDelete,
   } = useProductForm();
+
+  // ── Skills ──────────────────────────────────────────────────
+  const { data: skillsResp } = useGetSkillsQuery();
+  const skillsRaw = skillsResp?.data || skillsResp || [];
+  const skillOptions = Array.isArray(skillsRaw) ? skillsRaw : [];
+
+  // ── Reorder mutation ─────────────────────────────────────────
+  const [reorderProducts] = useReorderProductsMutation();
+
+  // ── Move position mutation (cross-page) ─────────────────────
+  const [moveProductPosition, { isLoading: isMoving }] = useMoveProductPositionMutation();
+  const [movingProductId, setMovingProductId] = useState(null);
 
   // ── Variant modal state ───────────────────────────────────────
   const [variantProduct, setVariantProduct] = useState(null);
@@ -127,6 +155,27 @@ const AdminProducts = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // ── Reorder handler (from drag-and-drop) ─────────────────────
+  const handleReorder = async (items) => {
+    try {
+      await reorderProducts(items).unwrap();
+    } catch (err) {
+      console.error('Reorder failed', err);
+    }
+  };
+
+  // ── Move position handler (cross-page) ────────────────────────
+  const handleMovePosition = async ({ id, targetPosition }) => {
+    try {
+      setMovingProductId(id);
+      await moveProductPosition({ id, targetPosition }).unwrap();
+    } catch (err) {
+      console.error('Move position failed', err);
+    } finally {
+      setMovingProductId(null);
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────
   return (
     <div className="admin-products">
@@ -152,6 +201,7 @@ const AdminProducts = () => {
       <ProductFilters
         filters={filters}
         categories={categoryList}
+        skills={skillOptions}
         onChange={handleFiltersChange}
         onReset={handleFiltersReset}
         activeCount={activeFilterCount}
@@ -169,6 +219,10 @@ const AdminProducts = () => {
             onEdit={openEdit}
             onDelete={handleDelete}
             onVariants={openVariants}
+            onReorder={handleReorder}
+            onMovePosition={handleMovePosition}
+            movingId={movingProductId}
+            totalItems={totalItems}
           />
 
           {/* ── Pagination ── */}
@@ -190,6 +244,7 @@ const AdminProducts = () => {
           apiError={apiError}
           isBusy={isBusy}
           categoryOptions={categoryOptions}
+          skillOptions={skillOptions}
           fileInputRef={fileInputRef}
           setForm={setForm}
           onSubmit={handleSubmit}

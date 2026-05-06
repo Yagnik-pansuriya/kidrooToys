@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FiX, FiPlus, FiEdit2, FiTrash2, FiLoader, FiPackage, FiImage } from 'react-icons/fi';
+import { FiX, FiPlus, FiEdit2, FiTrash2, FiLoader, FiPackage, FiImage, FiChevronDown, FiChevronUp, FiTag, FiDollarSign, FiBox, FiCamera, FiSearch, FiSettings } from 'react-icons/fi';
 import Loader from '../../../../components/Loader/Loader';
 import {
   useGetVariantsQuery,
@@ -22,12 +22,50 @@ const emptyVariant = {
   dimLength:     '',   // ─┐ combined into dimensions JSON on submit
   dimWidth:      '',   //  │
   dimHeight:     '',   // ─┘
+  youtubeUrl:    '',
+  seoKeywords:   '',
   status:        'active',
   isDefault:     false,
   isActive:      true,
   imageFiles:    [],   // File objects for new uploads (up to 5)
   previewUrls:   [],   // blob URLs (new) or remote URLs (existing)
   attributes:    [{ key: '', value: '' }],
+};
+
+/**
+ * FormGroup — collapsible card section for grouping related fields.
+ */
+const FormGroup = ({ icon, title, defaultOpen = true, children, count }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className={`form-group ${isOpen ? 'form-group--open' : 'form-group--closed'}`}>
+      <button
+        type="button"
+        className="form-group__header"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <div className="form-group__title">
+          <span className="form-group__icon">{icon}</span>
+          <span>{title}</span>
+          {count !== undefined && (
+            <span className="form-group__count">{count}</span>
+          )}
+        </div>
+        <span className="form-group__chevron">
+          {isOpen ? <FiChevronUp /> : <FiChevronDown />}
+        </span>
+      </button>
+      {isOpen && (
+        <div className="form-group__body">
+          <div className="admin-form-grid">
+            {children}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 // ─── VariantForm ──────────────────────────────────────────────────────────────
@@ -120,16 +158,18 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
     onSave({
       sku:              form.sku,
       barcode:          form.barcode,
-      price:            Number(form.price),
-      originalPrice:    Number(form.originalPrice),
-      stock:            Number(form.stock),
-      lowStockAlert:    form.lowStockAlert !== '' ? Number(form.lowStockAlert) : undefined,
-      weight:           form.weight        !== '' ? Number(form.weight)        : undefined,
+      price:            form.price === '' ? 0 : Number(form.price) || 0,
+      originalPrice:    form.originalPrice === '' ? 0 : Number(form.originalPrice) || 0,
+      stock:            form.stock === '' ? 0 : Number(form.stock) || 0,
+      lowStockAlert:    form.lowStockAlert === '' ? 0 : Number(form.lowStockAlert) || 0,
+      weight:           form.weight === '' ? 0 : Number(form.weight) || 0,
       dimensions:       {
         length: Number(form.dimLength) || 0,
         width:  Number(form.dimWidth)  || 0,
         height: Number(form.dimHeight) || 0,
       },
+      youtubeUrl:       form.youtubeUrl,
+      seoKeywords:      form.seoKeywords,
       status:           form.status,
       isDefault:        form.isDefault,
       isActive:         form.isActive,
@@ -143,9 +183,9 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
 
   return (
     <form className="variant-form" onSubmit={handleSubmit} noValidate>
-      <div className="admin-form-grid">
 
-        {/* ── Identity ── */}
+      {/* ═══════════ GROUP 1: Variant Identity ═══════════ */}
+      <FormGroup icon={<FiTag />} title="Variant Identity" defaultOpen={true}>
         <div className="admin-field">
           <label>SKU *</label>
           <input type="text" placeholder="TOY-CAR-RED-001" required {...field('sku')} />
@@ -155,8 +195,10 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
           <label>Barcode</label>
           <input type="text" placeholder="1234567890123" {...field('barcode')} />
         </div>
+      </FormGroup>
 
-        {/* ── Pricing ── */}
+      {/* ═══════════ GROUP 2: Pricing & Inventory ═══════════ */}
+      <FormGroup icon={<FiDollarSign />} title="Pricing & Inventory" defaultOpen={true}>
         <div className="admin-field">
           <label>Price *</label>
           <input type="number" step="0.01" min="0" placeholder="29.99" required {...field('price')} />
@@ -167,7 +209,6 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
           <input type="number" step="0.01" min="0" placeholder="39.99" {...field('originalPrice')} />
         </div>
 
-        {/* ── Inventory ── */}
         <div className="admin-field">
           <label>Stock *</label>
           <input type="number" min="0" placeholder="50" required {...field('stock')} />
@@ -177,8 +218,10 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
           <label>Low Stock Alert</label>
           <input type="number" min="0" placeholder="5" {...field('lowStockAlert')} />
         </div>
+      </FormGroup>
 
-        {/* ── Physical ── */}
+      {/* ═══════════ GROUP 3: Physical Details ═══════════ */}
+      <FormGroup icon={<FiBox />} title="Physical Details" defaultOpen={false}>
         <div className="admin-field">
           <label>Weight (kg)</label>
           <input type="number" step="0.01" min="0" placeholder="0.5" {...field('weight')} />
@@ -193,34 +236,26 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
             <input type="number" min="0" step="0.1" placeholder="H" {...field('dimHeight')} style={{ flex: 1 }} />
           </div>
         </div>
+      </FormGroup>
 
-        {/* ── Status ── */}
-        <div className="admin-field">
-          <label>Status</label>
-          <select {...field('status')}>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="out_of_stock">Out of Stock</option>
-          </select>
+      {/* ═══════════ GROUP 4: Media ═══════════ */}
+      <FormGroup
+        icon={<FiCamera />}
+        title="Media & Images"
+        defaultOpen={false}
+        count={form.previewUrls.length}
+      >
+        {/* YouTube Video URL */}
+        <div className="admin-field admin-field--full">
+          <label>YouTube Video URL (optional)</label>
+          <input
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            {...field('youtubeUrl')}
+          />
         </div>
 
-        <div className="admin-field">
-          <label>Is Active</label>
-          <select {...boolField('isActive')}>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-        </div>
-
-        <div className="admin-field">
-          <label>Is Default</label>
-          <select {...boolField('isDefault')}>
-            <option value="false">No</option>
-            <option value="true">Yes</option>
-          </select>
-        </div>
-
-        {/* ── Images (up to 5) — same grid as ProductModal ── */}
+        {/* Images (up to 5) — same grid as ProductModal */}
         <div className="admin-field admin-field--full">
           <label><FiImage aria-hidden="true" /> Variant Images (up to 5)</label>
 
@@ -263,8 +298,50 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
             )}
           </div>
         </div>
+      </FormGroup>
 
-      </div>{/* /admin-form-grid */}
+      {/* ═══════════ GROUP 5: SEO ═══════════ */}
+      <FormGroup icon={<FiSearch />} title="SEO (Search Engine Optimization)" defaultOpen={false}>
+        <div className="admin-field admin-field--full">
+          <label>SEO Keywords (comma separated)</label>
+          <input
+            type="text"
+            placeholder="e.g. red wooden car, toy car variant, kids gift"
+            {...field('seoKeywords')}
+          />
+          <p className="admin-field__hint">
+            Keywords to help this variant appear in search engine results.
+          </p>
+        </div>
+      </FormGroup>
+
+      {/* ═══════════ GROUP 6: Status & Settings ═══════════ */}
+      <FormGroup icon={<FiSettings />} title="Status & Settings" defaultOpen={true}>
+        <div className="admin-field">
+          <label>Status</label>
+          <select {...field('status')}>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="out_of_stock">Out of Stock</option>
+          </select>
+        </div>
+
+        <div className="admin-field">
+          <label>Is Active</label>
+          <select {...boolField('isActive')}>
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+
+        <div className="admin-field">
+          <label>Is Default</label>
+          <select {...boolField('isDefault')}>
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
+        </div>
+      </FormGroup>
 
       {/* ── Dynamic Attributes (JSON stringified) ── */}
       <div className="variant-attrs">
@@ -341,9 +418,9 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
           ))}
         </div>
         <div className="variant-row__meta">
-          <span className="variant-row__price">${Number(variant.price || 0).toFixed(2)}</span>
+          <span className="variant-row__price">₹{Number(variant.price || 0).toFixed(2)}</span>
           {variant.originalPrice > 0 && (
-            <span className="variant-row__original">${Number(variant.originalPrice).toFixed(2)}</span>
+            <span className="variant-row__original">₹{Number(variant.originalPrice).toFixed(2)}</span>
           )}
           <span className={`status ${(variant.status === 'active' || (!variant.status && variant.isActive)) ? 'status--delivered' : 'status--cancelled'}`} style={{ textTransform: 'capitalize' }}>
             {variant.status ? variant.status.replace(/_/g, ' ') : (variant.isActive ? 'Active' : 'Inactive')}
@@ -353,25 +430,33 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
         </div>
       </div>
 
-      <div className="admin-actions">
-        <button
-          className="admin-action-btn admin-action-btn--edit"
-          onClick={() => onEditClick(variant)}
-          title="Edit variant"
-          aria-label={`Edit ${variant.sku}`}
-        >
-          <FiEdit2 />
-        </button>
-        <button
-          className="admin-action-btn admin-action-btn--delete"
-          onClick={() => onDelete(variant)}
-          disabled={deleting}
-          title="Delete variant"
-          aria-label={`Delete ${variant.sku}`}
-        >
-          <FiTrash2 />
-        </button>
-      </div>
+      {variant.isDefault ? (
+        <div className="admin-actions">
+          <span className="admin-tag" style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+            🔒 Synced with Product
+          </span>
+        </div>
+      ) : (
+        <div className="admin-actions">
+          <button
+            className="admin-action-btn admin-action-btn--edit"
+            onClick={() => onEditClick(variant)}
+            title="Edit variant"
+            aria-label={`Edit ${variant.sku}`}
+          >
+            <FiEdit2 />
+          </button>
+          <button
+            className="admin-action-btn admin-action-btn--delete"
+            onClick={() => onDelete(variant)}
+            disabled={deleting}
+            title="Delete variant"
+            aria-label={`Delete ${variant.sku}`}
+          >
+            <FiTrash2 />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -421,6 +506,10 @@ const VariantModal = ({ product, onClose }) => {
       dimLength:     dim.length            ?? '',
       dimWidth:      dim.width             ?? '',
       dimHeight:     dim.height            ?? '',
+      youtubeUrl:    variant.youtubeUrl    || '',
+      seoKeywords:   Array.isArray(variant.seoKeywords)
+                       ? variant.seoKeywords.join(',')
+                       : (variant.seoKeywords || ''),
       status:        variant.status        || 'active',
       isDefault:     variant.isDefault     ?? false,
       isActive:      variant.isActive      ?? true,

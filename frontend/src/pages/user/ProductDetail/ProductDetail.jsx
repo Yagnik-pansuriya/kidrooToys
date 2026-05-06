@@ -1,19 +1,28 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiShield, FiPackage } from 'react-icons/fi';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart, FiZap } from 'react-icons/fi';
+import { useDispatch } from 'react-redux';
 import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
 import { useGetVariantsQuery } from '../../../store/ActionApi/variantApi';
 import { useGetProductReviewsQuery, useGetProductReviewStatsQuery, useAddReviewMutation } from '../../../store/ActionApi/reviewApi';
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
+import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './ProductDetail.scss';
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
+  const { requireAuth, isCustomerAuthenticated, isInWishlist, customer } = useCustomerAuth();
+  const [toggleWishlistApi] = useToggleWishlistMutation();
 
   // ── API data ──────────────────────────────────────────────────
   const { data: productResp, isLoading } = useGetProductByIdQuery(id);
@@ -35,11 +44,32 @@ const ProductDetail = () => {
   const reviews = reviewsResp?.data || reviewsResp || [];
   const stats = statsResp?.data || statsResp || {};
 
-  // Related products (same category)
-  const categoryId = product?.category?._id || product?.category;
+  // Resolve categories array (new multi-category schema)
+  const productCategories = useMemo(() => {
+    if (Array.isArray(product?.categories) && product.categories.length > 0) {
+      return product.categories.map((c) => ({
+        id: typeof c === 'object' ? (c._id || c.id) : c,
+        name: typeof c === 'object' ? (c.catagoryName || c.name || '') : '',
+      }));
+    }
+    // Legacy fallback
+    if (product?.category) {
+      const id = typeof product.category === 'object'
+        ? (product.category._id || product.category.id)
+        : product.category;
+      const name = typeof product.category === 'object'
+        ? (product.category.catagoryName || product.category.name || '')
+        : '';
+      return id ? [{ id, name }] : [];
+    }
+    return [];
+  }, [product]);
+
+  // Use first category for related products query
+  const primaryCategoryId = productCategories[0]?.id || '';
   const { data: relatedResp } = useGetProductsQuery(
-    { page: 1, limit: 4, category: categoryId || '' },
-    { skip: !categoryId }
+    { page: 1, limit: 4, category: primaryCategoryId },
+    { skip: !primaryCategoryId }
   );
   const relatedInner = relatedResp?.data || relatedResp;
   const relatedProducts = (relatedInner?.data || relatedInner || [])
@@ -148,10 +178,35 @@ const ProductDetail = () => {
   const variantImages = selectedVariant?.images?.length ? selectedVariant.images : [];
   const images = variantImages.length > 0 ? variantImages : productImages;
 
+  // YouTube embed helper
+  const getYoutubeEmbedUrl = (url) => {
+    if (!url) return null;
+    // Handle youtu.be short links
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+    if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+    // Handle youtube.com/shorts/
+    const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
+    if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+    // Handle youtube.com/watch?v=
+    const longMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+    if (longMatch) return `https://www.youtube.com/embed/${longMatch[1]}`;
+    // Handle youtube.com/embed/
+    const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/);
+    if (embedMatch) return `https://www.youtube.com/embed/${embedMatch[1]}`;
+    return null;
+  };
+
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(selectedVariant?.youtubeUrl || product.youtubeUrl);
+  const totalSlides = images.length + (youtubeEmbedUrl ? 1 : 0);
+  const isVideoSlide = youtubeEmbedUrl && selectedImage === images.length;
+
+  const handlePrevSlide = () => setSelectedImage((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
+  const handleNextSlide = () => setSelectedImage((prev) => (prev < totalSlides - 1 ? prev + 1 : 0));
+
   const price = selectedVariant ? Number(selectedVariant.price) : Number(product.price || 0);
   const originalPrice = selectedVariant ? Number(selectedVariant.originalPrice || 0) : Number(product.originalPrice || 0);
   const discount = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : (product.discountPercentage || 0);
-  const categoryName = product.category?.catagoryName || product.category?.name || '';
+  const categoryName = productCategories.map((c) => c.name).filter(Boolean).join(', ');
   const stock = selectedVariant ? selectedVariant.stock : product.stock;
   const inStock = stock > 0;
   const sku = selectedVariant?.sku || '';
@@ -187,10 +242,37 @@ const ProductDetail = () => {
     showSuccess(`${name} added to cart!`);
   };
 
+  const handleBuyNow = () => {
+    const proceed = () => {
+      addToCart({ ...product, quantity, selectedVariant });
+      showSuccess(`${name} added to cart!`);
+      navigate('/checkout');
+    };
+    if (!requireAuth('Please login to purchase this product', proceed)) return;
+    proceed();
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!requireAuth('Please login to save items to your wishlist')) return;
+    try {
+      await toggleWishlistApi(id).unwrap();
+      dispatch(toggleWishlistId(id));
+      showSuccess(isInWishlist(id) ? 'Removed from wishlist' : 'Added to wishlist ❤️');
+    } catch (err) {
+      showError('Failed to update wishlist');
+    }
+  };
+
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to write a review')) return;
     try {
-      await addReviewApi({ productId: id, body: reviewForm }).unwrap();
+      const body = { ...reviewForm };
+      // Auto-fill name from customer profile if available
+      if (customer && !body.name) {
+        body.name = `${customer.firstName} ${customer.lastName}`;
+      }
+      await addReviewApi({ productId: id, body }).unwrap();
       showSuccess('Review added successfully!');
       setReviewForm({ name: '', rating: 5, title: '', comment: '' });
     } catch (err) {
@@ -198,15 +280,96 @@ const ProductDetail = () => {
     }
   };
 
+  // ── SEO: Build JSON-LD Product structured data ────────────────
+  const seoTitle = product.seoTitle || `Buy ${name} Online`;
+  const seoDescription = product.seoDescription
+    || `${product.description?.substring(0, 150)}${product.description?.length > 150 ? '…' : ''}`;
+  const seoKeywords = Array.isArray(product.seoKeywords)
+    ? product.seoKeywords.join(', ')
+    : (product.tags?.join(', ') || '');
+  const productUrl = `${window.location.origin}/product/${id}`;
+  const productImage = productImages[0] || '';
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      // ── Product Schema ──
+      {
+        '@type': 'Product',
+        name: name,
+        description: product.description,
+        image: productImages,
+        sku: sku || product.slug,
+        brand: { '@type': 'Brand', name: 'Kidroo Toys' },
+        category: categoryName || 'Toys',
+        url: productUrl,
+        offers: {
+          '@type': 'Offer',
+          url: productUrl,
+          priceCurrency: 'INR',
+          price: price.toFixed(2),
+          availability: inStock
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          seller: { '@type': 'Organization', name: 'Kidroo Toys' },
+          ...(originalPrice > price && {
+            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          }),
+        },
+        ...(product.ratings > 0 && {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.ratings,
+            reviewCount: product.numReviews || 1,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }),
+        ...(product.ageRange && {
+          audience: {
+            '@type': 'PeopleAudience',
+            suggestedMinAge: product.ageRange.split('-')[0] || '0',
+            suggestedMaxAge: product.ageRange.includes('+') ? '99' : (product.ageRange.split('-')[1] || '99'),
+          },
+        }),
+      },
+      // ── BreadcrumbList Schema ──
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: window.location.origin },
+          { '@type': 'ListItem', position: 2, name: 'Shop', item: `${window.location.origin}/shop` },
+          ...(categoryName ? [{ '@type': 'ListItem', position: 3, name: categoryName, item: `${window.location.origin}/shop?category=${product.categories?.[0]?._id || ''}` }] : []),
+          { '@type': 'ListItem', position: categoryName ? 4 : 3, name: name, item: productUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="pdp">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        canonicalUrl={productUrl}
+        ogType="product"
+        ogImage={productImage}
+        ogTitle={seoTitle}
+        ogDescription={seoDescription}
+        jsonLd={jsonLd}
+      />
+
       {/* ── Breadcrumb ── */}
       <nav className="pdp__breadcrumb">
         <Link to="/">Home</Link>
         <FiChevronRight />
-        {categoryName && (
+        {productCategories.length > 0 && (
           <>
-            <Link to={`/?category=${categoryId}`}>{categoryName}</Link>
+            <Link to={`/?category=${productCategories[0].id}`}>
+              {productCategories[0].name || 'Shop'}
+            </Link>
             <FiChevronRight />
           </>
         )}
@@ -215,17 +378,52 @@ const ProductDetail = () => {
 
       {/* ═══════════ PRODUCT MAIN ═══════════ */}
       <section className="pdp__main">
-        {/* Image gallery */}
+        {/* Image slider gallery */}
         <div className="pdp__gallery">
-          <div className="pdp__main-image">
-            {images[selectedImage] ? (
-              <img src={images[selectedImage]} alt={name} />
-            ) : (
-              <div className="pdp__img-placeholder">📦</div>
+          <div className="pdp__slider">
+            {/* Main display area */}
+            <div className="pdp__main-image">
+              {isVideoSlide ? (
+                <div className="pdp__video-wrap">
+                  <iframe
+                    src={youtubeEmbedUrl}
+                    title="Product Video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="pdp__video-iframe"
+                  />
+                </div>
+              ) : images[selectedImage] ? (
+                <img src={images[selectedImage]} alt={name} />
+              ) : (
+                <div className="pdp__img-placeholder">📦</div>
+              )}
+              {discount > 0 && !isVideoSlide && <span className="pdp__badge">-{discount}%</span>}
+            </div>
+
+            {/* Slider arrows */}
+            {totalSlides > 1 && (
+              <>
+                <button className="pdp__slider-arrow pdp__slider-arrow--prev" onClick={handlePrevSlide} aria-label="Previous slide">
+                  <FiChevronLeft />
+                </button>
+                <button className="pdp__slider-arrow pdp__slider-arrow--next" onClick={handleNextSlide} aria-label="Next slide">
+                  <FiChevronRight />
+                </button>
+              </>
             )}
-            {discount > 0 && <span className="pdp__badge">-{discount}%</span>}
+
+            {/* Slide counter */}
+            {totalSlides > 1 && (
+              <div className="pdp__slide-counter">
+                {selectedImage + 1} / {totalSlides}
+              </div>
+            )}
           </div>
-          {images.length > 1 && (
+
+          {/* Thumbnails */}
+          {totalSlides > 1 && (
             <div className="pdp__thumbs">
               {images.map((img, i) => (
                 <button
@@ -236,6 +434,15 @@ const ProductDetail = () => {
                   <img src={img} alt={`${name} ${i + 1}`} />
                 </button>
               ))}
+              {youtubeEmbedUrl && (
+                <button
+                  className={`pdp__thumb pdp__thumb--video ${selectedImage === images.length ? 'pdp__thumb--active' : ''}`}
+                  onClick={() => setSelectedImage(images.length)}
+                >
+                  <FiPlay className="pdp__thumb-play" />
+                  <span>Video</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -263,13 +470,61 @@ const ProductDetail = () => {
 
           <p className="pdp__desc">{product.description}</p>
 
+          {/* Categories */}
+          {productCategories.length > 0 && (
+            <div className="pdp__option-group">
+              <label>Categories</label>
+              <div className="pdp__category-tags">
+                {productCategories.map((c) => (
+                  <Link
+                    key={c.id}
+                    to={`/shop?category=${c.id}`}
+                    className="pdp__category-tag"
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Age Range */}
           {product.ageRange && (
             <div className="pdp__option-group">
               <label>Age Range</label>
               <span className="pdp__age-tag">
-                {product.ageRange.from}–{product.ageRange.to} years
+                {product.ageRange} years
               </span>
+            </div>
+          )}
+
+          {/* ── Skills ── */}
+          {Array.isArray(product.skills) && product.skills.length > 0 && (
+            <div className="pdp__skills">
+              <label className="pdp__skills-label">
+                <FiZap /> Skills Developed
+              </label>
+              <div className="pdp__skills-grid">
+                {product.skills.map((skill) => {
+                  const sid = skill._id || skill.id || skill;
+                  const sName = skill.name || '';
+                  const sDesc = skill.description || '';
+                  const sImg = skill.image || '';
+                  return (
+                    <div key={sid} className="pdp__skill-card">
+                      {sImg && (
+                        <div className="pdp__skill-img">
+                          <img src={sImg} alt={sName} loading="lazy" />
+                        </div>
+                      )}
+                      <div className="pdp__skill-info">
+                        <strong>{sName}</strong>
+                        {sDesc && <span>{sDesc}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -351,10 +606,45 @@ const ProductDetail = () => {
             <button className="pdp__add-btn" onClick={handleAddToCart} disabled={!inStock}>
               <FiShoppingCart /> {inStock ? 'Add to Cart' : 'Out of Stock'}
             </button>
-            <button className="pdp__buy-btn" disabled={!inStock}>
+            <button className="pdp__buy-btn" onClick={handleBuyNow} disabled={!inStock}>
               Buy Now
             </button>
+            <button
+              className={`pdp__wishlist-btn ${isInWishlist(id) ? 'pdp__wishlist-btn--active' : ''}`}
+              onClick={handleToggleWishlist}
+              title={isInWishlist(id) ? 'Remove from wishlist' : 'Add to wishlist'}
+            >
+              <FiHeart />
+            </button>
           </div>
+
+          {/* Warranty & Guarantee badges */}
+          {(product.hasWarranty || product.hasGuarantee) && (
+            <div className="pdp__warranty-badges">
+              {product.hasWarranty && (
+                <div className="pdp__warranty-badge">
+                  <FiShield className="pdp__warranty-icon" />
+                  <div>
+                    <strong>{product.warrantyPeriod ? `${product.warrantyPeriod} Month` : ''} Warranty</strong>
+                    {product.warrantyType && (
+                      <small>{product.warrantyType === 'manufacturer' ? 'Manufacturer' : 'Seller'} Warranty</small>
+                    )}
+                  </div>
+                </div>
+              )}
+              {product.hasGuarantee && (
+                <div className="pdp__warranty-badge">
+                  <FiShield className="pdp__warranty-icon" />
+                  <div>
+                    <strong>{product.guaranteePeriod ? `${product.guaranteePeriod} Month` : ''} Guarantee</strong>
+                    {product.guaranteeTerms && (
+                      <small>{product.guaranteeTerms}</small>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Trust badges */}
           <div className="pdp__trust">
@@ -399,8 +689,10 @@ const ProductDetail = () => {
               <table>
                 <tbody>
                   <tr><td>Brand</td><td>Kidroo</td></tr>
-                  <tr><td>Category</td><td>{categoryName}</td></tr>
-                  {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange.from}–{product.ageRange.to} years</td></tr>}
+                  <tr><td>Categories</td><td>{categoryName || 'Uncategorized'}</td></tr>
+                  {product.hasWarranty && <tr><td>Warranty</td><td>{product.warrantyPeriod ? `${product.warrantyPeriod} months` : 'Yes'} ({product.warrantyType || 'N/A'})</td></tr>}
+                  {product.hasGuarantee && <tr><td>Guarantee</td><td>{product.guaranteePeriod ? `${product.guaranteePeriod} months` : 'Yes'}</td></tr>}
+                  {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
                   {selectedVariant?.weight && <tr><td>Weight</td><td>{selectedVariant.weight} g</td></tr>}
@@ -484,7 +776,11 @@ const ProductDetail = () => {
                     {pImg ? <img src={pImg} alt={pName} loading="lazy" /> : <span>📦</span>}
                   </div>
                   <div className="pdp__related-info">
-                    <span className="pdp__related-cat">{p.category?.catagoryName || ''}</span>
+                    <span className="pdp__related-cat">
+                      {Array.isArray(p.categories) && p.categories.length > 0
+                        ? (typeof p.categories[0] === 'object' ? (p.categories[0].catagoryName || p.categories[0].name || '') : '')
+                        : (p.category?.catagoryName || '')}
+                    </span>
                     <h4>{pName}</h4>
                     <span className="pdp__related-price">₹{pPrice.toFixed(0)}</span>
                   </div>

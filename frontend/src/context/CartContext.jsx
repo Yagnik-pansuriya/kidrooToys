@@ -8,6 +8,38 @@ export const useCart = () => {
   return ctx;
 };
 
+/**
+ * Normalize a product into a consistent cart item shape.
+ * Handles both API products (_id, productName, images[]) and
+ * pre-normalized products (id, name, image).
+ */
+const normalizeCartItem = (product, quantity = 1) => {
+  const variant = product.selectedVariant;
+  // Build a unique cart key: productId + optional variantId
+  const productId = product._id || product.id;
+  const variantId = variant?._id || product.variantId || null;
+  const cartId = variantId ? `${productId}_${variantId}` : productId;
+
+  return {
+    id: cartId,                                // unique key for the cart
+    productId,                                 // actual MongoDB product _id
+    variantId,                                 // variant _id if any
+    name: product.productName || product.name || 'Product',
+    image: variant?.images?.[0]
+      || (Array.isArray(product.images) ? product.images[0] : null)
+      || product.image || '',
+    price: variant?.price ?? product.price ?? 0,
+    originalPrice: variant?.originalPrice ?? product.originalPrice ?? 0,
+    variantName: variant
+      ? Object.values(variant.attributes || {}).join(' / ') || variant.sku || ''
+      : (product.variantName || ''),
+    category: typeof product.category === 'object'
+      ? (product.category?.catagoryName || product.category?.name || '')
+      : (product.category || ''),
+    quantity,
+  };
+};
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     const saved = localStorage.getItem('kidroo_cart');
@@ -20,17 +52,18 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = useCallback((product, quantity = 1) => {
+    const normalized = normalizeCartItem(product, quantity);
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const existing = prev.find(item => item.id === normalized.id);
       let updated;
       if (existing) {
         updated = prev.map(item =>
-          item.id === product.id
+          item.id === normalized.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
       } else {
-        updated = [...prev, { ...product, quantity }];
+        updated = [...prev, normalized];
       }
       saveCart(updated);
       return updated;
@@ -38,22 +71,22 @@ export const CartProvider = ({ children }) => {
     setIsCartOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((productId) => {
+  const removeFromCart = useCallback((itemId) => {
     setCartItems(prev => {
-      const updated = prev.filter(item => item.id !== productId);
+      const updated = prev.filter(item => item.id !== itemId);
       saveCart(updated);
       return updated;
     });
   }, []);
 
-  const updateQuantity = useCallback((productId, quantity) => {
+  const updateQuantity = useCallback((itemId, quantity) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(itemId);
       return;
     }
     setCartItems(prev => {
       const updated = prev.map(item =>
-        item.id === productId ? { ...item, quantity } : item
+        item.id === itemId ? { ...item, quantity } : item
       );
       saveCart(updated);
       return updated;

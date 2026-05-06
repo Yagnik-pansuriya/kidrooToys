@@ -17,7 +17,7 @@ const AdminNewsletter = () => {
   const { showSuccess, showError } = useToast();
   const [toDelete, setToDelete] = useState(null);
 
-  const subscribers = subscribersResp?.data || subscribersResp || [];
+  const subscribers = subscribersResp?.data?.subscribers || subscribersResp?.subscribers || (Array.isArray(subscribersResp?.data) ? subscribersResp.data : []);
   const stats = statsResp?.data || statsResp || { total: 0, active: 0, inactive: 0 };
 
   const confirmDelete = async () => {

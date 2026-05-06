@@ -8,6 +8,8 @@ import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
+import { useCustomerAuth } from '../../../context/CustomerAuthContext';
+import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Offers.scss';
 
 const Offers = () => {
@@ -29,6 +31,7 @@ const Offers = () => {
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
+  const { requireAuth } = useCustomerAuth();
 
   // ── Derived data ────────────────────────────────────────────────
   const heroOffer = useMemo(() => activeOffers.find((o) => o.isFeatured) || activeOffers[0], [activeOffers]);
@@ -86,6 +89,7 @@ const Offers = () => {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
+    if (!requireAuth('Please login to subscribe to our newsletter')) return;
     if (!email.trim()) return;
     try {
       await subscribe(email.trim()).unwrap();
@@ -116,6 +120,20 @@ const Offers = () => {
 
   return (
     <div className="offers-v3">
+      {/* ── SEO Head ── */}
+      <SEOHead
+        title="Offers & Deals - Save Big on Kids Toys"
+        description="Discover amazing deals and discounts on kids toys at Kidroo. Flash sales, clearance offers, and exclusive coupon codes. Save big on educational and fun toys!"
+        keywords="toy deals, kids toy offers, discount toys, toy sale India, cheap kids toys, toy coupon codes, flash sale toys"
+        canonicalUrl={`${window.location.origin}/offers`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'OfferCatalog',
+          name: 'Kidroo Toys - Offers & Deals',
+          description: 'Amazing deals and discounts on premium kids toys.',
+          url: `${window.location.origin}/offers`,
+        }}
+      />
 
       {/* ═══════════ HERO BANNER ═══════════ */}
       {heroOffer && (

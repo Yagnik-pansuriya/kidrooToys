@@ -246,3 +246,142 @@
     text-align: center;
   }
 }
+
+// ── Payment Method Toggles ────────────────────────────────────
+.payment-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-lg;
+    padding: $space-md $space-lg;
+    background: #F8F9FC;
+    border-radius: $radius-lg;
+    border: 1px solid #E2E4EC;
+    transition: border-color $transition-base, box-shadow $transition-base;
+
+    &:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb, 255, 107, 53), 0.08);
+    }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+
+    strong {
+      font-size: 0.95rem;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    p {
+      font-size: 0.78rem;
+      color: var(--color-text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+
+  &__icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  &__config {
+    padding: $space-md $space-lg;
+    background: #F0F4FF;
+    border-radius: $radius-lg;
+    border: 1px dashed #C5D1F0;
+    animation: fadeSlideDown 0.3s ease;
+
+    .admin-field {
+      margin-bottom: $space-md;
+      &:last-child { margin-bottom: 0; }
+    }
+  }
+
+  &__warning {
+    color: #D97706;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: $space-sm $space-md;
+    background: #FFFBEB;
+    border-radius: $radius;
+    border: 1px solid #FDE68A;
+    margin-top: $space-sm;
+  }
+}
+
+.admin-field__hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+// ── Toggle Switch ─────────────────────────────────────────────
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  flex-shrink: 0;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  &__slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #CBD5E1;
+    border-radius: 28px;
+    transition: background 0.3s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  input:checked + &__slider {
+    background: var(--color-primary, #FF6B35);
+  }
+
+  input:checked + &__slider::before {
+    transform: translateX(24px);
+  }
+}
+
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

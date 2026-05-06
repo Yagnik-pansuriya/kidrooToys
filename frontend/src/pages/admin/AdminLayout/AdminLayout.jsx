@@ -11,7 +11,8 @@ import {
   MdSettings,
   MdEmail,
   MdRateReview,
-  MdViewCarousel
+  MdViewCarousel,
+  MdExtension
 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout, setPermissions } from '../../../store/ReducerApi/authSlice';
@@ -27,6 +28,7 @@ const allNavItems = [
   { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null },
   { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers', permRoute: '/offers' },
   { to: '/admin/banners', icon: <MdViewCarousel />, label: 'Banners', permRoute: '/banners' },
+  { to: '/admin/skills', icon: <MdExtension />, label: 'Skills', permRoute: '/skills' },
   { to: '/admin/newsletter', icon: <MdEmail />, label: 'Newsletter', permRoute: '/newsletter' },
   { to: '/admin/reviews', icon: <MdRateReview />, label: 'Reviews', permRoute: '/reviews' },
   { to: '/admin/users', icon: <MdPeople />, label: 'Users', permRoute: '/users', adminOnly: true },

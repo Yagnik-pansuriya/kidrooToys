@@ -7,11 +7,12 @@ import { FiFilter, FiX, FiChevronDown, FiChevronUp } from 'react-icons/fi';
  * Props:
  *  filters      {Object}   Current filter state
  *  categories   {Array}    Category list for dropdown
+ *  skills       {Array}    Skills list for dropdown
  *  onChange      {fn}       Called with updated filters
  *  onReset       {fn}       Called to reset all filters
  *  activeCount   {number}   Number of active filters (for badge)
  */
-const ProductFilters = ({ filters, categories = [], onChange, onReset, activeCount = 0 }) => {
+const ProductFilters = ({ filters, categories = [], skills = [], onChange, onReset, activeCount = 0 }) => {
   const [open, setOpen] = useState(false);
 
   const update = (key, value) => {
@@ -55,28 +56,50 @@ const ProductFilters = ({ filters, categories = [], onChange, onReset, activeCou
               </select>
             </div>
 
-            {/* Min Price */}
+            {/* Price Range */}
             <div className="product-filters__field">
-              <label>Min Price</label>
-              <input
-                type="number"
-                placeholder="₹ 0"
-                min="0"
-                value={filters.minPrice}
-                onChange={(e) => update('minPrice', e.target.value)}
-              />
+              <label>Price Range</label>
+              <select
+                value={filters.priceRange}
+                onChange={(e) => update('priceRange', e.target.value)}
+              >
+                <option value="">All Prices</option>
+                <option value="under499">Under ₹499</option>
+                <option value="under999">Under ₹999</option>
+                <option value="above1000">Above ₹1000</option>
+              </select>
             </div>
 
-            {/* Max Price */}
+            {/* Age Group */}
             <div className="product-filters__field">
-              <label>Max Price</label>
-              <input
-                type="number"
-                placeholder="₹ 9999"
-                min="0"
-                value={filters.maxPrice}
-                onChange={(e) => update('maxPrice', e.target.value)}
-              />
+              <label>Age Group</label>
+              <select
+                value={filters.ageRange}
+                onChange={(e) => update('ageRange', e.target.value)}
+              >
+                <option value="">All Ages</option>
+                <option value="0-2">0–2 years</option>
+                <option value="2-4">2–4 years</option>
+                <option value="4-6">4–6 years</option>
+                <option value="6-8">6–8 years</option>
+                <option value="8+">8+ years</option>
+              </select>
+            </div>
+
+            {/* Skills */}
+            <div className="product-filters__field">
+              <label>Skill</label>
+              <select
+                value={filters.skill}
+                onChange={(e) => update('skill', e.target.value)}
+              >
+                <option value="">All Skills</option>
+                {skills.map((s) => (
+                  <option key={s._id || s.id} value={s._id || s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Featured */}
