@@ -129,13 +129,14 @@
   }
 
   &__section {
-    padding: $space-md 0;
+    padding: $space-md $space-lg;
     border-bottom: 1px solid #F0F0F0;
 
     &:last-of-type { border-bottom: none; }
 
     h4 {
       font-size: 0.95rem;
+      font-weight: 700;
       margin-bottom: $space-sm;
       color: var(--color-text-primary);
     }
@@ -143,14 +144,15 @@
     p {
       font-size: 0.88rem;
       color: var(--color-text-secondary);
-      margin: 2px 0;
+      margin: 3px 0;
+      line-height: 1.5;
     }
 
     &--razorpay {
       background: #F5F3FF;
       padding: $space-md $space-lg;
       border-radius: $radius-lg;
-      margin-bottom: $space-md;
+      margin: 0 $space-lg $space-md;
       border: 1px solid #E0E7FF;
     }
   }

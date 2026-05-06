@@ -1,0 +1,62 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+// ─── Page layout ──────────────────────────────────────────────────────────────
+.admin-page {
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+    margin-bottom: $space-xl; // spacing between header and cards grid
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.8rem;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  &__subtitle {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+    margin: 4px 0 0;
+  }
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.admin-empty {
+  text-align: center;
+  padding: $space-2xl;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  background: white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+}
+
+// ─── Banner cards grid ────────────────────────────────────────────────────────
+.admin-offer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $space-md;
+
+  @include sm { grid-template-columns: repeat(2, 1fr); }
+  @include lg { grid-template-columns: repeat(3, 1fr); }
+}
+
+// ─── Banner card image ────────────────────────────────────────────────────────
+// Override the inline style so the image is contained properly without cropping
+.admin-offer-card {
+  overflow: visible; // don't clip the card content
+
+  &__banner-img {
+    width: 100%;
+    height: 140px;
+    object-fit: contain; // show full image — no cropping
+    background: #F0F2F8; // subtle bg so transparent images look clean
+    border-radius: $radius;
+    margin-bottom: $space-md;
+    display: block;
+  }
+}

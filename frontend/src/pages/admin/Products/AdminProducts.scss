@@ -452,13 +452,15 @@
 
   input, select, textarea {
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding: $space-sm $space-md;
     border: 2px solid #E2E4EC;
     border-radius: $radius;
     font-size: 0.9rem;
     transition: border-color $transition-base;
 
-    &:focus { border-color: var(--color-primary); }
+    &:focus { border-color: var(--color-primary); outline: none; }
   }
 
   textarea { resize: vertical; }

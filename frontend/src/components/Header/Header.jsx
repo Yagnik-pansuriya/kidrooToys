@@ -69,7 +69,7 @@ const Header = () => {
         {/* Actions */}
         <div className="header__actions">
           {/* Wishlist */}
-          <NavLink to="/wishlist" className="header__action-btn" title="Wishlist">
+          <NavLink to="/wishlist" className="header__action-btn header__wishlist-btn" title="Wishlist">
             <FiHeart />
             {wishlistIds.length > 0 && (
               <span className="header__wishlist-count">{wishlistIds.length}</span>

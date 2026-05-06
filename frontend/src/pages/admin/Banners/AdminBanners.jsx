@@ -8,6 +8,7 @@ import {
   useDeleteBannerMutation,
 } from '../../../store/ActionApi/bannerApi';
 import { useToast } from '../../../context/ToastContext';
+import './AdminBanners.scss';
 
 const emptyForm = {
   tag: 'KIDS NEED TOYS',
@@ -137,7 +138,11 @@ const AdminBanners = () => {
                 </div>
               </div>
               {banner.image && (
-                <img src={banner.image} alt={banner.title} style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 8, marginBottom: 12 }} />
+                <img
+                  src={banner.image}
+                  alt={banner.title}
+                  className="admin-offer-card__banner-img"
+                />
               )}
               <h3 className="admin-offer-card__title">{banner.title} {banner.highlightText}</h3>
               <p className="admin-offer-card__desc">{banner.italicText} {banner.afterText}</p>
