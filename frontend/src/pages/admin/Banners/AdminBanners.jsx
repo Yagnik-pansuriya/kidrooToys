@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiSearch } from 'react-icons/fi';
 
 import {
   useGetBannersQuery,
@@ -9,6 +9,18 @@ import {
 } from '../../../store/ActionApi/bannerApi';
 import { useToast } from '../../../context/ToastContext';
 import './AdminBanners.scss';
+
+import React from 'react';
+
+// Simple debounce hook
+function useDebounce(value, delay = 400) {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
 
 const emptyForm = {
   tag: 'KIDS NEED TOYS',
@@ -26,7 +38,12 @@ const emptyForm = {
 };
 
 const AdminBanners = () => {
-  const { data: resp, isFetching } = useGetBannersQuery();
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  const { data: resp, isFetching } = useGetBannersQuery(
+    debouncedSearch ? { search: debouncedSearch } : undefined
+  );
   const banners = resp?.data || resp || [];
   const bannerList = Array.isArray(banners) ? banners : [];
 
@@ -120,10 +137,31 @@ const AdminBanners = () => {
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="admin-search-bar">
+        <FiSearch className="admin-search-bar__icon" />
+        <input
+          type="text"
+          className="admin-search-bar__input"
+          placeholder="Search banners by title, tag, highlight text…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        {searchInput && (
+          <button className="admin-search-bar__clear" onClick={() => setSearchInput('')}>
+            <FiX />
+          </button>
+        )}
+      </div>
+
       {isFetching ? (
         <div className="admin-loading">Loading banners...</div>
       ) : bannerList.length === 0 ? (
-        <div className="admin-empty">No banners yet. Click "Add Banner" to create one.</div>
+        <div className="admin-empty">
+          {debouncedSearch
+            ? `No banners found for "${debouncedSearch}"`
+            : 'No banners yet. Click "Add Banner" to create one.'}
+        </div>
       ) : (
         <div className="admin-offer-grid">
           {bannerList.map((banner) => (

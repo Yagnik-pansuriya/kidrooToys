@@ -16,7 +16,7 @@ export const emptyForm = {
   featured:           false,
   newArrival:         false,
   bestSeller:         false,
-  ageRange:           '',
+  ageRange:           [],
   tags:               '',
   isActive:           true,
   youtubeUrl:         '',

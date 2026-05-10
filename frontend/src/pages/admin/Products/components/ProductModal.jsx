@@ -193,17 +193,54 @@ const ProductModal = ({
               <input type="text" placeholder="e.g. wooden-toy-car" required {...field('slug')} />
             </div>
 
-            {/* Age Range */}
-            <div className="admin-field">
+            {/* Age Range — multi-select */}
+            <div className="admin-field admin-field--full">
               <label>Age Range *</label>
-              <select required value={form.ageRange} onChange={(e) => setForm((p) => ({ ...p, ageRange: e.target.value }))}>
-                <option value="">Select Age Range</option>
-                <option value="0-2">0–2 years</option>
-                <option value="2-4">2–4 years</option>
-                <option value="4-6">4–6 years</option>
-                <option value="6-8">6–8 years</option>
-                <option value="8+">8+ years</option>
-              </select>
+              {/* Selected chips */}
+              {form.ageRange.length > 0 && (
+                <div className="admin-category-chips">
+                  {form.ageRange.map((range) => {
+                    const labels = { '0-2': '0–2 years', '2-4': '2–4 years', '4-6': '4–6 years', '6-8': '6–8 years', '8+': '8+ years' };
+                    return (
+                      <span key={range} className="admin-category-chip">
+                        {labels[range] || range}
+                        <button type="button" onClick={() => setForm((p) => ({ ...p, ageRange: p.ageRange.filter((r) => r !== range) }))} aria-label={`Remove ${range}`}>
+                          <FiX />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Checkbox list */}
+              <div className="admin-category-grid">
+                {[
+                  { value: '0-2', label: '0–2 years' },
+                  { value: '2-4', label: '2–4 years' },
+                  { value: '4-6', label: '4–6 years' },
+                  { value: '6-8', label: '6–8 years' },
+                  { value: '8+',  label: '8+ years'  },
+                ].map((opt) => {
+                  const checked = form.ageRange.includes(opt.value);
+                  return (
+                    <label key={opt.value} className={`admin-category-option ${checked ? 'admin-category-option--checked' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          setForm((p) => ({
+                            ...p,
+                            ageRange: checked
+                              ? p.ageRange.filter((r) => r !== opt.value)
+                              : [...p.ageRange, opt.value],
+                          }));
+                        }}
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Description ─ full width */}

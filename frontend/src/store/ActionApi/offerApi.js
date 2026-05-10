@@ -4,7 +4,12 @@ import { setOffers } from '../ReducerApi/offerSlice';
 export const offerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getOffers: builder.query({
-      query: () => API_ENDPOINTS.OFFERS,
+      query: ({ search } = {}) => {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        const qs = params.toString();
+        return `${API_ENDPOINTS.OFFERS}${qs ? `?${qs}` : ''}`;
+      },
       providesTags: ['Offers'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {

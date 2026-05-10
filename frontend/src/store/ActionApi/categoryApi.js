@@ -4,7 +4,12 @@ import { setCategories } from '../ReducerApi/categorySlice';
 export const categoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCategories: builder.query({
-      query: () => API_ENDPOINTS.CATEGORIES,
+      query: ({ search } = {}) => {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        const qs = params.toString();
+        return `${API_ENDPOINTS.CATEGORIES}${qs ? `?${qs}` : ''}`;
+      },
       providesTags: ['Categories'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
@@ -67,6 +72,14 @@ export const categoryApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Categories'],
     }),
+
+    toggleCategoryStatus: builder.mutation({
+      query: (id) => ({
+        url: `${API_ENDPOINTS.CATEGORIES}/${id}/toggle-status`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Categories'],
+    }),
   }),
 });
 
@@ -78,4 +91,5 @@ export const {
   useDeleteCategoryMutation,
   useReorderCategoriesMutation,
   useMoveCategoryPositionMutation,
+  useToggleCategoryStatusMutation,
 } = categoryApi;

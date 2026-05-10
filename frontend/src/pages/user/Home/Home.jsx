@@ -16,11 +16,12 @@ import './Home.scss';
 const Home = () => {
   // ── API data ──────────────────────────────────────────────────
   useGetCategoriesQuery();
-  const { data: newArrivalResp } = useGetProductsQuery({ page: 1, limit: 8, newArrival: 'true' });
+  const { data: newArrivalResp } = useGetProductsQuery({ page: 1, limit: 8, newArrival: 'true', isActive: 'true' });
   const { data: bannerResp } = useGetBannersQuery({ activeOnly: true });
 
   const categories = useSelector((s) => s.category.categories) || [];
-  const categoryList = Array.isArray(categories) ? categories : categories?.data || [];
+  const allCategories = Array.isArray(categories) ? categories : categories?.data || [];
+  const categoryList = allCategories.filter((c) => c.isActive !== false);
 
   // Parse new arrival products from RTK Query response directly
   const newArrivalInner = newArrivalResp?.data || newArrivalResp;

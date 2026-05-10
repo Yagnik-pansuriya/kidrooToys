@@ -4,7 +4,12 @@ import { setSkills } from '../ReducerApi/skillSlice';
 export const skillApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSkills: builder.query({
-      query: () => API_ENDPOINTS.SKILLS,
+      query: ({ search } = {}) => {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        const qs = params.toString();
+        return `${API_ENDPOINTS.SKILLS}${qs ? `?${qs}` : ''}`;
+      },
       providesTags: ['Skills'],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
