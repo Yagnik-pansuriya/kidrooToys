@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FiPlus } from 'react-icons/fi';
+import React, { useState, useMemo } from 'react';
+import { FiPlus, FiSearch, FiX } from 'react-icons/fi';
 import { useGetOffersQuery, useAddOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation } from '../../../store/ActionApi/offerApi';
 import { useToast } from '../../../context/ToastContext';
 import Loader from '../../../components/Loader/Loader';
@@ -9,8 +9,23 @@ import OfferPreviewModal from './components/OfferPreviewModal';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import './AdminOffers.scss';
 
+// Simple debounce hook
+function useDebounce(value, delay = 400) {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 const AdminOffers = () => {
-  const { data: offersResponse, isLoading: isOffersLoading } = useGetOffersQuery();
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  const { data: offersResponse, isLoading: isOffersLoading } = useGetOffersQuery(
+    debouncedSearch ? { search: debouncedSearch } : undefined
+  );
   const offerList = offersResponse?.data || offersResponse || [];
   
   const [addOffer, { isLoading: isAdding }] = useAddOfferMutation();
@@ -105,6 +120,23 @@ const AdminOffers = () => {
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="admin-search-bar">
+        <FiSearch className="admin-search-bar__icon" />
+        <input
+          type="text"
+          className="admin-search-bar__input"
+          placeholder="Search offers by title, coupon code, tag…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        {searchInput && (
+          <button className="admin-search-bar__clear" onClick={() => setSearchInput('')}>
+            <FiX />
+          </button>
+        )}
+      </div>
+
       {isOffersLoading ? (
         <Loader inline message="Loading offers…" />
       ) : (
@@ -118,7 +150,11 @@ const AdminOffers = () => {
               onDelete={handleDelete}
             />
           ))}
-          {Array.isArray(offerList) && offerList.length === 0 && <p>No offers found.</p>}
+          {Array.isArray(offerList) && offerList.length === 0 && (
+            <p className="admin-empty-state">
+              {debouncedSearch ? `No offers found for "${debouncedSearch}"` : 'No offers found.'}
+            </p>
+          )}
         </div>
       )}
 

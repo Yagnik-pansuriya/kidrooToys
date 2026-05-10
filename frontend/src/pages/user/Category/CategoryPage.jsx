@@ -39,7 +39,7 @@ const CategoryPage = () => {
   const [page, setPage] = useState(1);
 
   const { data: productsResponse, isFetching } = useGetProductsQuery(
-    { page, limit: PRODUCTS_PER_PAGE, category: categoryId },
+    { page, limit: PRODUCTS_PER_PAGE, category: categoryId, isActive: 'true' },
     { skip: !categoryId }
   );
 

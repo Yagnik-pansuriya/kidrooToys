@@ -6,7 +6,7 @@ export const productApi = baseApi.injectEndpoints({
 
     // GET /api/products?page=1&limit=10&search=...&category=...&minPrice=...&maxPrice=...&featured=...&newArrival=...&bestSeller=...
     getProducts: builder.query({
-      query: ({ page = 1, limit = 10, search = '', category = '', minPrice = '', maxPrice = '', featured = '', newArrival = '', bestSeller = '', ageRange = '', skill = '' } = {}) => {
+      query: ({ page = 1, limit = 10, search = '', category = '', minPrice = '', maxPrice = '', featured = '', newArrival = '', bestSeller = '', ageRange = '', skill = '', isActive = '' } = {}) => {
         const params = new URLSearchParams({ page, limit });
         if (search.trim())   params.append('search', search.trim());
         if (category)        params.append('category', category);
@@ -17,6 +17,7 @@ export const productApi = baseApi.injectEndpoints({
         if (bestSeller !== '') params.append('bestSeller', bestSeller);
         if (ageRange !== '')  params.append('ageRange', ageRange);
         if (skill !== '')     params.append('skill', skill);
+        if (isActive !== '')  params.append('isActive', isActive);
         return `${API_ENDPOINTS.PRODUCTS}?${params.toString()}`;
       },
       providesTags: ['Products'],
@@ -89,6 +90,14 @@ export const productApi = baseApi.injectEndpoints({
       invalidatesTags: ['Products'],
     }),
 
+    toggleProductStatus: builder.mutation({
+      query: (id) => ({
+        url: `${API_ENDPOINTS.PRODUCTS}/${id}/toggle-status`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['Products'],
+    }),
+
     // GET /api/products/:id (single product detail)
     getProductById: builder.query({
       query: (id) => `${API_ENDPOINTS.PRODUCTS}/${id}`,
@@ -106,4 +115,5 @@ export const {
   useDeleteProductMutation,
   useReorderProductsMutation,
   useMoveProductPositionMutation,
+  useToggleProductStatusMutation,
 } = productApi;

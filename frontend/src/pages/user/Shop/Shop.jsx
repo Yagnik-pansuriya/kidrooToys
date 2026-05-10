@@ -71,11 +71,13 @@ const Shop = () => {
     category: selectedCategory,
     ageRange: selectedAgeGroup,
     skill: selectedSkill,
+    isActive: 'true',
     ...priceFilter,
   });
 
   const categories = useSelector((s) => s.category.categories) || [];
-  const categoryList = Array.isArray(categories) ? categories : categories?.data || [];
+  const allCategories = Array.isArray(categories) ? categories : categories?.data || [];
+  const categoryList = allCategories.filter((c) => c.isActive !== false);
 
   // Extract products & pagination directly from the query response (not shared Redux slice)
   const inner = productsResponse?.data || productsResponse || {};

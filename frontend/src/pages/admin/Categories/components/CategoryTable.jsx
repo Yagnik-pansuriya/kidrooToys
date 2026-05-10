@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { FiEdit2, FiTrash2, FiImage, FiCheckCircle, FiMove, FiCheck } from 'react-icons/fi';
 import Loader from '../../../../components/Loader/Loader';
 
-const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReorder, onMovePosition, movingId }) => {
+const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReorder, onMovePosition, movingId, searchTerm, onToggleStatus }) => {
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
   const [editingPosId, setEditingPosId] = useState(null);
@@ -22,7 +22,6 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
     setDragIdx(idx);
     dragRef.current = idx;
     e.dataTransfer.effectAllowed = 'move';
-    // Transparent drag image
     const el = e.currentTarget;
     el.style.opacity = '0.5';
   };
@@ -34,8 +33,6 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
       const [moved] = newOrder.splice(dragIdx, 1);
       newOrder.splice(overIdx, 0, moved);
 
-      // Preserve the existing position values but redistribute them
-      // in the new order. This prevents duplicate positions across pages.
       const existingPositions = sorted.map((cat) => cat.position ?? 0);
       const items = newOrder.map((cat, i) => ({
         id: cat._id || cat.id,
@@ -75,7 +72,6 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
       return;
     }
 
-    // Clamp to valid range: 0 to total - 1
     const clampedPos = Math.min(newPos, Math.max(maxPos, 0));
 
     if (clampedPos === currentPos) {
@@ -110,17 +106,23 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
             <th>Category Name</th>
             <th>Slug</th>
             <th>Pos</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {sorted.length === 0 && (
-            <tr><td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>No categories yet.</td></tr>
+            <tr>
+              <td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>
+                {searchTerm ? `No categories found for "${searchTerm}"` : 'No categories yet.'}
+              </td>
+            </tr>
           )}
           {sorted.map((category, idx) => {
             const categoryId = category._id || category.id;
             const isMoving = movingId === categoryId;
             const isEditingPos = editingPosId === categoryId;
+            const isActive = category.isActive !== false; // default true for legacy data
 
             return (
               <tr
@@ -129,7 +131,7 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
                 onDragStart={(e) => onDragStart(e, idx)}
                 onDragEnd={onDragEnd}
                 onDragOver={(e) => onDragOver(e, idx)}
-                className={`${dragIdx === idx ? 'dragging' : ''} ${overIdx === idx && dragIdx !== idx ? 'drag-over' : ''}`}
+                className={`${dragIdx === idx ? 'dragging' : ''} ${overIdx === idx && dragIdx !== idx ? 'drag-over' : ''} ${!isActive ? 'row--inactive' : ''}`}
                 style={{ cursor: 'grab' }}
               >
                 <td>
@@ -187,6 +189,23 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
                       {isMoving ? '…' : (category.position ?? idx)}
                     </span>
                   )}
+                </td>
+
+                {/* Status toggle */}
+                <td>
+                  <button
+                    className={`status-toggle ${isActive ? 'status-toggle--active' : 'status-toggle--inactive'}`}
+                    onClick={() => onToggleStatus?.(category)}
+                    title={isActive ? 'Click to deactivate' : 'Click to activate'}
+                    disabled={deleting}
+                  >
+                    <span className="status-toggle__track">
+                      <span className="status-toggle__thumb" />
+                    </span>
+                    <span className="status-toggle__label">
+                      {isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </button>
                 </td>
 
                 <td>

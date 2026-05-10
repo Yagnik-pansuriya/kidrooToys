@@ -84,16 +84,18 @@ const useProductForm = () => {
       newArrival:         product.newArrival ?? false,
       bestSeller:         product.bestSeller ?? false,
       ageRange:            (() => {
-                              // New format: string like '0-2', '4-6', '8+'
-                              if (typeof product.ageRange === 'string') return product.ageRange;
+                              // New format: array of strings like ['0-2', '4-6']
+                              if (Array.isArray(product.ageRange)) return product.ageRange;
+                              // Old format: single string like '0-2'
+                              if (typeof product.ageRange === 'string' && product.ageRange) return [product.ageRange];
                               // Legacy format: { from, to } → map to closest option
                               if (product.ageRange && typeof product.ageRange === 'object') {
                                 const f = product.ageRange.from ?? 0;
                                 const t = product.ageRange.to;
-                                if (t === undefined || t === null) return '8+';
-                                return `${f}-${t}`;
+                                if (t === undefined || t === null) return ['8+'];
+                                return [`${f}-${t}`];
                               }
-                              return '';
+                              return [];
                             })(),
       tags:               Array.isArray(product.tags)
                             ? product.tags.join(',')
@@ -161,10 +163,17 @@ const useProductForm = () => {
     // String fields — always send
     const stringFields = [
       'productName', 'slug', 'description', 'tags', 'youtubeUrl',
-      'warrantyType', 'guaranteeTerms', 'ageRange', 'seoKeywords',
+      'warrantyType', 'guaranteeTerms', 'seoKeywords',
       'seoTitle', 'seoDescription',
     ];
     stringFields.forEach((key) => fd.append(key, form[key] ?? ''));
+
+    // ageRange — send as comma-separated string
+    if (Array.isArray(form.ageRange) && form.ageRange.length > 0) {
+      fd.append('ageRange', form.ageRange.join(','));
+    } else {
+      fd.append('ageRange', '');
+    }
 
     // Numeric fields — convert empty string to '0' so the backend
     // never receives a blank that might silently become NaN or get

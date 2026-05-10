@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FiPlus } from 'react-icons/fi';
+import { FiPlus, FiSearch, FiX } from 'react-icons/fi';
 import {
   useGetCategoriesQuery,
   useAddCategoryMutation,
@@ -8,6 +8,7 @@ import {
   useDeleteCategoryMutation,
   useReorderCategoriesMutation,
   useMoveCategoryPositionMutation,
+  useToggleCategoryStatusMutation,
 } from '../../../store/ActionApi/categoryApi';
 import { useToast } from '../../../context/ToastContext';
 
@@ -16,6 +17,16 @@ import CategoryTable from './components/CategoryTable';
 import CategoryFormModal from './components/CategoryFormModal';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 
+// Simple debounce hook
+function useDebounce(value, delay = 400) {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 const AdminCategories = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -23,13 +34,20 @@ const AdminCategories = () => {
   const [apiError, setApiError] = useState('');
   const { showSuccess, showError } = useToast();
 
+  // Search
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
+
   // RTK Query hooks & Redux
-  const { isLoading: loadingCategories } = useGetCategoriesQuery();
+  const { isLoading: loadingCategories } = useGetCategoriesQuery(
+    debouncedSearch ? { search: debouncedSearch } : undefined
+  );
   const [addCategory, { isLoading: adding }] = useAddCategoryMutation();
   const [updateCategory, { isLoading: updating }] = useUpdateCategoryMutation();
   const [deleteCategory, { isLoading: deleting }] = useDeleteCategoryMutation();
   const [reorderCategories] = useReorderCategoriesMutation();
   const [moveCategoryPosition, { isLoading: isMovingCategory }] = useMoveCategoryPositionMutation();
+  const [toggleCategoryStatus] = useToggleCategoryStatusMutation();
   const [movingCategoryId, setMovingCategoryId] = useState(null);
 
   const categoryList = useSelector((state) => state.category.categories) || [];
@@ -118,6 +136,16 @@ const AdminCategories = () => {
     }
   };
 
+  // Toggle active/inactive
+  const handleToggleStatus = async (category) => {
+    try {
+      await toggleCategoryStatus(category._id || category.id).unwrap();
+      showSuccess(`Category ${category.isActive ? 'deactivated' : 'activated'}`);
+    } catch (err) {
+      showError(err?.data?.message || 'Toggle failed');
+    }
+  };
+
   return (
     <div className="admin-products">
       {/* Header */}
@@ -126,6 +154,23 @@ const AdminCategories = () => {
         <button className="admin-btn admin-btn--primary" onClick={openAdd}>
           <FiPlus /> Add Category
         </button>
+      </div>
+
+      {/* Search Bar */}
+      <div className="admin-search-bar">
+        <FiSearch className="admin-search-bar__icon" />
+        <input
+          type="text"
+          className="admin-search-bar__input"
+          placeholder="Search categories by name, slug, description…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        {searchInput && (
+          <button className="admin-search-bar__clear" onClick={() => setSearchInput('')}>
+            <FiX />
+          </button>
+        )}
       </div>
 
       {/* Table with drag-and-drop */}
@@ -138,6 +183,8 @@ const AdminCategories = () => {
         onReorder={handleReorder}
         onMovePosition={handleMovePosition}
         movingId={movingCategoryId}
+        searchTerm={debouncedSearch}
+        onToggleStatus={handleToggleStatus}
       />
 
       {/* Add / Edit Modal */}

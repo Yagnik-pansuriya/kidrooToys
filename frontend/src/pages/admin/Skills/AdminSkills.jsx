@@ -1,12 +1,30 @@
 import { useState, useRef } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiLoader, FiZap } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiLoader, FiZap, FiSearch } from 'react-icons/fi';
 import { useGetSkillsQuery, useAddSkillMutation, useUpdateSkillMutation, useDeleteSkillMutation } from '../../../store/ActionApi/skillApi';
 import { useToast } from '../../../context/ToastContext';
 import './AdminSkills.scss';
 
+import React from 'react';
+
+// Simple debounce hook
+function useDebounce(value, delay = 400) {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 const AdminSkills = () => {
+  // ── Search ────────────────────────────────────────────────────
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
+
   // ── API ───────────────────────────────────────────────────────
-  const { data: skillsResp, isLoading } = useGetSkillsQuery();
+  const { data: skillsResp, isLoading } = useGetSkillsQuery(
+    debouncedSearch ? { search: debouncedSearch } : undefined
+  );
   const [addSkill, { isLoading: adding }] = useAddSkillMutation();
   const [updateSkill, { isLoading: updating }] = useUpdateSkillMutation();
   const [deleteSkill] = useDeleteSkillMutation();
@@ -99,11 +117,32 @@ const AdminSkills = () => {
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="admin-search-bar">
+        <FiSearch className="admin-search-bar__icon" />
+        <input
+          type="text"
+          className="admin-search-bar__input"
+          placeholder="Search skills by name or description…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        {searchInput && (
+          <button className="admin-search-bar__clear" onClick={() => setSearchInput('')}>
+            <FiX />
+          </button>
+        )}
+      </div>
+
       {/* Grid */}
       {skillList.length === 0 ? (
         <div className="admin-skills__empty">
           <FiZap />
-          <p>No skills yet. Create one to get started!</p>
+          <p>
+            {debouncedSearch
+              ? `No skills found for "${debouncedSearch}"`
+              : 'No skills yet. Create one to get started!'}
+          </p>
         </div>
       ) : (
         <div className="admin-skills__grid">

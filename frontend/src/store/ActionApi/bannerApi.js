@@ -5,9 +5,10 @@ export const bannerApi = baseApi.injectEndpoints({
 
     // GET /api/banners?activeOnly=true (public)
     getBanners: builder.query({
-      query: ({ activeOnly = false } = {}) => {
+      query: ({ activeOnly = false, search } = {}) => {
         const params = new URLSearchParams();
         if (activeOnly) params.append('activeOnly', 'true');
+        if (search) params.append('search', search);
         const qs = params.toString();
         return `${API_ENDPOINTS.BANNERS}${qs ? `?${qs}` : ''}`;
       },

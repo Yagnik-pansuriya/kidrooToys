@@ -160,3 +160,159 @@ h1, h2, h3, h4, h5, h6 {
     opacity: 1;
   }
 }
+
+// ─── Shared Admin Search Bar ──────────────────────────────────────────────────
+.admin-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  background: #fff;
+  border: 2px solid #E2E4EC;
+  border-radius: 0.75rem;
+  transition: border-color 250ms ease, box-shadow 250ms ease;
+  overflow: hidden;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  }
+
+  &__icon {
+    position: absolute;
+    left: 1rem;
+    font-size: 1.05rem;
+    color: #8A8D9E;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
+
+  &__input {
+    width: 100%;
+    padding: 0.7rem 2.5rem 0.7rem 2.75rem;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    color: #1A1D2E;
+    font-family: inherit;
+
+    &::placeholder {
+      color: #8A8D9E;
+      font-weight: 500;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    color: #8A8D9E;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 250ms ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background: #F0F2F8;
+      color: #EF4444;
+    }
+  }
+}
+
+// Admin empty state for search results
+.admin-empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #8A8D9E;
+  font-size: 0.92rem;
+  grid-column: 1 / -1;
+}
+
+// ── Status Toggle Switch ──────────────────────────────────────────
+.status-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  font-family: inherit;
+
+  &__track {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    border-radius: 12px;
+    background: #ccc;
+    transition: background 0.25s ease;
+    flex-shrink: 0;
+  }
+
+  &__thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.25s ease;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  // Active state
+  &--active {
+    .status-toggle__track {
+      background: #22c55e;
+    }
+    .status-toggle__thumb {
+      transform: translateX(16px);
+    }
+    .status-toggle__label {
+      color: #16a34a;
+    }
+  }
+
+  // Inactive state
+  &--inactive {
+    .status-toggle__track {
+      background: #d1d5db;
+    }
+    .status-toggle__label {
+      color: #9ca3af;
+    }
+  }
+
+  &:hover .status-toggle__track {
+    filter: brightness(0.92);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Dim inactive rows in admin tables
+.row--inactive {
+  opacity: 0.55;
+  &:hover {
+    opacity: 0.8;
+  }
+}
