@@ -15,7 +15,7 @@ import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove, FiCheck } from 'react-ico
  *  onMovePosition {fn}     Called with { id, targetPosition } for cross-page move
  *  movingId     {string|null}  ID of the product currently being moved (shows spinner)
  */
-const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants, onReorder, onMovePosition, movingId, totalItems }) => {
+const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants, onReorder, onMovePosition, movingId, totalItems, onToggleStatus }) => {
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
   const [editingPosId, setEditingPosId] = useState(null);
@@ -114,7 +114,8 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
           <th>Categories</th>
           <th>Price</th>
           <th>Pos</th>
-          <th>Status</th>
+          <th>Stock</th>
+          <th>Active</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -170,6 +171,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
           const productId = product._id || product.id;
           const isMoving = movingId === productId;
           const isEditingPos = editingPosId === productId;
+          const isActive = product.isActive !== false;
 
           return (
             <tr
@@ -178,7 +180,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
               onDragStart={(e) => onDragStart(e, idx)}
               onDragEnd={onDragEnd}
               onDragOver={(e) => onDragOver(e, idx)}
-              className={`${dragIdx === idx ? 'dragging' : ''} ${overIdx === idx && dragIdx !== idx ? 'drag-over' : ''}`}
+              className={`${dragIdx === idx ? 'dragging' : ''} ${overIdx === idx && dragIdx !== idx ? 'drag-over' : ''} ${!isActive ? 'row--inactive' : ''}`}
               style={{ cursor: 'grab' }}
             >
               {/* Drag handle */}
@@ -256,6 +258,23 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
                 <span className={`status ${inStock ? 'status--delivered' : 'status--cancelled'}`}>
                   {inStock ? 'In Stock' : 'Out of Stock'}
                 </span>
+              </td>
+
+              {/* Active toggle */}
+              <td>
+                <button
+                  className={`status-toggle ${isActive ? 'status-toggle--active' : 'status-toggle--inactive'}`}
+                  onClick={() => onToggleStatus?.(product)}
+                  title={isActive ? 'Click to deactivate' : 'Click to activate'}
+                  disabled={deleting}
+                >
+                  <span className="status-toggle__track">
+                    <span className="status-toggle__thumb" />
+                  </span>
+                  <span className="status-toggle__label">
+                    {isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </button>
               </td>
 
               {/* Actions */}

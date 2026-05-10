@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { FiStar, FiTrash2, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiStar, FiTrash2, FiCheckCircle, FiXCircle, FiSearch, FiX } from 'react-icons/fi';
 import { MdRateReview } from 'react-icons/md';
 import {
   useGetAllReviewsQuery,
@@ -12,11 +12,35 @@ import Pagination from '../../../components/Pagination/Pagination';
 import Loader from '../../../components/Loader/Loader';
 import './AdminReviews.scss';
 
+import React from 'react';
+
+// Simple debounce hook
+function useDebounce(value, delay = 400) {
+  const [debounced, setDebounced] = React.useState(value);
+  React.useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 const REVIEWS_PER_PAGE = 20;
 
 const AdminReviews = () => {
   const [page, setPage] = useState(1);
-  const { data: reviewsResp, isLoading } = useGetAllReviewsQuery({ page, limit: REVIEWS_PER_PAGE });
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
+
+  // Reset to page 1 when search changes
+  React.useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
+  const { data: reviewsResp, isLoading } = useGetAllReviewsQuery({
+    page,
+    limit: REVIEWS_PER_PAGE,
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+  });
   const [deleteReview] = useDeleteReviewMutation();
   const [toggleApproval] = useToggleReviewApprovalMutation();
   const { showSuccess, showError } = useToast();
@@ -61,6 +85,23 @@ const AdminReviews = () => {
         <span className="admin-reviews__count">{totalItems} reviews</span>
       </div>
 
+      {/* Search Bar */}
+      <div className="admin-search-bar">
+        <FiSearch className="admin-search-bar__icon" />
+        <input
+          type="text"
+          className="admin-search-bar__input"
+          placeholder="Search reviews by product, reviewer, title, comment…"
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+        />
+        {searchInput && (
+          <button className="admin-search-bar__clear" onClick={() => setSearchInput('')}>
+            <FiX />
+          </button>
+        )}
+      </div>
+
       {isLoading ? (
         <Loader inline message="Loading reviews…" />
       ) : (
@@ -81,7 +122,11 @@ const AdminReviews = () => {
             <tbody>
               {reviews.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="admin-table__empty">No reviews found.</td>
+                  <td colSpan={8} className="admin-table__empty">
+                    {debouncedSearch
+                      ? `No reviews found for "${debouncedSearch}"`
+                      : 'No reviews found.'}
+                  </td>
                 </tr>
               ) : (
                 reviews.map((review, idx) => (

@@ -7,6 +7,7 @@ import {
   useGetProductsQuery,
   useReorderProductsMutation,
   useMoveProductPositionMutation,
+  useToggleProductStatusMutation,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
@@ -116,6 +117,9 @@ const AdminProducts = () => {
   // ── Move position mutation (cross-page) ─────────────────────
   const [moveProductPosition, { isLoading: isMoving }] = useMoveProductPositionMutation();
   const [movingProductId, setMovingProductId] = useState(null);
+  
+  // ── Toggle status mutation ──────────────────────────────────────
+  const [toggleProductStatus] = useToggleProductStatusMutation();
 
   // ── Variant modal state ───────────────────────────────────────
   const [variantProduct, setVariantProduct] = useState(null);
@@ -176,6 +180,14 @@ const AdminProducts = () => {
     }
   };
 
+  const handleToggleStatus = async (product) => {
+    try {
+      await toggleProductStatus(product._id || product.id).unwrap();
+    } catch (err) {
+      console.error('Toggle status failed', err);
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────
   return (
     <div className="admin-products">
@@ -223,6 +235,7 @@ const AdminProducts = () => {
             onMovePosition={handleMovePosition}
             movingId={movingProductId}
             totalItems={totalItems}
+            onToggleStatus={handleToggleStatus}
           />
 
           {/* ── Pagination ── */}

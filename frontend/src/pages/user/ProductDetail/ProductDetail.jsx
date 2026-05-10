@@ -325,11 +325,14 @@ const ProductDetail = () => {
             worstRating: 1,
           },
         }),
-        ...(product.ageRange && {
+        ...(Array.isArray(product.ageRange) && product.ageRange.length > 0 && {
           audience: {
             '@type': 'PeopleAudience',
-            suggestedMinAge: product.ageRange.split('-')[0] || '0',
-            suggestedMaxAge: product.ageRange.includes('+') ? '99' : (product.ageRange.split('-')[1] || '99'),
+            suggestedMinAge: product.ageRange[0].split('-')[0] || '0',
+            suggestedMaxAge: (() => {
+              const last = product.ageRange[product.ageRange.length - 1];
+              return last.includes('+') ? '99' : (last.split('-')[1] || '99');
+            })(),
           },
         }),
       },
@@ -489,11 +492,11 @@ const ProductDetail = () => {
           )}
 
           {/* Age Range */}
-          {product.ageRange && (
+          {Array.isArray(product.ageRange) && product.ageRange.length > 0 && (
             <div className="pdp__option-group">
               <label>Age Range</label>
               <span className="pdp__age-tag">
-                {product.ageRange} years
+                {product.ageRange.map((r) => r.includes('+') ? `${r} years` : `${r} years`).join(', ')}
               </span>
             </div>
           )}
@@ -692,7 +695,7 @@ const ProductDetail = () => {
                   <tr><td>Categories</td><td>{categoryName || 'Uncategorized'}</td></tr>
                   {product.hasWarranty && <tr><td>Warranty</td><td>{product.warrantyPeriod ? `${product.warrantyPeriod} months` : 'Yes'} ({product.warrantyType || 'N/A'})</td></tr>}
                   {product.hasGuarantee && <tr><td>Guarantee</td><td>{product.guaranteePeriod ? `${product.guaranteePeriod} months` : 'Yes'}</td></tr>}
-                  {product.ageRange && <tr><td>Age Range</td><td>{product.ageRange} years</td></tr>}
+                  {Array.isArray(product.ageRange) && product.ageRange.length > 0 && <tr><td>Age Range</td><td>{product.ageRange.join(', ')} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
                   {selectedVariant?.weight && <tr><td>Weight</td><td>{selectedVariant.weight} g</td></tr>}
