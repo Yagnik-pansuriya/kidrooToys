@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove, FiCheck } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiImage, FiMove, FiCheck } from 'react-icons/fi';
 
 /**
  * ProductTable with drag-and-drop reordering + inline position editing
@@ -10,12 +10,11 @@ import { FiEdit2, FiTrash2, FiImage, FiLayers, FiMove, FiCheck } from 'react-ico
  *  deleting     {boolean}  Disable actions while a delete is in flight
  *  onEdit       {fn}       Called with the product object to edit
  *  onDelete     {fn}       Called with the product object to delete
- *  onVariants   {fn}       Called with the product object to manage variants
  *  onReorder    {fn}       Called with array of { id, position } after drag-drop
  *  onMovePosition {fn}     Called with { id, targetPosition } for cross-page move
  *  movingId     {string|null}  ID of the product currently being moved (shows spinner)
  */
-const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onVariants, onReorder, onMovePosition, movingId, totalItems, onToggleStatus }) => {
+const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDelete, onReorder, onMovePosition, movingId, totalItems, onToggleStatus }) => {
   const [dragIdx, setDragIdx] = useState(null);
   const [overIdx, setOverIdx] = useState(null);
   const [editingPosId, setEditingPosId] = useState(null);
@@ -111,6 +110,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
           <th style={{ width: 40 }}>#</th>
           <th>Image</th>
           <th>Name</th>
+          <th>Product Code</th>
           <th>Categories</th>
           <th>Price</th>
           <th>Pos</th>
@@ -123,7 +123,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
       <tbody>
         {sorted.length === 0 && (
           <tr>
-            <td colSpan={8} className="admin-table__empty">
+            <td colSpan={10} className="admin-table__empty">
               {searchQuery
                 ? `No products found for "${searchQuery}".`
                 : 'No products yet. Click "Add Product" to create one.'}
@@ -138,18 +138,8 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
 
           const name     = product.productName || product.name;
           const price    = Number(product.price || 0).toFixed(2);
-          // When hasVariants is true, product.stock is forced to 0 by backend.
-          // Check the default variant's stock for the real stock status.
-          const resolvedStock = (() => {
-            if (product.hasVariants && Array.isArray(product.variants) && product.variants.length > 0) {
-              const defV = product.variants.find((v) => typeof v === 'object' && v.isDefault);
-              if (defV) return defV.stock ?? 0;
-              // If no default variant found, sum all variant stocks
-              return product.variants.reduce((sum, v) => sum + (typeof v === 'object' ? (v.stock || 0) : 0), 0);
-            }
-            return product.stock || 0;
-          })();
-          const inStock  = resolvedStock > 0;
+          const stock    = product.stock || 0;
+          const inStock  = stock > 0;
 
           // Resolve categories: new multi-category array or legacy single
           const categoryNames = (() => {
@@ -201,6 +191,13 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
 
               {/* Name */}
               <td className="td-bold">{name}</td>
+
+              {/* Product Code */}
+              <td>
+                <span className="admin-tag" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                  {product.productCode || '—'}
+                </span>
+              </td>
 
               {/* Categories */}
               <td>
@@ -280,14 +277,6 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
               {/* Actions */}
               <td>
                 <div className="admin-actions">
-                  <button
-                    className="admin-action-btn admin-action-btn--variants"
-                    onClick={() => onVariants(product)}
-                    disabled={deleting}
-                    title="Manage variants"
-                  >
-                    <FiLayers />
-                  </button>
                   <button
                     className="admin-action-btn admin-action-btn--edit"
                     onClick={() => onEdit(product)}

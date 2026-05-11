@@ -17,7 +17,6 @@ import ProductSearchBar from './components/ProductSearchBar';
 import ProductFilters   from './components/ProductFilters';
 import ProductTable     from './components/ProductTable';
 import ProductModal     from './components/ProductModal';
-import VariantModal     from './components/VariantModal';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import useProductForm   from './hooks/useProductForm';
 
@@ -120,11 +119,6 @@ const AdminProducts = () => {
   
   // ── Toggle status mutation ──────────────────────────────────────
   const [toggleProductStatus] = useToggleProductStatusMutation();
-
-  // ── Variant modal state ───────────────────────────────────────
-  const [variantProduct, setVariantProduct] = useState(null);
-  const openVariants  = useCallback((product) => setVariantProduct(product), []);
-  const closeVariants = useCallback(() => setVariantProduct(null), []);
 
   // ── Search handlers ───────────────────────────────────────────
   const handleSearchSubmit = (e) => {
@@ -230,7 +224,6 @@ const AdminProducts = () => {
             deleting={deleting}
             onEdit={openEdit}
             onDelete={handleDelete}
-            onVariants={openVariants}
             onReorder={handleReorder}
             onMovePosition={handleMovePosition}
             movingId={movingProductId}
@@ -264,14 +257,6 @@ const AdminProducts = () => {
           onClose={closeModal}
           onAddImages={handleAddImages}
           onRemoveImage={handleRemoveImage}
-        />
-      )}
-
-      {/* ── Variants modal ── */}
-      {variantProduct && (
-        <VariantModal
-          product={variantProduct}
-          onClose={closeVariants}
         />
       )}
 
