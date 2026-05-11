@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useToast } from '../../../../context/ToastContext';
-import { emptyForm, generateSku } from '../constants/productConstants';
+import { emptyForm, generateProductCode } from '../constants/productConstants';
 import { useAddProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../../../store/ActionApi/productApi';
 
 /**
@@ -31,7 +31,7 @@ const useProductForm = () => {
   // ── Modal helpers ────────────────────────────────────────────
   const openAdd = () => {
     setEditing(null);
-    setForm({ ...emptyForm, sku: generateSku() });
+    setForm({ ...emptyForm, productCode: generateProductCode() });
     setApiError('');
     setShowModal(true);
   };
@@ -60,7 +60,7 @@ const useProductForm = () => {
     setForm({
       productName:        product.productName || product.name || '',
       slug:               product.slug || '',
-      sku:                product.sku || '',
+      productCode:        product.productCode || '',
       description:        product.description || '',
       price:              product.price ?? '',
       originalPrice:      product.originalPrice ?? '',
@@ -149,7 +149,7 @@ const useProductForm = () => {
 
     // String fields — always send
     const stringFields = [
-      'productName', 'slug', 'sku', 'description', 'tags', 'youtubeUrl',
+      'productName', 'slug', 'productCode', 'description', 'tags', 'youtubeUrl',
       'warrantyType', 'guaranteeTerms', 'seoKeywords',
       'seoTitle', 'seoDescription',
     ];

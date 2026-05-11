@@ -117,7 +117,7 @@ const ProductDetail = () => {
   const categoryName = productCategories.map((c) => c.name).filter(Boolean).join(', ');
   const stock = product.stock || 0;
   const inStock = stock > 0;
-  const sku = product.sku || '';
+  const productCode = product.productCode || '';
 
   const handleAddToCart = () => {
     addToCart({ ...product, quantity });
@@ -181,7 +181,7 @@ const ProductDetail = () => {
         name: name,
         description: product.description,
         image: productImages,
-        sku: sku,
+        sku: productCode,
         brand: { '@type': 'Brand', name: 'Kidroo Toys' },
         category: categoryName || 'Toys',
         url: productUrl,
@@ -463,9 +463,9 @@ const ProductDetail = () => {
 
           {/* SKU & Stock indicator */}
           <div className="pdp__variant-meta">
-            {sku && (
+            {productCode && (
               <span className="pdp__sku">
-                <FiPackage /> SKU: {sku}
+                <FiPackage /> Product Code: {productCode}
               </span>
             )}
             <span className={`pdp__stock-indicator ${inStock ? 'pdp__stock-indicator--in' : 'pdp__stock-indicator--out'}`}>
@@ -579,7 +579,7 @@ const ProductDetail = () => {
                   {product.hasGuarantee && <tr><td>Guarantee</td><td>{product.guaranteePeriod ? `${product.guaranteePeriod} months` : 'Yes'}</td></tr>}
                   {Array.isArray(product.ageRange) && product.ageRange.length > 0 && <tr><td>Age Range</td><td>{product.ageRange.join(', ')} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
-                  {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
+                  {productCode && <tr><td>Product Code</td><td>{productCode}</td></tr>}
                   {product.tags?.length > 0 && <tr><td>Tags</td><td>{product.tags.join(', ')}</td></tr>}
                 </tbody>
               </table>

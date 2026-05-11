@@ -104,7 +104,7 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Products', id }],
     }),
 
-    // GET /api/products/:id/related (products sharing the same SKU)
+    // GET /api/products/:id/related (products sharing the same product code)
     getRelatedProducts: builder.query({
       query: (id) => `${API_ENDPOINTS.PRODUCTS}/${id}/related`,
       providesTags: (result, error, id) => [{ type: 'Products', id: `related-${id}` }],

@@ -1,17 +1,19 @@
 // ─── Pagination ───────────────────────────────────────────────
 export const PRODUCTS_PER_PAGE = 10;
 
-// ─── Generate a random SKU code ───────────────────────────────
-export const generateSku = () => {
+// ─── Generate a random Product Code ───────────────────────────
+export const generateProductCode = () => {
   const num = Math.floor(10000 + Math.random() * 90000); // 5-digit
   return `KIDROO-TOY-${num}`;
 };
+// Legacy alias (safe to remove after full cache clear)
+export const generateSku = generateProductCode;
 
 // ─── Empty form state ─────────────────────────────────────────
 export const emptyForm = {
   productName:        '',
   slug:               '',
-  sku:                '',
+  productCode:          '',
   description:        '',
   price:              '',
   originalPrice:      '',

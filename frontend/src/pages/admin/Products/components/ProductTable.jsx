@@ -110,7 +110,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
           <th style={{ width: 40 }}>#</th>
           <th>Image</th>
           <th>Name</th>
-          <th>SKU</th>
+          <th>Product Code</th>
           <th>Categories</th>
           <th>Price</th>
           <th>Pos</th>
@@ -192,10 +192,10 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
               {/* Name */}
               <td className="td-bold">{name}</td>
 
-              {/* SKU */}
+              {/* Product Code */}
               <td>
                 <span className="admin-tag" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-                  {product.sku || '—'}
+                  {product.productCode || '—'}
                 </span>
               </td>
 
