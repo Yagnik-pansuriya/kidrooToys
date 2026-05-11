@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useToast } from '../../../../context/ToastContext';
-import { emptyForm } from '../constants/productConstants';
+import { emptyForm, generateSku } from '../constants/productConstants';
 import { useAddProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../../../store/ActionApi/productApi';
 
 /**
@@ -31,7 +31,7 @@ const useProductForm = () => {
   // ── Modal helpers ────────────────────────────────────────────
   const openAdd = () => {
     setEditing(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, sku: generateSku() });
     setApiError('');
     setShowModal(true);
   };
@@ -57,26 +57,15 @@ const useProductForm = () => {
       return [];
     })();
 
-    // When hasVariants is true, product.stock is always forced to 0 by the backend.
-    // The real stock lives on the default variant — use that for the edit form.
-    const resolvedStock = (() => {
-      if (product.hasVariants && Array.isArray(product.variants) && product.variants.length > 0) {
-        const defaultVariant = product.variants.find(
-          (v) => typeof v === 'object' && v.isDefault
-        );
-        if (defaultVariant) return defaultVariant.stock ?? 0;
-      }
-      return product.stock ?? '';
-    })();
-
     setForm({
       productName:        product.productName || product.name || '',
       slug:               product.slug || '',
+      sku:                product.sku || '',
       description:        product.description || '',
       price:              product.price ?? '',
       originalPrice:      product.originalPrice ?? '',
       discountPercentage: product.discountPercentage ?? '',
-      stock:              resolvedStock,
+      stock:              product.stock ?? '',
       categories:         resolvedCategories,
       ratings:            product.ratings ?? '',
       numReviews:         product.numReviews ?? '',
@@ -102,8 +91,6 @@ const useProductForm = () => {
                             : (product.tags || ''),
       isActive:           product.isActive ?? true,
       youtubeUrl:         product.youtubeUrl || '',
-      hasVariants:        product.hasVariants ?? false,
-      variants:           Array.isArray(product.variants) ? product.variants : [],
       images:             [],
       previewUrls:        product.images || [],
       // ── Warranty / Guarantee ──
@@ -162,7 +149,7 @@ const useProductForm = () => {
 
     // String fields — always send
     const stringFields = [
-      'productName', 'slug', 'description', 'tags', 'youtubeUrl',
+      'productName', 'slug', 'sku', 'description', 'tags', 'youtubeUrl',
       'warrantyType', 'guaranteeTerms', 'seoKeywords',
       'seoTitle', 'seoDescription',
     ];
@@ -189,7 +176,7 @@ const useProductForm = () => {
 
     // Boolean fields — always send
     const boolFields = [
-      'featured', 'newArrival', 'bestSeller', 'isActive', 'hasVariants',
+      'featured', 'newArrival', 'bestSeller', 'isActive',
       'hasWarranty', 'hasGuarantee',
     ];
     boolFields.forEach((key) => fd.append(key, String(!!form[key])));
@@ -203,13 +190,6 @@ const useProductForm = () => {
       fd.append('skills', form.skills.join(','));
     }
 
-
-    // variants: only send during create — during update, variants are managed
-    // by the variant CRUD endpoints and synced via syncDefaultVariant.
-    // Sending them here during edit could accidentally overwrite the variants array.
-    if (!editing) {
-      fd.append('variants', JSON.stringify(form.hasVariants ? form.variants : []));
-    }
     form.images.forEach((file) => fd.append('images', file));
     return fd;
   };

@@ -2,10 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart, FiZap } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
-import { useGetProductByIdQuery } from '../../../store/ActionApi/productApi';
-import { useGetVariantsQuery } from '../../../store/ActionApi/variantApi';
+import { useGetProductByIdQuery, useGetRelatedProductsQuery, useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetProductReviewsQuery, useGetProductReviewStatsQuery, useAddReviewMutation } from '../../../store/ActionApi/reviewApi';
-import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
@@ -26,20 +24,12 @@ const ProductDetail = () => {
 
   // ── API data ──────────────────────────────────────────────────
   const { data: productResp, isLoading } = useGetProductByIdQuery(id);
-  const { data: variantsResp, isLoading: isVariantsLoading } = useGetVariantsQuery(id, {
-    refetchOnMountOrArgChange: true,
-  });
 
   const { data: reviewsResp } = useGetProductReviewsQuery(id);
   const { data: statsResp } = useGetProductReviewStatsQuery(id);
   const [addReviewApi, { isLoading: submittingReview }] = useAddReviewMutation();
 
-
   const product = productResp?.data || productResp;
-
-  // Safely unwrap the variants response — API returns { success, data: [...] }
-  const rawVariants = variantsResp?.data ?? variantsResp;
-  const variants = Array.isArray(rawVariants) ? rawVariants : [];
 
   const reviews = reviewsResp?.data || reviewsResp || [];
   const stats = statsResp?.data || statsResp || {};
@@ -65,7 +55,14 @@ const ProductDetail = () => {
     return [];
   }, [product]);
 
-  // Use first category for related products query
+  // ── SKU-based related products (same SKU = grouped) ───────────
+  const { data: skuRelatedResp } = useGetRelatedProductsQuery(id, {
+    skip: !product,
+  });
+  const skuRelatedRaw = skuRelatedResp?.data || skuRelatedResp || [];
+  const skuRelatedProducts = Array.isArray(skuRelatedRaw) ? skuRelatedRaw : [];
+
+  // Category-based "You May Also Like" products
   const primaryCategoryId = productCategories[0]?.id || '';
   const { data: relatedResp } = useGetProductsQuery(
     { page: 1, limit: 4, category: primaryCategoryId },
@@ -75,176 +72,61 @@ const ProductDetail = () => {
   const relatedProducts = (relatedInner?.data || relatedInner || [])
     .filter((p) => (p._id || p.id) !== id);
 
-  // ── Variant helpers ───────────────────────────────────────────
-  const variantList = useMemo(() => {
-    const list = Array.isArray(variants) ? variants : [];
-    return list.filter((v) => v.status !== 'inactive');
-  }, [variants]);
-
-  // Extract all unique attribute keys (e.g. ["Color", "Size"])
-  // Handle both plain objects and potential legacy Map-serialized formats
-  const attrKeys = useMemo(() => {
-    const keys = variantList.flatMap((v) => {
-      const attrs = v.attributes;
-      if (!attrs || typeof attrs !== 'object') return [];
-      return Object.keys(attrs);
-    });
-    return [...new Set(keys)];
-  }, [variantList]);
-
   // ── Local state ───────────────────────────────────────────────
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  // Track each attribute selection independently: { Color: 'Red', Size: 'Large' }
-  const [selectedAttrs, setSelectedAttrs] = useState({});
   const [activeTab, setActiveTab] = useState('description');
 
   // Review form
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, title: '', comment: '' });
 
-  // ── Auto-select default variant on load ───────────────────────
-  useEffect(() => {
-    if (variantList.length === 0) return;
 
-    const defaultVariant = variantList.find((v) => v.isDefault) || variantList[0];
-    if (defaultVariant) {
-      setSelectedVariant(defaultVariant);
-      // Populate selectedAttrs from the default variant's attributes
-      const attrs = {};
-      if (defaultVariant.attributes) {
-        Object.entries(defaultVariant.attributes).forEach(([key, val]) => {
-          attrs[key] = val;
-        });
-      }
-      setSelectedAttrs(attrs);
-    }
-  }, [variantList]);
-
-  // ── When selectedAttrs changes, find the matching variant ─────
-  useEffect(() => {
-    if (attrKeys.length === 0) return;
-
-    // Score each variant: count how many selected attributes it matches.
-    // The best (highest score) variant wins. This handles both full matches
-    // (all keys shared) and partial matches (variants with different key sets).
-    let bestVariant = null;
-    let bestScore = -1;
-
-    for (const v of variantList) {
-      let score = 0;
-      const vAttrs = v.attributes || {};
-      for (const [key, val] of Object.entries(selectedAttrs)) {
-        if (vAttrs[key] === val) score++;
-      }
-      if (score > bestScore) {
-        bestScore = score;
-        bestVariant = v;
-      }
-    }
-
-    setSelectedVariant(bestVariant || null);
-    setSelectedImage(0);
-  }, [selectedAttrs, variantList, attrKeys]);
-
-  // ── Determine which attribute values are clickable given current selections ──
-  //
-  // A value is "available" if there exists at least one variant that:
-  //   (a) has this attribute key = this value, AND
-  //   (b) for every OTHER selected attribute, either matches it OR simply
-  //       doesn't have that key at all (it's a different variant type).
-  const getAvailableValues = (attrKey) => {
-    return variantList
-      .filter((v) => {
-        const vAttrs = v.attributes || {};
-        for (const [key, val] of Object.entries(selectedAttrs)) {
-          if (key === attrKey) continue;          // skip the key we're evaluating
-          if (!(key in vAttrs)) continue;          // variant doesn't have this key — OK
-          if (vAttrs[key] !== val) return false;   // has the key but different value — incompatible
-        }
-        return true;
-      })
-      .map((v) => (v.attributes || {})[attrKey])
-      .filter(Boolean);
-  };
 
   if (isLoading) return <Loader message="Loading product…" />;
   if (!product) return <div className="pdp-empty">Product not found.</div>;
 
   const name = product.productName || product.name;
 
-  // Use variant images if variant has them, otherwise fall back to product images
   const productImages = product.images?.length ? product.images : [product.image].filter(Boolean);
-  const variantImages = selectedVariant?.images?.length ? selectedVariant.images : [];
-  const images = variantImages.length > 0 ? variantImages : productImages;
+  const images = productImages;
 
   // YouTube embed helper
   const getYoutubeEmbedUrl = (url) => {
     if (!url) return null;
-    // Handle youtu.be short links
     const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
     if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
-    // Handle youtube.com/shorts/
     const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
     if (shortsMatch) return `https://www.youtube.com/embed/${shortsMatch[1]}`;
-    // Handle youtube.com/watch?v=
     const longMatch = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
     if (longMatch) return `https://www.youtube.com/embed/${longMatch[1]}`;
-    // Handle youtube.com/embed/
     const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]+)/);
     if (embedMatch) return `https://www.youtube.com/embed/${embedMatch[1]}`;
     return null;
   };
 
-  const youtubeEmbedUrl = getYoutubeEmbedUrl(selectedVariant?.youtubeUrl || product.youtubeUrl);
+  const youtubeEmbedUrl = getYoutubeEmbedUrl(product.youtubeUrl);
   const totalSlides = images.length + (youtubeEmbedUrl ? 1 : 0);
   const isVideoSlide = youtubeEmbedUrl && selectedImage === images.length;
 
   const handlePrevSlide = () => setSelectedImage((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
   const handleNextSlide = () => setSelectedImage((prev) => (prev < totalSlides - 1 ? prev + 1 : 0));
 
-  const price = selectedVariant ? Number(selectedVariant.price) : Number(product.price || 0);
-  const originalPrice = selectedVariant ? Number(selectedVariant.originalPrice || 0) : Number(product.originalPrice || 0);
+  const price = Number(product.price || 0);
+  const originalPrice = Number(product.originalPrice || 0);
   const discount = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : (product.discountPercentage || 0);
   const categoryName = productCategories.map((c) => c.name).filter(Boolean).join(', ');
-  const stock = selectedVariant ? selectedVariant.stock : product.stock;
+  const stock = product.stock || 0;
   const inStock = stock > 0;
-  const sku = selectedVariant?.sku || '';
-
-  const handleSelectAttr = (key, val) => {
-    // Step 1: try to keep all existing selections + this new one
-    const merged = { ...selectedAttrs, [key]: val };
-
-    // Check if any variant matches all of merged
-    const exactMatch = variantList.find((v) => {
-      const vAttrs = v.attributes || {};
-      return Object.entries(merged).every(([k, v_]) => vAttrs[k] === v_);
-    });
-
-    if (exactMatch) {
-      // Perfect combo match — keep all current selections
-      setSelectedAttrs(merged);
-    } else {
-      // No exact match: find the best variant that has [key]=val
-      // and adopt its full attributes (clears incompatible selections)
-      const best = variantList.find((v) => (v.attributes || {})[key] === val);
-      if (best) {
-        setSelectedAttrs({ ...best.attributes });
-      } else {
-        setSelectedAttrs({ [key]: val });
-      }
-    }
-  };
-
+  const sku = product.sku || '';
 
   const handleAddToCart = () => {
-    addToCart({ ...product, quantity, selectedVariant });
+    addToCart({ ...product, quantity });
     showSuccess(`${name} added to cart!`);
   };
 
   const handleBuyNow = () => {
     const proceed = () => {
-      addToCart({ ...product, quantity, selectedVariant });
+      addToCart({ ...product, quantity });
       showSuccess(`${name} added to cart!`);
       navigate('/checkout');
     };
@@ -299,7 +181,7 @@ const ProductDetail = () => {
         name: name,
         description: product.description,
         image: productImages,
-        sku: sku || product.slug,
+        sku: sku,
         brand: { '@type': 'Brand', name: 'Kidroo Toys' },
         category: categoryName || 'Toys',
         url: productUrl,
@@ -531,67 +413,67 @@ const ProductDetail = () => {
             </div>
           )}
 
-          {/* ── Variant selectors (multi-attribute) ── */}
-          {isVariantsLoading ? (
-            <div className="pdp__variants-loading">
-              <div className="pdp__variants-skeleton" />
-            </div>
-          ) : variantList.length > 0 ? (
-            attrKeys.length > 0 ? attrKeys.map((key) => {
-              const allValues = [...new Set(variantList.map((v) => v.attributes?.[key]).filter(Boolean))];
-              const availableValues = getAvailableValues(key);
-              return (
-                <div className="pdp__option-group" key={key}>
-                  <label>
-                    {key}
-                    {selectedAttrs[key] && (
-                      <span className="pdp__option-selected">: {selectedAttrs[key]}</span>
-                    )}
-                  </label>
-                  <div className="pdp__option-pills">
-                    {allValues.map((val) => {
-                      const isSelected = selectedAttrs[key] === val;
-                      const isAvailable = availableValues.includes(val);
-                      return (
-                        <button
-                          key={val}
-                          className={`pdp__pill ${isSelected ? 'pdp__pill--active' : ''} ${!isAvailable ? 'pdp__pill--disabled' : ''}`}
-                          onClick={() => isAvailable && handleSelectAttr(key, val)}
-                          disabled={!isAvailable}
-                          title={!isAvailable ? 'This combination is unavailable' : ''}
-                        >
-                          {key.toLowerCase() === 'color' ? (
-                            <span className="pdp__color-dot" style={{ background: val }} />
-                          ) : null}
-                          {val}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            }) : (
-              <div className="pdp__option-group">
-                <p className="pdp__no-attrs">This product has {variantList.length} variant(s) available.</p>
+          {/* ── Available Variants (SKU-grouped products) ── */}
+          {skuRelatedProducts.length > 0 && (
+            <div className="pdp__variants-section">
+              <label className="pdp__variants-label">Available Variants</label>
+              <div className="pdp__variants-grid">
+                {skuRelatedProducts.map((rp) => {
+                  const rpName = rp.productName || rp.name;
+                  const rpImg = Array.isArray(rp.images) ? rp.images[0] : rp.image;
+                  const rpPrice = Number(rp.price || 0);
+                  const rpOriginal = Number(rp.originalPrice || 0);
+                  const rpDiscount = rpOriginal > rpPrice ? Math.round((1 - rpPrice / rpOriginal) * 100) : 0;
+                  const rpStock = rp.stock || 0;
+                  const rpInStock = rpStock > 0;
+                  return (
+                    <Link
+                      key={rp._id || rp.id}
+                      to={`/product/${rp._id || rp.id}`}
+                      className="pdp__variant-card"
+                    >
+                      <div className="pdp__variant-card-img">
+                        {rpImg ? (
+                          <img src={rpImg} alt={rpName} loading="lazy" />
+                        ) : (
+                          <span className="pdp__variant-card-placeholder">📦</span>
+                        )}
+                        {rpDiscount > 0 && (
+                          <span className="pdp__variant-card-badge">-{rpDiscount}%</span>
+                        )}
+                      </div>
+                      <div className="pdp__variant-card-info">
+                        <span className="pdp__variant-card-name">{rpName}</span>
+                        <div className="pdp__variant-card-pricing">
+                          <span className="pdp__variant-card-price">₹{rpPrice.toFixed(0)}</span>
+                          {rpOriginal > rpPrice && (
+                            <span className="pdp__variant-card-original">₹{rpOriginal.toFixed(0)}</span>
+                          )}
+                        </div>
+                        <span className={`pdp__variant-card-stock ${rpInStock ? 'pdp__variant-card-stock--in' : 'pdp__variant-card-stock--out'}`}>
+                          {rpInStock ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            )
-          ) : null}
-
-          {/* Variant meta: SKU & Stock indicator */}
-          {selectedVariant && (
-            <div className="pdp__variant-meta">
-              {sku && (
-                <span className="pdp__sku">
-                  <FiPackage /> SKU: {sku}
-                </span>
-              )}
-              <span className={`pdp__stock-indicator ${inStock ? 'pdp__stock-indicator--in' : 'pdp__stock-indicator--out'}`}>
-                {inStock ? (
-                  stock <= 5 ? `Only ${stock} left!` : 'In Stock'
-                ) : 'Out of Stock'}
-              </span>
             </div>
           )}
+
+          {/* SKU & Stock indicator */}
+          <div className="pdp__variant-meta">
+            {sku && (
+              <span className="pdp__sku">
+                <FiPackage /> SKU: {sku}
+              </span>
+            )}
+            <span className={`pdp__stock-indicator ${inStock ? 'pdp__stock-indicator--in' : 'pdp__stock-indicator--out'}`}>
+              {inStock ? (
+                stock <= 5 ? `Only ${stock} left!` : 'In Stock'
+              ) : 'Out of Stock'}
+            </span>
+          </div>
 
 
           {/* Quantity */}
@@ -698,16 +580,6 @@ const ProductDetail = () => {
                   {Array.isArray(product.ageRange) && product.ageRange.length > 0 && <tr><td>Age Range</td><td>{product.ageRange.join(', ')} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {sku && <tr><td>SKU</td><td>{sku}</td></tr>}
-                  {selectedVariant?.weight && <tr><td>Weight</td><td>{selectedVariant.weight} g</td></tr>}
-                  {selectedVariant?.dimensions && (
-                    <tr>
-                      <td>Dimensions</td>
-                      <td>
-                        {[selectedVariant.dimensions.length, selectedVariant.dimensions.width, selectedVariant.dimensions.height]
-                          .filter(Boolean).join(' × ')} cm
-                      </td>
-                    </tr>
-                  )}
                   {product.tags?.length > 0 && <tr><td>Tags</td><td>{product.tags.join(', ')}</td></tr>}
                 </tbody>
               </table>

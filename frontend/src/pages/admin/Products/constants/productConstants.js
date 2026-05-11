@@ -1,10 +1,17 @@
 // ─── Pagination ───────────────────────────────────────────────
 export const PRODUCTS_PER_PAGE = 10;
 
+// ─── Generate a random SKU code ───────────────────────────────
+export const generateSku = () => {
+  const num = Math.floor(10000 + Math.random() * 90000); // 5-digit
+  return `KIDROO-TOY-${num}`;
+};
+
 // ─── Empty form state ─────────────────────────────────────────
 export const emptyForm = {
   productName:        '',
   slug:               '',
+  sku:                '',
   description:        '',
   price:              '',
   originalPrice:      '',
@@ -20,8 +27,6 @@ export const emptyForm = {
   tags:               '',
   isActive:           true,
   youtubeUrl:         '',
-  hasVariants:        false,
-  variants:           [],   // array of variant strings e.g. ['Red', 'Blue', 'XL']
   images:             [],   // File objects for new uploads
   previewUrls:        [],   // Blob / remote URLs for preview
   // ── Warranty / Guarantee fields ──
