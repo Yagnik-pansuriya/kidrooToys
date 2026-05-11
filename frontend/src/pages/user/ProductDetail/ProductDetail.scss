@@ -1062,6 +1062,145 @@
   color: #8A8D9E;
 }
 
+// ─── Available Variants (SKU-grouped cards) ───────────────────
+.pdp__variants-section {
+  margin-top: $space-sm;
+}
+
+.pdp__variants-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #8A8D9E;
+  margin-bottom: $space-sm;
+}
+
+.pdp__variants-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: $space-md;
+
+  @media (min-width: $bp-md) {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+.pdp__variant-card {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #E8E5E0;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  background: white;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 8px 28px rgba(139, 115, 85, 0.15);
+    transform: translateY(-3px);
+  }
+}
+
+.pdp__variant-card-img {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #F8F5F0;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .pdp__variant-card:hover & img {
+    transform: scale(1.06);
+  }
+}
+
+.pdp__variant-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 2.5rem;
+}
+
+.pdp__variant-card-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 3px 10px;
+  background: #EF4444;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border-radius: $radius-full;
+  letter-spacing: 0.3px;
+}
+
+.pdp__variant-card-info {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pdp__variant-card-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-header);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pdp__variant-card-pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.pdp__variant-card-price {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--color-header);
+}
+
+.pdp__variant-card-original {
+  font-size: 0.75rem;
+  color: #8A8D9E;
+  text-decoration: line-through;
+}
+
+.pdp__variant-card-stock {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+
+  &--in {
+    color: #16A34A;
+  }
+
+  &--out {
+    color: #DC2626;
+  }
+}
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }

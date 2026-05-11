@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiZap, FiChevronDown, FiChevronUp, FiBox, FiDollarSign, FiFilter, FiCamera, FiSearch } from 'react-icons/fi';
+import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiZap, FiChevronDown, FiChevronUp, FiBox, FiDollarSign, FiFilter, FiCamera, FiSearch, FiRefreshCw } from 'react-icons/fi';
+import { generateProductCode } from '../constants/productConstants';
 
 /**
  * SelectField — thin wrapper to keep inline JSX tidy.
@@ -191,6 +192,26 @@ const ProductModal = ({
             <div className="admin-field">
               <label>Slug *</label>
               <input type="text" placeholder="e.g. wooden-toy-car" required {...field('slug')} />
+            </div>
+
+            {/* Product Code — auto-generated, editable */}
+            <div className="admin-field">
+              <label>Product Code *</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="text" placeholder="KIDROO-TOY-12345" required {...field('productCode')} style={{ flex: 1 }} />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--secondary"
+                  onClick={() => setForm(p => ({ ...p, productCode: generateProductCode() }))}
+                  style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                  title="Generate new Product Code"
+                >
+                  <FiRefreshCw size={14} /> Generate
+                </button>
+              </div>
+              <p className="admin-field__hint">
+                Products with the same Product Code are grouped together as related items.
+              </p>
             </div>
 
             {/* Age Range — multi-select */}
