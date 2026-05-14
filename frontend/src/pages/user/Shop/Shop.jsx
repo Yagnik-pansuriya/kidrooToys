@@ -474,7 +474,7 @@ const Shop = () => {
                             <FiHeart />
                           </button>
                         </div>
-                        <Link to={`/product/${product._id || product.id}`} className="shop-product-card__info">
+                        <Link to={`/product/${product.slug || product._id || product.id}`} className="shop-product-card__info">
                           {category && <span className="shop-product-card__category">{category}</span>}
                           <div className="shop-product-card__name-row">
                             <h3 className="shop-product-card__name">{name}</h3>

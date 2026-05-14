@@ -661,26 +661,91 @@
 
 // Specs tab
 .pdp__tab-specs {
-  max-width: 600px;
+  max-width: 700px;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
+// Section title for each specs group
+.pdp__specs-section-title {
+  font-family: $font-heading;
+  font-size: 1.1rem;
+  color: var(--color-header);
+  margin-top: $space-lg;
+  margin-bottom: $space-sm;
+  padding-bottom: $space-xs;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+// Unified specs table
+.pdp__specs-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #F0EDE8;
+  border-radius: $radius;
+  overflow: hidden;
+  margin-bottom: $space-md;
+
+  thead {
+    th {
+      padding: $space-md $space-lg;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #8A8D9E;
+      background: #FAF6F0;
+      border-bottom: 2px solid #F0EDE8;
+
+      &:first-child {
+        width: 40%;
+      }
+    }
   }
 
-  td {
-    padding: $space-md;
-    border-bottom: 1px solid #F0EDE8;
-    font-size: 0.92rem;
+  tbody {
+    td {
+      padding: $space-md $space-lg;
+      font-size: 0.92rem;
+      border-bottom: 1px solid #F0EDE8;
 
-    &:first-child {
-      font-weight: 700;
-      color: #8A8D9E;
-      width: 40%;
+      &:first-child {
+        font-weight: 700;
+        color: #8A8D9E;
+        width: 40%;
+      }
+
+      &:last-child {
+        color: var(--color-header);
+      }
     }
 
-    &:last-child {
-      color: var(--color-header);
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) td {
+      background: #FDFCFA;
+    }
+
+    tr:hover td {
+      background: #F8F5F0;
+    }
+  }
+
+  // Custom specs variant (from admin-built table)
+  &--custom {
+    tbody {
+      td:first-child {
+        font-weight: 700;
+        color: var(--color-header);
+      }
+
+      td:last-child {
+        color: #6B6E7E;
+      }
     }
   }
 }
@@ -1205,3 +1270,59 @@
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+// ─── Rich HTML Content (from Quill editor) ────────────────────────────────────
+.pdp__rich-content {
+  color: #4A4D5E;
+  line-height: 1.8;
+  margin-bottom: $space-lg;
+  word-wrap: break-word;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-header);
+    margin-top: $space-lg;
+    margin-bottom: $space-sm;
+    line-height: 1.3;
+  }
+
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.35rem; }
+  h3 { font-size: 1.15rem; }
+
+  p {
+    margin-bottom: $space-sm;
+    line-height: 1.8;
+  }
+
+  ul, ol {
+    padding-left: 1.5rem;
+    margin-bottom: $space-sm;
+
+    li {
+      margin-bottom: $space-xxs;
+      line-height: 1.7;
+    }
+  }
+
+  strong, b { font-weight: 700; }
+  em, i { font-style: italic; }
+
+  u { text-decoration: underline; }
+  s { text-decoration: line-through; color: #8A8D9E; }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: underline;
+    &:hover { opacity: 0.8; }
+  }
+}
+
+.pdp__desc.pdp__desc {
+  // Override for the short desc in the product info area
+  p {
+    margin: 0 0 $space-xs;
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+
