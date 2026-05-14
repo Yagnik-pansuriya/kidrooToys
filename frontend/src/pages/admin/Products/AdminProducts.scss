@@ -463,6 +463,48 @@
     &:focus { border-color: var(--color-primary); outline: none; }
   }
 
+  &__group {
+    display: flex;
+    align-items: stretch;
+
+    input {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right-color: transparent;
+
+      &:focus {
+        border-right-color: var(--color-primary);
+        position: relative;
+        z-index: 2;
+      }
+    }
+
+    button {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border: 2px solid #E2E4EC;
+      background: #F8F9FC;
+      color: var(--color-text-secondary);
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 0 $space-md;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all $transition-base;
+      white-space: nowrap;
+
+      &:hover {
+        background: rgba(88, 28, 235, 0.05);
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+      }
+
+      svg { font-size: 1rem; }
+    }
+  }
+
   textarea { resize: vertical; }
 
   &__preview {
@@ -1291,6 +1333,185 @@
     &:hover {
       background: var(--color-hover);
       transform: scale(1.05);
+    }
+  }
+}
+
+// ─── React Quill rich text editor ─────────────────────────────────────────────
+.admin-quill-wrap {
+  .ql-toolbar.ql-snow {
+    border: 2px solid #E2E4EC;
+    border-radius: $radius $radius 0 0;
+    background: #F8F9FC;
+  }
+
+  .ql-container.ql-snow {
+    border: 2px solid #E2E4EC;
+    border-top: none;
+    border-radius: 0 0 $radius $radius;
+    min-height: 160px;
+    max-height: 360px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+    font-family: inherit;
+  }
+
+  .ql-editor {
+    min-height: 140px;
+    line-height: 1.6;
+
+    &.ql-blank::before {
+      color: #aaa;
+      font-style: normal;
+    }
+  }
+
+  .ql-container:focus-within {
+    border-color: var(--color-primary);
+  }
+}
+
+// ─── Product Specifications table builder ─────────────────────────────────────
+.admin-spec-table-wrap {
+  border: 2px solid #E2E4EC;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.admin-spec-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  // ── Header ──
+  thead {
+    th {
+      padding: $space-sm $space-md;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-muted);
+      background: #F8F9FC;
+      border-bottom: 2px solid #E2E4EC;
+      white-space: nowrap;
+    }
+  }
+
+  // Column widths
+  &__num { width: 44px; text-align: center !important; }
+  &__key-col { width: 38%; }
+  &__val-col { /* remaining space */ }
+  &__action-col { width: 60px; text-align: center !important; }
+
+  // ── Body rows ──
+  tbody {
+    tr {
+      border-bottom: 1px solid #F0F2F8;
+      transition: background $transition-base;
+
+      &:hover {
+        background: #FAFBFE;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: $space-xs $space-sm;
+      vertical-align: middle;
+    }
+  }
+
+  &__num-cell {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    width: 44px;
+  }
+
+  // ── Inline input inside table cells ──
+  &__input {
+    width: 100%;
+    padding: $space-xs $space-sm;
+    border: 1.5px solid #E2E4EC;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: white;
+    transition: border-color $transition-base, box-shadow $transition-base;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px rgba(88, 28, 235, 0.08);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: #C5C9D8;
+      font-size: 0.82rem;
+    }
+  }
+
+  // ── Remove button ──
+  &__remove-btn {
+    @include flex-center;
+    width: 30px;
+    height: 30px;
+    border-radius: $radius;
+    color: #ccc;
+    cursor: pointer;
+    transition: all $transition-base;
+    margin: 0 auto;
+
+    &:hover {
+      color: var(--color-danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
+
+  // ── Empty state ──
+  &__empty {
+    text-align: center;
+    padding: $space-xl $space-md !important;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  // ── Footer with Add Row ──
+  tfoot {
+    td {
+      padding: $space-sm $space-md;
+      background: #F8F9FC;
+      border-top: 1px solid #E2E4EC;
+    }
+  }
+
+  &__add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: $space-xs $space-md;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    background: white;
+    border: 1.5px dashed var(--color-primary);
+    border-radius: $radius;
+    cursor: pointer;
+    transition: all $transition-base;
+
+    &:hover {
+      background: rgba(88, 28, 235, 0.06);
+      border-style: solid;
+    }
+
+    svg {
+      font-size: 0.9rem;
     }
   }
 }

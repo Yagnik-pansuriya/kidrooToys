@@ -14,7 +14,7 @@ import SEOHead from '../../../components/SEOHead/SEOHead';
 import './ProductDetail.scss';
 
 const ProductDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { addToCart } = useCart();
@@ -23,13 +23,13 @@ const ProductDetail = () => {
   const [toggleWishlistApi] = useToggleWishlistMutation();
 
   // ── API data ──────────────────────────────────────────────────
-  const { data: productResp, isLoading } = useGetProductByIdQuery(id);
-
-  const { data: reviewsResp } = useGetProductReviewsQuery(id);
-  const { data: statsResp } = useGetProductReviewStatsQuery(id);
-  const [addReviewApi, { isLoading: submittingReview }] = useAddReviewMutation();
-
+  const { data: productResp, isLoading } = useGetProductByIdQuery(slug);
   const product = productResp?.data || productResp;
+  const productId = product?._id || product?.id;
+
+  const { data: reviewsResp } = useGetProductReviewsQuery(productId, { skip: !productId });
+  const { data: statsResp } = useGetProductReviewStatsQuery(productId, { skip: !productId });
+  const [addReviewApi, { isLoading: submittingReview }] = useAddReviewMutation();
 
   const reviews = reviewsResp?.data || reviewsResp || [];
   const stats = statsResp?.data || statsResp || {};
@@ -56,8 +56,8 @@ const ProductDetail = () => {
   }, [product]);
 
   // ── SKU-based related products (same SKU = grouped) ───────────
-  const { data: skuRelatedResp } = useGetRelatedProductsQuery(id, {
-    skip: !product,
+  const { data: skuRelatedResp } = useGetRelatedProductsQuery(productId, {
+    skip: !productId || !product,
   });
   const skuRelatedRaw = skuRelatedResp?.data || skuRelatedResp || [];
   const skuRelatedProducts = Array.isArray(skuRelatedRaw) ? skuRelatedRaw : [];
@@ -70,7 +70,7 @@ const ProductDetail = () => {
   );
   const relatedInner = relatedResp?.data || relatedResp;
   const relatedProducts = (relatedInner?.data || relatedInner || [])
-    .filter((p) => (p._id || p.id) !== id);
+    .filter((p) => (p._id || p.id) !== productId);
 
   // ── Local state ───────────────────────────────────────────────
   const [selectedImage, setSelectedImage] = useState(0);
@@ -105,8 +105,19 @@ const ProductDetail = () => {
   };
 
   const youtubeEmbedUrl = getYoutubeEmbedUrl(product.youtubeUrl);
-  const totalSlides = images.length + (youtubeEmbedUrl ? 1 : 0);
-  const isVideoSlide = youtubeEmbedUrl && selectedImage === images.length;
+  const youtubeEmbedUrl2 = getYoutubeEmbedUrl(product.youtubeUrl2);
+  const videoCount = (youtubeEmbedUrl ? 1 : 0) + (youtubeEmbedUrl2 ? 1 : 0);
+  const totalSlides = images.length + videoCount;
+
+  // Determine which video URL to show for a given slide index
+  const getVideoForSlide = (slideIdx) => {
+    const videoStartIdx = images.length;
+    if (slideIdx === videoStartIdx && youtubeEmbedUrl) return youtubeEmbedUrl;
+    if (slideIdx === videoStartIdx + (youtubeEmbedUrl ? 1 : 0) && youtubeEmbedUrl2) return youtubeEmbedUrl2;
+    return null;
+  };
+  const isVideoSlide = selectedImage >= images.length && selectedImage < totalSlides;
+  const currentVideoUrl = getVideoForSlide(selectedImage);
 
   const handlePrevSlide = () => setSelectedImage((prev) => (prev > 0 ? prev - 1 : totalSlides - 1));
   const handleNextSlide = () => setSelectedImage((prev) => (prev < totalSlides - 1 ? prev + 1 : 0));
@@ -118,6 +129,7 @@ const ProductDetail = () => {
   const stock = product.stock || 0;
   const inStock = stock > 0;
   const productCode = product.productCode || '';
+  const skuCode = product.skuCode || '';
 
   const handleAddToCart = () => {
     addToCart({ ...product, quantity });
@@ -134,12 +146,12 @@ const ProductDetail = () => {
     proceed();
   };
 
-  const handleToggleWishlist = async () => {
+  const handleWishlistToggle = async () => {
     if (!requireAuth('Please login to save items to your wishlist')) return;
     try {
-      await toggleWishlistApi(id).unwrap();
-      dispatch(toggleWishlistId(id));
-      showSuccess(isInWishlist(id) ? 'Removed from wishlist' : 'Added to wishlist ❤️');
+      await toggleWishlistApi(productId).unwrap();
+      dispatch(toggleWishlistId(productId));
+      showSuccess(isInWishlist(productId) ? 'Removed from wishlist' : 'Added to wishlist ❤️');
     } catch (err) {
       showError('Failed to update wishlist');
     }
@@ -154,7 +166,7 @@ const ProductDetail = () => {
       if (customer && !body.name) {
         body.name = `${customer.firstName} ${customer.lastName}`;
       }
-      await addReviewApi({ productId: id, body }).unwrap();
+      await addReviewApi({ productId, body }).unwrap();
       showSuccess('Review added successfully!');
       setReviewForm({ name: '', rating: 5, title: '', comment: '' });
     } catch (err) {
@@ -169,7 +181,7 @@ const ProductDetail = () => {
   const seoKeywords = Array.isArray(product.seoKeywords)
     ? product.seoKeywords.join(', ')
     : (product.tags?.join(', ') || '');
-  const productUrl = `${window.location.origin}/product/${id}`;
+  const productUrl = `${window.location.origin}/product/${slug}`;
   const productImage = productImages[0] || '';
 
   const jsonLd = {
@@ -271,7 +283,7 @@ const ProductDetail = () => {
               {isVideoSlide ? (
                 <div className="pdp__video-wrap">
                   <iframe
-                    src={youtubeEmbedUrl}
+                    src={currentVideoUrl}
                     title="Product Video"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -325,7 +337,16 @@ const ProductDetail = () => {
                   onClick={() => setSelectedImage(images.length)}
                 >
                   <FiPlay className="pdp__thumb-play" />
-                  <span>Video</span>
+                  <span>Video 1</span>
+                </button>
+              )}
+              {youtubeEmbedUrl2 && (
+                <button
+                  className={`pdp__thumb pdp__thumb--video ${selectedImage === images.length + (youtubeEmbedUrl ? 1 : 0) ? 'pdp__thumb--active' : ''}`}
+                  onClick={() => setSelectedImage(images.length + (youtubeEmbedUrl ? 1 : 0))}
+                >
+                  <FiPlay className="pdp__thumb-play" />
+                  <span>Video 2</span>
                 </button>
               )}
             </div>
@@ -353,7 +374,7 @@ const ProductDetail = () => {
             {discount > 0 && <span className="pdp__discount-tag">{discount}% OFF</span>}
           </div>
 
-          <p className="pdp__desc">{product.description}</p>
+          <div className="pdp__desc" dangerouslySetInnerHTML={{ __html: product.description }} />
 
           {/* Categories */}
           {productCategories.length > 0 && (
@@ -429,7 +450,7 @@ const ProductDetail = () => {
                   return (
                     <Link
                       key={rp._id || rp.id}
-                      to={`/product/${rp._id || rp.id}`}
+                      to={`/product/${rp.slug || rp._id || rp.id}`}
                       className="pdp__variant-card"
                     >
                       <div className="pdp__variant-card-img">
@@ -468,6 +489,11 @@ const ProductDetail = () => {
                 <FiPackage /> Product Code: {productCode}
               </span>
             )}
+            {skuCode && (
+              <span className="pdp__sku">
+                <FiPackage /> SKU: {skuCode}
+              </span>
+            )}
             <span className={`pdp__stock-indicator ${inStock ? 'pdp__stock-indicator--in' : 'pdp__stock-indicator--out'}`}>
               {inStock ? (
                 stock <= 5 ? `Only ${stock} left!` : 'In Stock'
@@ -495,9 +521,9 @@ const ProductDetail = () => {
               Buy Now
             </button>
             <button
-              className={`pdp__wishlist-btn ${isInWishlist(id) ? 'pdp__wishlist-btn--active' : ''}`}
-              onClick={handleToggleWishlist}
-              title={isInWishlist(id) ? 'Remove from wishlist' : 'Add to wishlist'}
+              className={`pdp__wishlist-btn ${isInWishlist(productId) ? 'pdp__wishlist-btn--active' : ''}`}
+              onClick={handleWishlistToggle}
+              title={isInWishlist(productId) ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <FiHeart />
             </button>
@@ -558,7 +584,7 @@ const ProductDetail = () => {
           {activeTab === 'description' && (
             <div className="pdp__tab-desc">
               <h3>Designed for Little Hands, Built for Big Dreams</h3>
-              <p>{product.description}</p>
+              <div className="pdp__rich-content" dangerouslySetInnerHTML={{ __html: product.description }} />
               {product.tags?.length > 0 && (
                 <div className="pdp__tags">
                   {product.tags.map((tag, i) => (
@@ -571,7 +597,10 @@ const ProductDetail = () => {
 
           {activeTab === 'specs' && (
             <div className="pdp__tab-specs">
-              <table>
+
+              {/* ── General Information Table ── */}
+              <h4 className="pdp__specs-section-title">General Information</h4>
+              <table className="pdp__specs-table">
                 <tbody>
                   <tr><td>Brand</td><td>Kidroo</td></tr>
                   <tr><td>Categories</td><td>{categoryName || 'Uncategorized'}</td></tr>
@@ -580,9 +609,33 @@ const ProductDetail = () => {
                   {Array.isArray(product.ageRange) && product.ageRange.length > 0 && <tr><td>Age Range</td><td>{product.ageRange.join(', ')} years</td></tr>}
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {productCode && <tr><td>Product Code</td><td>{productCode}</td></tr>}
+                  {skuCode && <tr><td>SKU Code</td><td>{skuCode}</td></tr>}
                   {product.tags?.length > 0 && <tr><td>Tags</td><td>{product.tags.join(', ')}</td></tr>}
                 </tbody>
               </table>
+
+              {/* ── Custom Product Specifications Table (from admin) ── */}
+              {Array.isArray(product.specifications) && product.specifications.length > 0 && (
+                <>
+                  <h4 className="pdp__specs-section-title">Product Specifications</h4>
+                  <table className="pdp__specs-table pdp__specs-table--custom">
+                    <thead>
+                      <tr>
+                        <th>Specification</th>
+                        <th>Details</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {product.specifications.map((spec, idx) => (
+                        <tr key={idx}>
+                          <td>{spec.key}</td>
+                          <td>{spec.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              )}
             </div>
           )}
 
@@ -646,7 +699,7 @@ const ProductDetail = () => {
               const pImg = Array.isArray(p.images) ? p.images[0] : p.image;
               const pPrice = Number(p.price || 0);
               return (
-                <Link to={`/product/${p._id || p.id}`} className="pdp__related-card" key={p._id || p.id}>
+                <Link to={`/product/${p.slug || p._id || p.id}`} className="pdp__related-card" key={p._id || p.id}>
                   <div className="pdp__related-img">
                     {pImg ? <img src={pImg} alt={pName} loading="lazy" /> : <span>📦</span>}
                   </div>

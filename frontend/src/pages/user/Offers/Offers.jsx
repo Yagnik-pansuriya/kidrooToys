@@ -319,7 +319,7 @@ const Offers = () => {
                         </button>
                       </div>
                     </div>
-                    <Link to={`/product/${product._id || product.id}`} className="offers-v3__product-info">
+                    <Link to={`/product/${product.slug || product._id || product.id}`} className="offers-v3__product-info">
                       <h4 className="offers-v3__product-name">{name}</h4>
                       <div className="offers-v3__product-pricing">
                         <span className="offers-v3__product-price">₹{price.toFixed(0)}</span>

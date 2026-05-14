@@ -268,7 +268,7 @@ const Home = () => {
                       </button>
                     </div>
                   </div>
-                  <Link to={`/product/${product._id || product.id}`} className="product-card-v2__info">
+                  <Link to={`/product/${product.slug || product._id || product.id}`} className="product-card-v2__info">
                     {category && <span className="product-card-v2__category">{category}</span>}
                     <h3 className="product-card-v2__name">{name}</h3>
                     <div className="product-card-v2__pricing">
