@@ -484,11 +484,6 @@ const ProductDetail = () => {
 
           {/* SKU & Stock indicator */}
           <div className="pdp__variant-meta">
-            {productCode && (
-              <span className="pdp__sku">
-                <FiPackage /> Product Code: {productCode}
-              </span>
-            )}
             {skuCode && (
               <span className="pdp__sku">
                 <FiPackage /> SKU: {skuCode}
