@@ -243,7 +243,7 @@ const CategoryPage = () => {
                             <FiHeart />
                           </button>
                         </div>
-                        <Link to={`/product/${product._id || product.id}`} className="shop-product-card__info">
+                        <Link to={`/product/${product.slug || product._id || product.id}`} className="shop-product-card__info">
                           <span className="shop-product-card__category">{categoryName}</span>
                           <div className="shop-product-card__name-row">
                             <h3 className="shop-product-card__name">{name}</h3>

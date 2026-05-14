@@ -1,6 +1,25 @@
 import { useState } from 'react';
-import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiZap, FiChevronDown, FiChevronUp, FiBox, FiDollarSign, FiFilter, FiCamera, FiSearch, FiRefreshCw } from 'react-icons/fi';
-import { generateProductCode } from '../constants/productConstants';
+import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiZap, FiChevronDown, FiChevronUp, FiBox, FiDollarSign, FiFilter, FiCamera, FiSearch, FiRefreshCw, FiList, FiTrash2 } from 'react-icons/fi';
+import { generateProductCode, generateSkuCode, MAX_IMAGES } from '../constants/productConstants';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+
+// ── Quill toolbar config ─────────────────────────────────────────
+const QUILL_MODULES = {
+  toolbar: [
+    [{ header: [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ color: [] }, { background: [] }],
+    [{ align: [] }],
+    ['link'],
+    ['clean'],
+  ],
+};
+const QUILL_FORMATS = [
+  'header', 'bold', 'italic', 'underline', 'strike',
+  'list', 'bullet', 'color', 'background', 'align', 'link',
+];
 
 /**
  * SelectField — thin wrapper to keep inline JSX tidy.
@@ -197,20 +216,36 @@ const ProductModal = ({
             {/* Product Code — auto-generated, editable */}
             <div className="admin-field">
               <label>Product Code *</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input type="text" placeholder="KIDROO-TOY-12345" required {...field('productCode')} style={{ flex: 1 }} />
+              <div className="admin-field__group">
+                <input type="text" placeholder="KIDROO-TOY-12345" required {...field('productCode')} />
                 <button
                   type="button"
-                  className="admin-btn admin-btn--secondary"
                   onClick={() => setForm(p => ({ ...p, productCode: generateProductCode() }))}
-                  style={{ whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                   title="Generate new Product Code"
                 >
-                  <FiRefreshCw size={14} /> Generate
+                  <FiRefreshCw /> Generate
                 </button>
               </div>
               <p className="admin-field__hint">
                 Products with the same Product Code are grouped together as related items.
+              </p>
+            </div>
+
+            {/* SKU Code */}
+            <div className="admin-field">
+              <label>SKU Code</label>
+              <div className="admin-field__group">
+                <input type="text" placeholder="e.g. SKU-WTC-001" {...field('skuCode')} />
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, skuCode: generateSkuCode() }))}
+                  title="Generate new SKU Code"
+                >
+                  <FiRefreshCw /> Generate
+                </button>
+              </div>
+              <p className="admin-field__hint">
+                Unique Stock Keeping Unit code for inventory tracking.
               </p>
             </div>
 
@@ -264,16 +299,19 @@ const ProductModal = ({
               </div>
             </div>
 
-            {/* Description ─ full width */}
+            {/* Description ─ full width (Rich Text Editor) */}
             <div className="admin-field admin-field--full">
               <label>Description *</label>
-              <textarea
-                rows={3}
-                placeholder="High-quality wooden toy car…"
-                required
-                value={form.description}
-                onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              />
+              <div className="admin-quill-wrap">
+                <ReactQuill
+                  theme="snow"
+                  value={form.description}
+                  onChange={(val) => setForm((p) => ({ ...p, description: val }))}
+                  modules={QUILL_MODULES}
+                  formats={QUILL_FORMATS}
+                  placeholder="Write a rich product description…"
+                />
+              </div>
             </div>
 
             {/* Tags */}
@@ -282,13 +320,23 @@ const ProductModal = ({
               <input type="text" placeholder="wooden,car,toy" required {...field('tags')} />
             </div>
 
-            {/* YouTube Video URL ─ full width */}
+            {/* YouTube Video URL 1 ─ full width */}
             <div className="admin-field admin-field--full">
-              <label>YouTube Video URL (optional)</label>
+              <label>YouTube Video URL 1 (optional)</label>
               <input
                 type="url"
                 placeholder="https://www.youtube.com/watch?v=..."
                 {...field('youtubeUrl')}
+              />
+            </div>
+
+            {/* YouTube Video URL 2 ─ full width */}
+            <div className="admin-field admin-field--full">
+              <label>YouTube Video URL 2 (optional)</label>
+              <input
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                {...field('youtubeUrl2')}
               />
             </div>
 
@@ -378,7 +426,7 @@ const ProductModal = ({
 
             {/* Images ─ full width */}
             <div className="admin-field admin-field--full">
-              <label><FiImage aria-hidden="true" /> Product Images (up to 5)</label>
+              <label><FiImage aria-hidden="true" /> Product Images (up to {MAX_IMAGES})</label>
 
               {/* Hidden file input */}
               <input
@@ -408,7 +456,7 @@ const ProductModal = ({
                 ))}
 
                 {/* Add-more slot */}
-                {form.previewUrls.length < 5 && (
+                {form.previewUrls.length < MAX_IMAGES && (
                   <button
                     type="button"
                     className="admin-image-slot admin-image-slot--add"
@@ -417,7 +465,7 @@ const ProductModal = ({
                   >
                     <FiPlus />
                     <span>Add Image</span>
-                    <small>{form.previewUrls.length}/5</small>
+                    <small>{form.previewUrls.length}/{MAX_IMAGES}</small>
                   </button>
                 )}
               </div>
@@ -551,6 +599,108 @@ const ProductModal = ({
               )}
             </div>
 
+          </FormGroup>
+
+          {/* ═══════════ GROUP 7: Product Specifications ═══════════ */}
+          <FormGroup
+            icon={<FiList />}
+            title="Product Specifications"
+            defaultOpen={false}
+            count={form.specifications?.length || 0}
+          >
+            <div className="admin-field admin-field--full">
+              <p className="admin-field__hint" style={{ marginBottom: '0.75rem' }}>
+                Build a specifications table for this product. Add rows like Color, Size, Material, Weight, Dimensions etc.
+              </p>
+
+              {/* Specifications Table */}
+              <div className="admin-spec-table-wrap">
+                <table className="admin-spec-table">
+                  <thead>
+                    <tr>
+                      <th className="admin-spec-table__num">#</th>
+                      <th className="admin-spec-table__key-col">Specification</th>
+                      <th className="admin-spec-table__val-col">Value / Details</th>
+                      <th className="admin-spec-table__action-col">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(form.specifications || []).length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="admin-spec-table__empty">
+                          No specifications added yet. Click "Add Row" below to start building the table.
+                        </td>
+                      </tr>
+                    ) : (
+                      (form.specifications || []).map((spec, idx) => (
+                        <tr key={idx} className="admin-spec-table__row">
+                          <td className="admin-spec-table__num-cell">{idx + 1}</td>
+                          <td>
+                            <input
+                              type="text"
+                              placeholder="e.g. Color, Size, Material…"
+                              value={spec.key}
+                              onChange={(e) => {
+                                const updated = [...form.specifications];
+                                updated[idx] = { ...updated[idx], key: e.target.value };
+                                setForm((p) => ({ ...p, specifications: updated }));
+                              }}
+                              className="admin-spec-table__input"
+                            />
+                          </td>
+                          <td>
+                            <input
+                              type="text"
+                              placeholder="e.g. Red, Large, Wood…"
+                              value={spec.value}
+                              onChange={(e) => {
+                                const updated = [...form.specifications];
+                                updated[idx] = { ...updated[idx], value: e.target.value };
+                                setForm((p) => ({ ...p, specifications: updated }));
+                              }}
+                              className="admin-spec-table__input"
+                            />
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="admin-spec-table__remove-btn"
+                              onClick={() => {
+                                setForm((p) => ({
+                                  ...p,
+                                  specifications: p.specifications.filter((_, i) => i !== idx),
+                                }));
+                              }}
+                              title="Remove this specification"
+                            >
+                              <FiTrash2 />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan={4}>
+                        <button
+                          type="button"
+                          className="admin-spec-table__add-btn"
+                          onClick={() =>
+                            setForm((p) => ({
+                              ...p,
+                              specifications: [...(p.specifications || []), { key: '', value: '' }],
+                            }))
+                          }
+                        >
+                          <FiPlus /> Add Row
+                        </button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
           </FormGroup>
 
           {/* ── Actions ── */}

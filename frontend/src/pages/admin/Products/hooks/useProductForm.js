@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useToast } from '../../../../context/ToastContext';
-import { emptyForm, generateProductCode } from '../constants/productConstants';
+import { emptyForm, generateProductCode, MAX_IMAGES } from '../constants/productConstants';
 import { useAddProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../../../store/ActionApi/productApi';
 
 /**
@@ -91,6 +91,8 @@ const useProductForm = () => {
                             : (product.tags || ''),
       isActive:           product.isActive ?? true,
       youtubeUrl:         product.youtubeUrl || '',
+      youtubeUrl2:        product.youtubeUrl2 || '',
+      skuCode:            product.skuCode || '',
       images:             [],
       previewUrls:        product.images || [],
       // ── Warranty / Guarantee ──
@@ -110,6 +112,10 @@ const useProductForm = () => {
                      : (product.seoKeywords || ''),
       seoTitle: product.seoTitle || '',
       seoDescription: product.seoDescription || '',
+      // ── Specifications ──
+      specifications: Array.isArray(product.specifications)
+        ? product.specifications.map((s) => ({ key: s.key || '', value: s.value || '' }))
+        : [],
     });
     setApiError('');
     setShowModal(true);
@@ -123,7 +129,7 @@ const useProductForm = () => {
     e.target.value = ''; // allow re-selecting same file
 
     setForm((prev) => {
-      const slots     = 5 - prev.images.length;
+      const slots     = MAX_IMAGES - prev.images.length;
       if (slots <= 0) return prev;
       const newFiles  = incoming.slice(0, slots);
       const newUrls   = newFiles.map((f) => URL.createObjectURL(f));
@@ -149,9 +155,9 @@ const useProductForm = () => {
 
     // String fields — always send
     const stringFields = [
-      'productName', 'slug', 'productCode', 'description', 'tags', 'youtubeUrl',
+      'productName', 'slug', 'productCode', 'description', 'tags', 'youtubeUrl', 'youtubeUrl2',
       'warrantyType', 'guaranteeTerms', 'seoKeywords',
-      'seoTitle', 'seoDescription',
+      'seoTitle', 'seoDescription', 'skuCode',
     ];
     stringFields.forEach((key) => fd.append(key, form[key] ?? ''));
 
@@ -191,6 +197,15 @@ const useProductForm = () => {
     }
 
     form.images.forEach((file) => fd.append('images', file));
+
+    // Specifications — send as JSON string
+    if (Array.isArray(form.specifications) && form.specifications.length > 0) {
+      const validSpecs = form.specifications.filter((s) => s.key.trim() || s.value.trim());
+      fd.append('specifications', JSON.stringify(validSpecs));
+    } else {
+      fd.append('specifications', '[]');
+    }
+
     return fd;
   };
 

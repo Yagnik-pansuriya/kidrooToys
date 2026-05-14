@@ -97,7 +97,7 @@ function App() {
                 <Route path="/about" element={<UserLayout><AboutUs /></UserLayout>} />
                 <Route path="/profile" element={<UserLayout><UserProfile /></UserLayout>} />
                 <Route path="/cart" element={<UserLayout><Cart /></UserLayout>} />
-                <Route path="/product/:id" element={<UserLayout><ProductDetail /></UserLayout>} />
+                <Route path="/product/:slug" element={<UserLayout><ProductDetail /></UserLayout>} />
                 <Route path="/wishlist" element={<UserLayout><Wishlist /></UserLayout>} />
                 <Route path="/checkout" element={<UserLayout><Checkout /></UserLayout>} />
                 <Route path="/order-confirmation/:orderId" element={<UserLayout><OrderConfirmation /></UserLayout>} />

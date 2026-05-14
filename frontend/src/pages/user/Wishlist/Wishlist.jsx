@@ -111,6 +111,7 @@ const Wishlist = () => {
                 const originalPrice = Number(product.originalPrice || 0);
                 const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
                 const productId = product._id || product.id;
+                const productSlugOrId = product.slug || productId;
                 const inStock = product.stock > 0;
 
                 return (
@@ -126,7 +127,7 @@ const Wishlist = () => {
                       <FiTrash2 />
                     </button>
 
-                    <Link to={`/product/${productId}`} className="wishlist-card__img-wrap">
+                    <Link to={`/product/${productSlugOrId}`} className="wishlist-card__img-wrap">
                       {imgSrc ? (
                         <img src={imgSrc} alt={name} loading="lazy" />
                       ) : (
@@ -135,7 +136,7 @@ const Wishlist = () => {
                     </Link>
 
                     <div className="wishlist-card__info">
-                      <Link to={`/product/${productId}`} className="wishlist-card__name">
+                      <Link to={`/product/${productSlugOrId}`} className="wishlist-card__name">
                         {name}
                       </Link>
 
