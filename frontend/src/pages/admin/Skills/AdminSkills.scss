@@ -57,14 +57,21 @@
   }
 
   &__img {
-    aspect-ratio: 16/10;
-    background: #F8F9FC;
+    width: 100%;
+    height: 180px;
+    background: #F4F5FA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+    border-bottom: 1px solid #EAECF0;
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center;
+      padding: 12px;
       display: block;
     }
   }

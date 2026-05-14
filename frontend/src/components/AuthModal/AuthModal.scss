@@ -506,6 +506,33 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── Password Strength Rules ───────────────────────────────── */
+
+.auth-pwd-rules {
+  list-style: none;
+  padding: 0.5rem 0.75rem;
+  margin: -0.5rem 0 1rem;
+  background: #f8f9fb;
+  border: 1.5px solid #eef0f4;
+  border-radius: 10px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.76rem;
+    color: #e74c3c;
+    padding: 0.2rem 0;
+    font-weight: 500;
+
+    svg { font-size: 0.78rem; flex-shrink: 0; }
+
+    &.ok {
+      color: #16a34a;
+    }
+  }
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 
 @media (max-width: 480px) {

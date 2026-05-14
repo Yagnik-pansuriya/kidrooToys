@@ -25,7 +25,8 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
 
   // Local state
   const [step, setStep] = useState(STEPS.CHOICE);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);       // login
+  const [showPwdSignup, setShowPwdSignup] = useState(false);    // signup
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(0);
   const [signupMobile, setSignupMobile] = useState('');
@@ -47,6 +48,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
       setForm({ firstName: '', lastName: '', mobile: '', password: '', email: '' });
       setOtpValues(['', '', '', '', '', '']);
       setShowPassword(false);
+      setShowPwdSignup(false);
       setCountdown(0);
       setSignupMobile('');
       setSignupEmail('');
@@ -104,8 +106,20 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
       showError('Please enter a valid 10-digit mobile number');
       return;
     }
-    if (password.length < 6) {
-      showError('Password must be at least 6 characters');
+    if (password.length < 8) {
+      showError('Password must be at least 8 characters');
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      showError('Password must contain at least one uppercase letter');
+      return;
+    }
+    if (!/\d/.test(password)) {
+      showError('Password must contain at least one digit');
+      return;
+    }
+    if (!/[^A-Za-z0-9]/.test(password)) {
+      showError('Password must contain at least one special character');
       return;
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -330,20 +344,54 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
                 <span className="auth-input__hint">📧 Verification OTP will be sent to this email</span>
               </label>
 
-              <label className="auth-input">
-                <span className="auth-input__label">Password *</span>
-                <div className="auth-input__wrap">
-                  <FiLock className="auth-input__icon" />
-                  <input type={showPassword ? 'text' : 'password'} name="password" placeholder="Min 6 characters" value={form.password} onChange={handleChange} minLength={6} required />
-                  <button type="button" className="auth-input__eye" onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <FiEyeOff /> : <FiEye />}
-                  </button>
-                </div>
-              </label>
+              {/* Password with strength rules */}
+              {(() => {
+                const pwd = form.password;
+                const rules = [
+                  { label: 'At least 8 characters', ok: pwd.length >= 8 },
+                  { label: 'One uppercase letter', ok: /[A-Z]/.test(pwd) },
+                  { label: 'One digit (0–9)', ok: /\d/.test(pwd) },
+                  { label: 'One special character (!@#$…)', ok: /[^A-Za-z0-9]/.test(pwd) },
+                ];
+                const pwdValid = rules.every(r => r.ok);
+                return (
+                  <>
+                    <label className="auth-input">
+                      <span className="auth-input__label">Password *</span>
+                      <div className="auth-input__wrap">
+                        <FiLock className="auth-input__icon" />
+                        <input
+                          type={showPwdSignup ? 'text' : 'password'}
+                          name="password"
+                          placeholder="Min 8 characters"
+                          value={form.password}
+                          onChange={handleChange}
+                          minLength={8}
+                          required
+                        />
+                        <button type="button" className="auth-input__eye" onClick={() => setShowPwdSignup(!showPwdSignup)}>
+                          {showPwdSignup ? <FiEyeOff /> : <FiEye />}
+                        </button>
+                      </div>
+                    </label>
 
-              <button type="submit" className="auth-submit" disabled={signingUp}>
-                {signingUp ? <span className="auth-spinner" /> : <>Create Account <FiArrowRight /></>}
-              </button>
+                    {/* Inline strength checklist */}
+                    {form.password && (
+                      <ul className="auth-pwd-rules">
+                        {rules.map(r => (
+                          <li key={r.label} className={r.ok ? 'ok' : ''}>
+                            {r.ok ? <FiCheck /> : <FiX />} {r.label}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <button type="submit" className="auth-submit" disabled={signingUp || !pwdValid}>
+                      {signingUp ? <span className="auth-spinner" /> : <>Create Account <FiArrowRight /></>}
+                    </button>
+                  </>
+                );
+              })()}
             </form>
 
             <p className="auth-switch">
