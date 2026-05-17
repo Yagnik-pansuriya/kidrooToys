@@ -1,43 +1,94 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr" prefix="og: https://ogp.me/ns#">
   <head>
+    <!-- ═══════════════════ CORE META ═══════════════════ -->
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧸</text></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
 
-    <!-- Default SEO Meta Tags (overridden dynamically per page by SEOHead component) -->
-    <meta name="description" content="Kidroo Toys - Where Imagination Comes to Play! Shop premium toys, educational kits, action figures, and more for kids of all ages. Free shipping on ₹500+." />
-    <meta name="keywords" content="kidroo, toys, kids, children, educational toys, action figures, building blocks, wooden toys, montessori, baby toys" />
+    <!-- ═══════════════════ PRIMARY SEO META TAGS ═══════════════════ -->
+    <title>Kidroo Toys - Buy Premium Kids Toys Online India | Educational & Fun Toys</title>
+    <meta name="description" content="Kidroo Toys - India's trusted online toy store. Shop premium quality educational toys, wooden toys, Montessori kits, action figures, building blocks, baby toys & more for kids of all ages. Free shipping on orders over ₹500. Safe, non-toxic & BIS certified toys." />
+    <meta name="keywords" content="kidroo toys, buy toys online India, kids toys online, educational toys for kids, wooden toys India, Montessori toys, baby toys online, building blocks for children, action figures India, STEM toys, learning toys, safe toys for babies, non-toxic toys, birthday gift for kids, toys for toddlers, preschool toys, toys for boys, toys for girls, puzzle toys, creative toys" />
     <meta name="author" content="Kidroo Toys" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#FF6B35" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow" />
+    <meta name="revisit-after" content="3 days" />
+    <meta name="rating" content="General" />
+    <meta name="distribution" content="global" />
+    <meta name="language" content="English" />
+    <meta name="content-language" content="en-IN" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- ═══════════════════ CANONICAL URL ═══════════════════ -->
+    <link rel="canonical" href="https://kidrootoys.com/" />
+
+    <!-- ═══════════════════ GEOGRAPHIC TARGETING (India) ═══════════════════ -->
+    <meta name="geo.region" content="IN" />
+    <meta name="geo.country" content="India" />
+    <meta name="geo.placename" content="India" />
+    <meta name="ICBM" content="20.5937, 78.9629" />
+
+    <!-- ═══════════════════ MOBILE & APP META ═══════════════════ -->
+    <meta name="theme-color" content="#FF6B35" />
+    <meta name="msapplication-TileColor" content="#FF6B35" />
+    <meta name="msapplication-navbutton-color" content="#FF6B35" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Kidroo Toys" />
+    <meta name="application-name" content="Kidroo Toys" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- ═══════════════════ FAVICONS & ICONS ═══════════════════ -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧸</text></svg>" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- ═══════════════════ OPEN GRAPH / FACEBOOK ═══════════════════ -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Kidroo Toys" />
-    <meta property="og:title" content="Kidroo Toys - Where Imagination Comes to Play 🧸" />
-    <meta property="og:description" content="Shop premium toys, educational kits, action figures, and more for kids of all ages. Free shipping on ₹500+." />
+    <meta property="og:title" content="Kidroo Toys - Buy Premium Kids Toys Online India | Educational & Fun Toys" />
+    <meta property="og:description" content="India's trusted online toy store. Shop premium quality educational toys, wooden toys, Montessori kits, action figures, building blocks & more. Free shipping on ₹500+." />
+    <meta property="og:url" content="https://kidrootoys.com/" />
+    <meta property="og:image" content="https://kidrootoys.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Kidroo Toys - Premium Kids Toys Online Store" />
+    <meta property="og:locale" content="en_IN" />
 
-    <!-- Twitter -->
+    <!-- ═══════════════════ TWITTER CARD ═══════════════════ -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Kidroo Toys - Where Imagination Comes to Play 🧸" />
-    <meta name="twitter:description" content="Shop premium toys, educational kits, action figures, and more for kids of all ages." />
+    <meta name="twitter:site" content="@KidrooToys" />
+    <meta name="twitter:creator" content="@KidrooToys" />
+    <meta name="twitter:title" content="Kidroo Toys - Buy Premium Kids Toys Online India" />
+    <meta name="twitter:description" content="India's trusted online toy store. Shop premium quality educational toys, wooden toys, Montessori kits, action figures & more. Free shipping on ₹500+." />
+    <meta name="twitter:image" content="https://kidrootoys.com/og-image.jpg" />
+    <meta name="twitter:image:alt" content="Kidroo Toys - Premium Kids Toys Online Store" />
 
-    <title>Kidroo Toys - Where Imagination Comes to Play 🧸</title>
+    <!-- ═══════════════════ DNS PREFETCH & PRECONNECT ═══════════════════ -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="//kidroo-backend.vercel.app" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://kidroo-backend.vercel.app" crossorigin />
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- ═══════════════════ GOOGLE FONTS ═══════════════════ -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- JSON-LD WebSite Structured Data (enables Google Sitelinks search box) -->
+    <!-- ═══════════════════ JSON-LD: WEBSITE (Sitelinks Search Box) ═══════════════════ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
+      "@id": "https://kidrootoys.com/#website",
       "name": "Kidroo Toys",
-      "alternateName": "Kidroo",
+      "alternateName": ["Kidroo", "Kidroo Toys India"],
       "url": "https://kidrootoys.com",
+      "description": "India's trusted online toy store. Shop premium quality educational toys, wooden toys, Montessori kits, action figures, building blocks & more for kids of all ages.",
+      "inLanguage": "en-IN",
       "potentialAction": {
         "@type": "SearchAction",
         "target": {
@@ -48,8 +99,123 @@
       }
     }
     </script>
+
+    <!-- ═══════════════════ JSON-LD: ORGANIZATION ═══════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://kidrootoys.com/#organization",
+      "name": "Kidroo Toys",
+      "alternateName": "Kidroo",
+      "url": "https://kidrootoys.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://kidrootoys.com/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "description": "Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!",
+      "foundingDate": "2024",
+      "areaServed": {
+        "@type": "Country",
+        "name": "India"
+      },
+      "contactPoint": [
+        {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "availableLanguage": ["English", "Hindi"],
+          "url": "https://kidrootoys.com/about"
+        }
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════ JSON-LD: ONLINE STORE ═══════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "@id": "https://kidrootoys.com/#store",
+      "name": "Kidroo Toys",
+      "url": "https://kidrootoys.com",
+      "description": "Buy premium kids toys online in India. Educational toys, wooden toys, Montessori kits, building blocks, action figures and more.",
+      "image": "https://kidrootoys.com/og-image.jpg",
+      "priceRange": "₹₹",
+      "currenciesAccepted": "INR",
+      "paymentAccepted": "Cash, UPI, Credit Card, Debit Card, Net Banking",
+      "areaServed": {
+        "@type": "Country",
+        "name": "India"
+      },
+      "brand": {
+        "@type": "Brand",
+        "name": "Kidroo Toys"
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "INR",
+        "availability": "https://schema.org/InStock",
+        "offerCount": "1000+",
+        "lowPrice": "99",
+        "highPrice": "9999"
+      },
+      "potentialAction": {
+        "@type": "BuyAction",
+        "target": "https://kidrootoys.com/shop"
+      }
+    }
+    </script>
+
+    <!-- ═══════════════════ JSON-LD: BREADCRUMB (Homepage) ═══════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://kidrootoys.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Shop All Toys",
+          "item": "https://kidrootoys.com/shop"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Offers & Deals",
+          "item": "https://kidrootoys.com/offers"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "About Us",
+          "item": "https://kidrootoys.com/about"
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
+    <!-- Noscript fallback for accessibility and SEO crawlers -->
+    <noscript>
+      <div style="padding:2rem;text-align:center;font-family:sans-serif;">
+        <h1>Kidroo Toys - Premium Kids Toys Online India</h1>
+        <p>Welcome to Kidroo Toys, India's trusted online toy store! Browse our collection of educational toys, wooden toys, Montessori kits, building blocks, action figures, and more for kids of all ages.</p>
+        <p>Please enable JavaScript to experience the full Kidroo Toys shopping experience.</p>
+        <nav>
+          <a href="/shop">Shop All Toys</a> |
+          <a href="/offers">Offers & Deals</a> |
+          <a href="/about">About Us</a>
+        </nav>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

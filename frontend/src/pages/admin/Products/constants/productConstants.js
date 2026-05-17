@@ -37,7 +37,7 @@ export const emptyForm = {
   newArrival:         false,
   bestSeller:         false,
   ageRange:           [],
-  tags:               '',
+  tags:               [],
   isActive:           true,
   youtubeUrl:         '',
   youtubeUrl2:        '',

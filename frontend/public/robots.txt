@@ -1,14 +1,19 @@
+# ═══════════════════════════════════════════════════════
 # Kidroo Toys - Robots.txt
 # https://www.robotstxt.org/robotstxt.html
+# Last updated: 2026-05-17
+# ═══════════════════════════════════════════════════════
 
+# Allow all crawlers to access public pages
 User-agent: *
 Allow: /
 Allow: /shop
 Allow: /offers
 Allow: /about
 Allow: /product/
+Allow: /category/
 
-# Block admin and user-specific pages
+# Block admin, user-specific, and transactional pages
 Disallow: /admin
 Disallow: /admin/
 Disallow: /cart
@@ -17,6 +22,44 @@ Disallow: /profile
 Disallow: /wishlist
 Disallow: /order-confirmation/
 
+# Block query parameters that create duplicate content
+Disallow: /*?sort=
+Disallow: /*?page=
+Disallow: /*?limit=
+
+# Crawl-delay for polite crawling (optional, respected by some bots)
+Crawl-delay: 1
+
+# Google specific rules
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /wishlist
+
+# Bing specific rules
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /profile
+Disallow: /wishlist
+
+# Block AI training crawlers (optional, privacy-focused)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
 # Sitemap (served from the backend API)
-# Update the domain below to match your production backend URL
 Sitemap: https://kidroo-backend.vercel.app/api/sitemap.xml
+
+# Host directive (for Yandex and other bots)
+Host: https://kidrootoys.com

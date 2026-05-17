@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiImage, FiCheckCircle, FiLoader } from 'react-icons/fi';
+import { slugify } from '../../../../utils/slugify';
 
 const emptyForm = {
   catagoryName: '',
@@ -73,7 +74,15 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
               <input
                 type="text"
                 value={form.catagoryName}
-                onChange={(e) => setForm((p) => ({ ...p, catagoryName: e.target.value }))}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setForm((p) => ({
+                    ...p,
+                    catagoryName: name,
+                    // Auto-generate slug from name (only if slug hasn't been manually edited or is still auto-synced)
+                    slug: slugify(name),
+                  }));
+                }}
                 placeholder="e.g. Wooden Toys"
                 required
               />
@@ -85,10 +94,13 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
               <input
                 type="text"
                 value={form.slug}
-                onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))}
+                onChange={(e) => setForm((p) => ({ ...p, slug: slugify(e.target.value) }))}
                 placeholder="e.g. wooden-toys"
                 required
               />
+              <p className="admin-field__hint" style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-muted, #888)' }}>
+                Auto-generated from name. Used in URL: /category/{form.slug || 'your-slug'}
+              </p>
             </div>
 
             {/* Count */}

@@ -87,8 +87,10 @@ const useProductForm = () => {
                               return [];
                             })(),
       tags:               Array.isArray(product.tags)
-                            ? product.tags.join(',')
-                            : (product.tags || ''),
+                            ? product.tags
+                            : (typeof product.tags === 'string' && product.tags
+                                ? product.tags.split(',')
+                                : []),
       isActive:           product.isActive ?? true,
       youtubeUrl:         product.youtubeUrl || '',
       youtubeUrl2:        product.youtubeUrl2 || '',
@@ -155,11 +157,19 @@ const useProductForm = () => {
 
     // String fields — always send
     const stringFields = [
-      'productName', 'slug', 'productCode', 'description', 'tags', 'youtubeUrl', 'youtubeUrl2',
+      'productName', 'slug', 'productCode', 'description', 'youtubeUrl', 'youtubeUrl2',
       'warrantyType', 'guaranteeTerms', 'seoKeywords',
       'seoTitle', 'seoDescription', 'skuCode',
     ];
     stringFields.forEach((key) => fd.append(key, form[key] ?? ''));
+
+    // Tags (bullet points) — send as JSON array
+    if (Array.isArray(form.tags) && form.tags.length > 0) {
+      const validTags = form.tags.filter((t) => t.trim());
+      fd.append('tags', JSON.stringify(validTags));
+    } else {
+      fd.append('tags', '[]');
+    }
 
     // ageRange — send as comma-separated string
     if (Array.isArray(form.ageRange) && form.ageRange.length > 0) {
