@@ -581,10 +581,13 @@ const ProductDetail = () => {
               <h3>Designed for Little Hands, Built for Big Dreams</h3>
               <div className="pdp__rich-content" dangerouslySetInnerHTML={{ __html: product.description }} />
               {product.tags?.length > 0 && (
-                <div className="pdp__tags">
-                  {product.tags.map((tag, i) => (
-                    <span key={i} className="pdp__tag">✓ {tag}</span>
-                  ))}
+                <div className="pdp__bullet-points">
+                  <h4>Bullet Points</h4>
+                  <ul className="pdp__bullet-list">
+                    {product.tags.map((tag, i) => (
+                      <li key={i}>{tag}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
@@ -605,7 +608,7 @@ const ProductDetail = () => {
                   <tr><td>Stock</td><td>{stock} units</td></tr>
                   {productCode && <tr><td>Product Code</td><td>{productCode}</td></tr>}
                   {skuCode && <tr><td>SKU Code</td><td>{skuCode}</td></tr>}
-                  {product.tags?.length > 0 && <tr><td>Tags</td><td>{product.tags.join(', ')}</td></tr>}
+                  {product.tags?.length > 0 && <tr><td>Bullet Points</td><td><ul style={{ margin: 0, paddingLeft: '1.2rem' }}>{product.tags.map((t, i) => <li key={i}>{t}</li>)}</ul></td></tr>}
                 </tbody>
               </table>
 
