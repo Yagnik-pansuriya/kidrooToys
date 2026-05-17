@@ -660,6 +660,90 @@
   }
 }
 
+// ─── Bullet Points (add/delete rows) ─────────────────────────────────────────
+.admin-bullet-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.admin-bullet-row {
+  display: flex;
+  align-items: center;
+  gap: $space-xs;
+
+  &__num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #F0F2F8;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    padding: $space-xs $space-sm;
+    border: 2px solid #E2E4EC;
+    border-radius: $radius;
+    font-size: 0.88rem;
+    transition: border-color $transition-base;
+    box-sizing: border-box;
+
+    &:focus {
+      border-color: var(--color-primary);
+      outline: none;
+    }
+  }
+
+  &__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: $radius;
+    color: var(--color-danger);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all $transition-base;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
+}
+
+.admin-bullet-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: $space-xs;
+  padding: $space-xs $space-md;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: rgba(88, 28, 235, 0.06);
+  border: 1px dashed rgba(88, 28, 235, 0.3);
+  border-radius: $radius;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  svg { font-size: 0.9rem; }
+
+  &:hover {
+    background: rgba(88, 28, 235, 0.12);
+    border-color: var(--color-primary);
+  }
+}
+
 // ─── Variants action button ───────────────────────────────────────────────────
 .admin-action-btn--variants {
   color: #7c3aed; // violet

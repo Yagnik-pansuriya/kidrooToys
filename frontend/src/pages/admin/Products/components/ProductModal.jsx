@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FiX, FiImage, FiPlus, FiLoader, FiShield, FiZap, FiChevronDown, FiChevronUp, FiBox, FiDollarSign, FiFilter, FiCamera, FiSearch, FiRefreshCw, FiList, FiTrash2 } from 'react-icons/fi';
 import { generateProductCode, generateSkuCode, MAX_IMAGES } from '../constants/productConstants';
+import { slugify } from '../../../../utils/slugify';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
@@ -165,18 +166,48 @@ const ProductModal = ({
     onChange: (e) => setForm((p) => ({ ...p, [key]: e.target.value })),
   });
 
-  const boolSelect = (key) => ({
-    value:   form[key],
-    onChange: (e) => setForm((p) => ({ ...p, [key]: e.target.value === 'true' })),
-    options:  [{ value: 'true', label: 'True' }, { value: 'false', label: 'False' }],
-  });
-
   const BOOL_FIELDS = [
     { key: 'featured',   label: 'Featured'    },
     { key: 'newArrival', label: 'New Arrival'  },
     { key: 'bestSeller', label: 'Best Seller'  },
     { key: 'isActive',   label: 'Is Active'    },
   ];
+
+  // ── Pricing Auto-calculation Handlers ────────────────────────
+  const handlePriceChange = (e) => {
+    const val = e.target.value;
+    setForm((p) => {
+      const next = { ...p, price: val };
+      const pVal = parseFloat(val);
+      const opVal = parseFloat(p.originalPrice);
+
+      if (!isNaN(pVal) && pVal >= 0 && !isNaN(opVal) && opVal > 0) {
+        let discount = Math.round(((opVal - pVal) / opVal) * 100);
+        next.discountPercentage = discount < 0 ? 0 : discount;
+      }
+      return next;
+    });
+  };
+
+  const handleOriginalPriceChange = (e) => {
+    const val = e.target.value;
+    setForm((p) => {
+      const next = { ...p, originalPrice: val };
+      const opVal = parseFloat(val);
+      const pVal = parseFloat(p.price);
+
+      if (!isNaN(opVal) && opVal > 0 && !isNaN(pVal) && pVal >= 0) {
+        let discount = Math.round(((opVal - pVal) / opVal) * 100);
+        next.discountPercentage = discount < 0 ? 0 : discount;
+      }
+      return next;
+    });
+  };
+
+  const handleDiscountChange = (e) => {
+    // Just update discount without affecting price or original price
+    setForm((p) => ({ ...p, discountPercentage: e.target.value }));
+  };
 
   return (
     <div className="admin-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
@@ -204,13 +235,35 @@ const ProductModal = ({
             {/* Product Name ─ full width */}
             <div className="admin-field admin-field--full">
               <label>Product Name *</label>
-              <input type="text" placeholder="e.g. Wooden Toy Car" required {...field('productName')} />
+              <input
+                type="text"
+                placeholder="e.g. Wooden Toy Car"
+                required
+                value={form.productName}
+                onChange={(e) => {
+                  const name = e.target.value;
+                  setForm((p) => ({
+                    ...p,
+                    productName: name,
+                    slug: slugify(name),
+                  }));
+                }}
+              />
             </div>
 
             {/* Slug */}
             <div className="admin-field">
               <label>Slug *</label>
-              <input type="text" placeholder="e.g. wooden-toy-car" required {...field('slug')} />
+              <input
+                type="text"
+                placeholder="e.g. wooden-toy-car"
+                required
+                value={form.slug}
+                onChange={(e) => setForm((p) => ({ ...p, slug: slugify(e.target.value) }))}
+              />
+              <p className="admin-field__hint" style={{ marginTop: '0.25rem' }}>
+                Auto-generated from name. URL: /product/{form.slug || 'your-slug'}
+              </p>
             </div>
 
             {/* Product Code — auto-generated, editable */}
@@ -314,10 +367,52 @@ const ProductModal = ({
               </div>
             </div>
 
-            {/* Tags */}
+            {/* Bullet Points */}
             <div className="admin-field admin-field--full">
-              <label>Tags * (comma separated)</label>
-              <input type="text" placeholder="wooden,car,toy" required {...field('tags')} />
+              <label>Bullet Points *</label>
+              <p className="admin-field__hint" style={{ marginBottom: '0.5rem' }}>
+                Add key product highlights. Each bullet point appears on the product page.
+              </p>
+              <div className="admin-bullet-list">
+                {(form.tags || []).map((tag, idx) => (
+                  <div key={idx} className="admin-bullet-row">
+                    <span className="admin-bullet-row__num">{idx + 1}</span>
+                    <input
+                      type="text"
+                      placeholder={`Bullet point ${idx + 1}`}
+                      value={tag}
+                      onChange={(e) => {
+                        const updated = [...form.tags];
+                        updated[idx] = e.target.value;
+                        setForm((p) => ({ ...p, tags: updated }));
+                      }}
+                      className="admin-bullet-row__input"
+                    />
+                    <button
+                      type="button"
+                      className="admin-bullet-row__remove"
+                      onClick={() => {
+                        setForm((p) => ({
+                          ...p,
+                          tags: p.tags.filter((_, i) => i !== idx),
+                        }));
+                      }}
+                      title="Remove this bullet point"
+                    >
+                      <FiX />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  className="admin-bullet-add-btn"
+                  onClick={() =>
+                    setForm((p) => ({ ...p, tags: [...(p.tags || []), ''] }))
+                  }
+                >
+                  <FiPlus /> Add Bullet Point
+                </button>
+              </div>
             </div>
 
             {/* YouTube Video URL 1 ─ full width */}
@@ -348,19 +443,19 @@ const ProductModal = ({
             {/* Price */}
             <div className="admin-field">
               <label>Price *</label>
-              <input type="number" step="0.01" min="0" placeholder="29.99" required {...field('price')} />
+              <input type="number" step="0.01" min="0" placeholder="29.99" required value={form.price} onChange={handlePriceChange} />
             </div>
 
             {/* Original Price */}
             <div className="admin-field">
               <label>Original Price *</label>
-              <input type="number" step="0.01" min="0" placeholder="39.99" required {...field('originalPrice')} />
+              <input type="number" step="0.01" min="0" placeholder="39.99" required value={form.originalPrice} onChange={handleOriginalPriceChange} />
             </div>
 
             {/* Discount % */}
             <div className="admin-field">
               <label>Discount % *</label>
-              <input type="number" min="0" placeholder="25" required {...field('discountPercentage')} />
+              <input type="number" min="0" placeholder="25" required value={form.discountPercentage} onChange={handleDiscountChange} />
             </div>
 
             {/* Stock */}
@@ -409,9 +504,18 @@ const ProductModal = ({
               onChange={(ids) => setForm((p) => ({ ...p, skills: ids }))}
             />
 
-            {/* Boolean selects */}
+            {/* Boolean checkboxes */}
             {BOOL_FIELDS.map(({ key, label }) => (
-              <SelectField key={key} label={label} {...boolSelect(key)} />
+              <div key={key} className="admin-field" style={{ justifyContent: 'center' }}>
+                <label className="admin-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={!!form[key]}
+                    onChange={(e) => setForm((p) => ({ ...p, [key]: e.target.checked }))}
+                  />
+                  {label}
+                </label>
+              </div>
             ))}
 
           </FormGroup>
