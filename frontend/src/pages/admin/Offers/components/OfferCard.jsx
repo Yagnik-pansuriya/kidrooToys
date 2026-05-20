@@ -6,11 +6,11 @@ const OfferCard = ({ offer, onPreview, onEdit, onDelete }) => {
   return (
     <div className="admin-offer-card">
       <div className="admin-offer-card__header">
-        <div>
+        <div className="admin-offer-card__tags">
           <span className={`admin-offer-card__type admin-offer-card__type--${offer.type}`}>
             {offerTypes.find(t => t.value === offer.type)?.label || offer.type}
           </span>
-          <span className={`admin-offer-card__status ${offer.isActive ? 'admin-offer-card__status--active' : ''}`}>
+          <span className={`admin-offer-card__status ${offer.isActive ? 'admin-offer-card__status--active' : 'admin-offer-card__status--inactive'}`}>
             {offer.isActive ? 'Active' : 'Inactive'}
           </span>
           {offer.isFeatured && (
@@ -39,8 +39,8 @@ const OfferCard = ({ offer, onPreview, onEdit, onDelete }) => {
         {offer.validity?.to && <span className="admin-offer-card__date">Until: {new Date(offer.validity.to).toLocaleDateString()}</span>}
       </div>
       <div className="admin-offer-card__colors">
-        <span style={{ background: offer.bgColor }} />
-        <span style={{ background: offer.textColor, border: '1px solid #ddd' }} />
+        {offer.bgColor && <span className="admin-offer-card__color-dot" style={{ background: offer.bgColor }} title={`BG: ${offer.bgColor}`} />}
+        {offer.textColor && <span className="admin-offer-card__color-dot" style={{ background: offer.textColor, border: '1px solid #ddd' }} title={`Text: ${offer.textColor}`} />}
       </div>
     </div>
   );

@@ -4,11 +4,13 @@ import { FiShoppingCart, FiUser, FiMenu, FiX, FiHeart, FiLogOut } from 'react-ic
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import UserConfirmModal from '../ConfirmModal/UserConfirmModal';
 import './Header.scss';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const { cartCount, setIsCartOpen } = useCart();
   const { settings } = useTheme();
   const { customer, isCustomerAuthenticated, wishlistIds, openAuthModal, handleLogout } = useCustomerAuth();
@@ -38,6 +40,7 @@ const Header = () => {
   };
 
   return (
+    <>
     <header className={`header ${isScrolled ? 'header--scrolled' : ''}`}>
       <div className="header__container">
         {/* Logo */}
@@ -102,7 +105,7 @@ const Header = () => {
 
           {/* Logout (only when logged in) */}
           {isCustomerAuthenticated && (
-            <button className="header__action-btn header__logout-btn" onClick={handleLogout} title="Logout">
+            <button className="header__action-btn header__logout-btn" onClick={() => setShowLogoutConfirm(true)} title="Logout">
               <FiLogOut />
             </button>
           )}
@@ -116,8 +119,32 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu Backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="header__mobile-menu-backdrop header__mobile-menu-backdrop--visible"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu Drawer */}
       <div className={`header__mobile-menu ${isMobileMenuOpen ? 'header__mobile-menu--open' : ''}`}>
+        {/* Drawer Header */}
+        <div className="header__mobile-header">
+          <Link to="/" className="header__logo" onClick={() => setIsMobileMenuOpen(false)}>
+            {settings.logo ? (
+              <img src={settings.logo} alt={settings.siteName} className="header__logo-img" />
+            ) : (
+              <span style={{ fontWeight: 700, fontSize: '1.2rem', color: 'var(--color-primary)' }}>
+                {settings.siteName || 'Kidroo'}
+              </span>
+            )}
+          </Link>
+          <button className="header__mobile-close" onClick={() => setIsMobileMenuOpen(false)}>
+            <FiX />
+          </button>
+        </div>
+
         <nav className="header__mobile-nav">
           {navLinks.map(link => (
             <NavLink
@@ -129,15 +156,24 @@ const Header = () => {
               {link.badge && <span className="header__nav-badge">{link.badge}</span>}
             </NavLink>
           ))}
+
+          <div className="header__mobile-divider" />
+
           <NavLink to="/wishlist" className="header__mobile-link">
-            <FiHeart /> Wishlist {wishlistIds.length > 0 && `(${wishlistIds.length})`}
+            <FiHeart /> Wishlist
+            {wishlistIds.length > 0 && (
+              <span style={{ marginLeft: 'auto', background: '#e74c3c', color: '#fff', fontSize: '0.68rem', fontWeight: 700, padding: '1px 6px', borderRadius: 99 }}>
+                {wishlistIds.length}
+              </span>
+            )}
           </NavLink>
+
           {isCustomerAuthenticated ? (
             <>
               <NavLink to="/profile" className="header__mobile-link">
                 <FiUser /> My Profile
               </NavLink>
-              <button className="header__mobile-link" onClick={handleLogout}>
+              <button className="header__mobile-link" style={{ color: '#e74c3c' }} onClick={() => { setIsMobileMenuOpen(false); setShowLogoutConfirm(true); }}>
                 <FiLogOut /> Logout
               </button>
             </>
@@ -149,6 +185,19 @@ const Header = () => {
         </nav>
       </div>
     </header>
+
+    {/* Logout Confirmation Modal */}
+    <UserConfirmModal
+      isOpen={showLogoutConfirm}
+      title="Log out of Kidroo?"
+      message="Are you sure you want to log out? You'll need to sign in again to access your account."
+      confirmText="Yes, Log Out"
+      cancelText="Stay Logged In"
+      variant="warning"
+      onConfirm={() => { setShowLogoutConfirm(false); handleLogout(); }}
+      onClose={() => setShowLogoutConfirm(false)}
+    />
+    </>
   );
 };
 

@@ -8,6 +8,7 @@ import {
   useDeleteBannerMutation,
 } from '../../../store/ActionApi/bannerApi';
 import { useToast } from '../../../context/ToastContext';
+import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import './AdminBanners.scss';
 
 import React from 'react';
@@ -56,6 +57,7 @@ const AdminBanners = () => {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const openCreate = () => {
     setEditing(null);
@@ -115,13 +117,19 @@ const AdminBanners = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this banner?')) return;
+  const handleDelete = (banner) => {
+    setDeleteTarget(banner);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await deleteBanner(id).unwrap();
+      await deleteBanner(deleteTarget._id || deleteTarget.id).unwrap();
       showSuccess('Banner deleted');
     } catch (err) {
       showError('Failed to delete');
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -172,7 +180,7 @@ const AdminBanners = () => {
                 </span>
                 <div className="admin-actions">
                   <button className="admin-action-btn admin-action-btn--edit" onClick={() => openEdit(banner)}><FiEdit2 /></button>
-                  <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(banner._id || banner.id)}><FiTrash2 /></button>
+                  <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(banner)}><FiTrash2 /></button>
                 </div>
               </div>
               {banner.image && (
@@ -239,9 +247,18 @@ const AdminBanners = () => {
                   <label>Display Order</label>
                   <input type="number" value={form.order} onChange={(e) => setForm(p => ({ ...p, order: e.target.value }))} />
                 </div>
-                <div className="admin-field">
-                  <label className="admin-checkbox">
-                    <input type="checkbox" checked={form.isActive} onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} /> Active
+                <div className="admin-field banner-active-field">
+                  <label className="banner-active-field__label">Active</label>
+                  <label className="banner-toggle">
+                    <input
+                      type="checkbox"
+                      checked={form.isActive}
+                      onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))}
+                    />
+                    <span className="banner-toggle__track">
+                      <span className="banner-toggle__thumb" />
+                    </span>
+                    <span className="banner-toggle__text">{form.isActive ? 'Active' : 'Inactive'}</span>
                   </label>
                 </div>
                 <div className="admin-field admin-field--full">
@@ -263,6 +280,15 @@ const AdminBanners = () => {
           </div>
         </div>
       )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      <ConfirmDeleteModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        itemName={deleteTarget?.title ? `${deleteTarget.title} ${deleteTarget.highlightText || ''}`.trim() : 'this banner'}
+        title="Delete Banner?"
+      />
     </div>
   );
 };
