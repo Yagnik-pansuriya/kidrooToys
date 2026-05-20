@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiPhone, FiMapPin, FiPackage, FiHeart, FiEdit, FiPlus, FiTrash2, FiCheck, FiX, FiHome, FiBriefcase, FiStar, FiLock, FiArrowRight } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiMapPin, FiPackage, FiHeart, FiEdit, FiPlus, FiTrash2, FiCheck, FiX, FiHome, FiBriefcase, FiStar, FiLock, FiArrowRight, FiShoppingCart, FiEye, FiEyeOff } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 import { useGetCustomerProfileQuery } from '../../../store/ActionApi/customerAuthApi';
-import { useUpdateCustomerProfileMutation, useChangeCustomerPasswordMutation, useAddAddressMutation, useUpdateAddressMutation, useDeleteAddressMutation, useSetDefaultAddressMutation } from '../../../store/ActionApi/customerApi';
+import { useUpdateCustomerProfileMutation, useChangeCustomerPasswordMutation, useAddAddressMutation, useUpdateAddressMutation, useDeleteAddressMutation, useSetDefaultAddressMutation, useGetWishlistQuery, useToggleWishlistMutation, useClearWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useToast } from '../../../context/ToastContext';
-import { updateCustomerProfile } from '../../../store/ReducerApi/customerAuthSlice';
+import { updateCustomerProfile, toggleWishlistId, setWishlistIds } from '../../../store/ReducerApi/customerAuthSlice';
+import { useCart } from '../../../context/CartContext';
 import Loader from '../../../components/Loader/Loader';
 import SEOHead from '../../../components/SEOHead/SEOHead';
+import UserConfirmModal from '../../../components/ConfirmModal/UserConfirmModal';
 import './UserProfile.scss';
 
 const ADDRESS_TYPES = [
@@ -47,6 +49,16 @@ const UserProfile = () => {
   const [updateAddressApi] = useUpdateAddressMutation();
   const [deleteAddressApi] = useDeleteAddressMutation();
   const [setDefaultApi] = useSetDefaultAddressMutation();
+  const [toggleWishlistApi] = useToggleWishlistMutation();
+  const [clearWishlistApi] = useClearWishlistMutation();
+  const { addToCart } = useCart();
+
+  // Wishlist API - only fetch when wishlist tab is active
+  const [wishlistTabActive, setWishlistTabActive] = useState(false);
+  const { data: wishlistResp, isLoading: wishlistLoading } = useGetWishlistQuery(undefined, {
+    skip: !isCustomerAuthenticated || !wishlistTabActive,
+  });
+  const wishlistItems = wishlistResp?.data || wishlistResp || [];
 
   const customer = profileResp?.data || profileResp || null;
 
@@ -56,6 +68,10 @@ const UserProfile = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  // Show/hide toggles for each password field
+  const [showPwd, setShowPwd] = useState({ current: false, newPwd: false, confirm: false });
+  // Address delete confirmation modal
+  const [deleteAddrId, setDeleteAddrId] = useState(null);
 
   // Profile form
   const [profileForm, setProfileForm] = useState({
@@ -181,12 +197,13 @@ const UserProfile = () => {
   };
 
   const handleDeleteAddress = async (addressId) => {
-    if (!confirm('Delete this address?')) return;
     try {
       await deleteAddressApi(addressId).unwrap();
       showSuccess('Address deleted');
     } catch (err) {
       showError(err?.data?.message || 'Failed to delete address');
+    } finally {
+      setDeleteAddrId(null);
     }
   };
 
@@ -237,7 +254,7 @@ const UserProfile = () => {
               <button className={activeTab === 'addresses' ? 'active' : ''} onClick={() => setActiveTab('addresses')}>
                 <FiMapPin /> Addresses
               </button>
-              <button className={activeTab === 'wishlist' ? 'active' : ''} onClick={() => navigate('/wishlist')}>
+              <button className={activeTab === 'wishlist' ? 'active' : ''} onClick={() => { setActiveTab('wishlist'); setWishlistTabActive(true); }}>
                 <FiHeart /> Wishlist
               </button>
               <button className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>
@@ -407,26 +424,123 @@ const UserProfile = () => {
                   <div className="address-list">
                     {addresses.map((addr) => (
                       <div className={`address-card ${addr.isDefault ? 'address-card--default' : ''}`} key={addr._id}>
+                        {/* Card Header */}
                         <div className="address-card__header">
                           <span className="address-card__label">
                             {getLabelIcon(addr.label)} {addr.label?.toUpperCase() || 'HOME'}
                           </span>
-                          {addr.isDefault && <span className="address-card__default-badge"><FiCheck /> Default</span>}
+                          {addr.isDefault && (
+                            <span className="address-card__default-badge"><FiCheck /> Default</span>
+                          )}
                         </div>
-                        <p className="address-card__name">{addr.fullName}</p>
-                        <p className="address-card__address">
-                          {[addr.houseNo, addr.street, addr.landmark].filter(Boolean).join(', ')}
-                          <br />
-                          {addr.city}, {addr.state} - {addr.zipCode}
-                        </p>
-                        <p className="address-card__phone"><FiPhone /> {addr.phone}</p>
+
+                        {/* Card Body */}
+                        <div className="address-card__body">
+                          <p className="address-card__name">{addr.fullName}</p>
+                          <p className="address-card__address">
+                            {[addr.houseNo, addr.street, addr.landmark].filter(Boolean).join(', ')}<br />
+                            {addr.city}, {addr.state} — {addr.zipCode}
+                          </p>
+                          <span className="address-card__phone"><FiPhone /> {addr.phone}</span>
+                        </div>
+
+                        {/* Action Bar */}
                         <div className="address-card__actions">
-                          <button onClick={() => openEditAddress(addr)}><FiEdit /> Edit</button>
-                          <button onClick={() => handleDeleteAddress(addr._id)}><FiTrash2 /> Delete</button>
-                          {!addr.isDefault && <button onClick={() => handleSetDefault(addr._id)}><FiCheck /> Set Default</button>}
+                          <button className="btn-edit" onClick={() => openEditAddress(addr)}>
+                            <FiEdit /> Edit
+                          </button>
+                          <button className="btn-delete" onClick={() => setDeleteAddrId(addr._id)}>
+                            <FiTrash2 /> Delete
+                          </button>
+                          {!addr.isDefault && (
+                            <button className="btn-default" onClick={() => handleSetDefault(addr._id)}>
+                              <FiCheck /> Set Default
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB: Wishlist */}
+            {activeTab === 'wishlist' && (
+              <div className="profile-section">
+                <div className="profile-section__header">
+                  <h3><FiHeart /> My Wishlist</h3>
+                  {wishlistItems.length > 0 && (
+                    <button className="profile-section__edit-btn" style={{ color: '#e74c3c', borderColor: '#e74c3c' }}
+                      onClick={async () => {
+                        try {
+                          await clearWishlistApi().unwrap();
+                          dispatch(setWishlistIds([]));
+                          showSuccess('Wishlist cleared');
+                        } catch { showError('Failed to clear wishlist'); }
+                      }}
+                    >
+                      <FiTrash2 /> Clear All
+                    </button>
+                  )}
+                </div>
+
+                {wishlistLoading ? (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>Loading wishlist…</div>
+                ) : wishlistItems.length === 0 ? (
+                  <div className="profile-section__empty">
+                    <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💝</div>
+                    <p>Your wishlist is empty.</p>
+                    <Link to="/shop" style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: '0.9rem' }}>Browse Shop →</Link>
+                  </div>
+                ) : (
+                  <div className="profile-wishlist-grid">
+                    {wishlistItems.map((product) => {
+                      const name = product.productName || product.name || 'Product';
+                      const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
+                      const price = Number(product.price || 0);
+                      const originalPrice = Number(product.originalPrice || 0);
+                      const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
+                      const productId = product._id || product.id;
+                      const inStock = product.stock > 0;
+                      return (
+                        <div className="profile-wishlist-card" key={productId}>
+                          <Link to={`/product/${product.slug || productId}`} className="profile-wishlist-card__img">
+                            {imgSrc ? <img src={imgSrc} alt={name} loading="lazy" /> : <div className="profile-wishlist-card__placeholder">📦</div>}
+                            {discount > 0 && <span className="profile-wishlist-card__badge">-{discount}%</span>}
+                          </Link>
+                          <div className="profile-wishlist-card__info">
+                            <Link to={`/product/${product.slug || productId}`} className="profile-wishlist-card__name">{name}</Link>
+                            <div className="profile-wishlist-card__price">
+                              <span>₹{price.toFixed(0)}</span>
+                              {originalPrice > price && <span className="profile-wishlist-card__original">₹{originalPrice.toFixed(0)}</span>}
+                            </div>
+                            <div className="profile-wishlist-card__actions">
+                              <button
+                                className="profile-wishlist-card__cart"
+                                disabled={!inStock}
+                                onClick={() => { addToCart(product); showSuccess(`${name} added to cart!`); }}
+                              >
+                                <FiShoppingCart /> {inStock ? 'Add to Cart' : 'Out of Stock'}
+                              </button>
+                              <button
+                                className="profile-wishlist-card__remove"
+                                title="Remove"
+                                onClick={async () => {
+                                  try {
+                                    await toggleWishlistApi(productId).unwrap();
+                                    dispatch(toggleWishlistId(productId));
+                                    showSuccess('Removed from wishlist');
+                                  } catch { showError('Failed to remove'); }
+                                }}
+                              >
+                                <FiTrash2 />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -452,44 +566,110 @@ const UserProfile = () => {
                     )}
                   </div>
 
-                  {showPasswordForm && (
-                    <form className="password-form" onSubmit={handleChangePassword}>
-                      <input
-                        type="password"
-                        placeholder="Current Password"
-                        value={passwordForm.currentPassword}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                        required
-                      />
-                      <input
-                        type="password"
-                        placeholder="New Password (min 6 chars)"
-                        value={passwordForm.newPassword}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                        minLength={6}
-                        required
-                      />
-                      <input
-                        type="password"
-                        placeholder="Confirm New Password"
-                        value={passwordForm.confirmPassword}
-                        onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                        required
-                      />
-                      <div className="password-form__actions">
-                        <button type="submit" className="btn-primary" disabled={changingPassword}>
-                          {changingPassword ? 'Changing...' : 'Change Password'}
-                        </button>
-                        <button type="button" className="btn-outline" onClick={() => setShowPasswordForm(false)}>Cancel</button>
-                      </div>
-                    </form>
-                  )}
+                  {showPasswordForm && (() => {
+                    const pwd = passwordForm.newPassword;
+                    const rules = [
+                      { label: 'At least 8 characters', ok: pwd.length >= 8 },
+                      { label: 'One uppercase letter', ok: /[A-Z]/.test(pwd) },
+                      { label: 'One digit (0–9)', ok: /\d/.test(pwd) },
+                      { label: 'One special character (!@#$…)', ok: /[^A-Za-z0-9]/.test(pwd) },
+                    ];
+                    const pwdValid = rules.every(r => r.ok);
+                    const allFilled = passwordForm.currentPassword && passwordForm.newPassword && passwordForm.confirmPassword;
+                    const matched = passwordForm.newPassword === passwordForm.confirmPassword;
+
+                    return (
+                      <form className="password-form" onSubmit={handleChangePassword}>
+                        {/* Current Password */}
+                        <div className="password-form__field">
+                          <input
+                            type={showPwd.current ? 'text' : 'password'}
+                            placeholder="Current Password"
+                            value={passwordForm.currentPassword}
+                            onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                            required
+                          />
+                          <button type="button" className="password-form__eye" onClick={() => setShowPwd(p => ({ ...p, current: !p.current }))}>
+                            {showPwd.current ? <FiEyeOff /> : <FiEye />}
+                          </button>
+                        </div>
+
+                        {/* New Password */}
+                        <div className="password-form__field">
+                          <input
+                            type={showPwd.newPwd ? 'text' : 'password'}
+                            placeholder="New Password (min 8 chars)"
+                            value={passwordForm.newPassword}
+                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                            minLength={8}
+                            required
+                          />
+                          <button type="button" className="password-form__eye" onClick={() => setShowPwd(p => ({ ...p, newPwd: !p.newPwd }))}>
+                            {showPwd.newPwd ? <FiEyeOff /> : <FiEye />}
+                          </button>
+                        </div>
+
+                        {/* Strength checklist */}
+                        {passwordForm.newPassword && (
+                          <ul className="password-form__rules">
+                            {rules.map(r => (
+                              <li key={r.label} className={r.ok ? 'ok' : ''}>
+                                {r.ok ? <FiCheck /> : <FiX />} {r.label}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {/* Confirm Password */}
+                        <div className="password-form__field">
+                          <input
+                            type={showPwd.confirm ? 'text' : 'password'}
+                            placeholder="Confirm New Password"
+                            value={passwordForm.confirmPassword}
+                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                            required
+                          />
+                          <button type="button" className="password-form__eye" onClick={() => setShowPwd(p => ({ ...p, confirm: !p.confirm }))}>
+                            {showPwd.confirm ? <FiEyeOff /> : <FiEye />}
+                          </button>
+                        </div>
+
+                        {/* Mismatch warning */}
+                        {passwordForm.confirmPassword && !matched && (
+                          <p className="password-form__mismatch">Passwords do not match</p>
+                        )}
+
+                        <div className="password-form__actions">
+                          <button
+                            type="submit"
+                            className="btn-primary"
+                            disabled={changingPassword || !pwdValid || !allFilled || !matched}
+                          >
+                            {changingPassword ? 'Changing...' : 'Change Password'}
+                          </button>
+                          <button type="button" className="btn-outline" onClick={() => { setShowPasswordForm(false); setShowPwd({ current: false, newPwd: false, confirm: false }); }}>Cancel</button>
+                        </div>
+                      </form>
+                    );
+                  })()}
                 </div>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Address Delete Confirmation Modal */}
+      <UserConfirmModal
+        isOpen={!!deleteAddrId}
+        title="Delete Address?"
+        message="Are you sure you want to remove this address? This action cannot be undone."
+        confirmText="Yes, Delete"
+        cancelText="Cancel"
+        variant="danger"
+        onConfirm={() => handleDeleteAddress(deleteAddrId)}
+        onClose={() => setDeleteAddrId(null)}
+      />
     </div>
   );
 };

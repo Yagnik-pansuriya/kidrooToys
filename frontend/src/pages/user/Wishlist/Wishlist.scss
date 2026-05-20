@@ -5,20 +5,35 @@
   min-height: 60vh;
 
   &__hero {
-    background: var(--color-header, #1a1d2e);
+    background: linear-gradient(135deg, var(--color-header, #1a1d2e) 0%, #2d3250 60%, var(--color-header, #1a1d2e) 100%);
     color: #fff;
-    padding: 3rem 0 2rem;
+    padding: 5.5rem 1rem 2.5rem;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 0%, rgba(255,107,53,0.2) 0%, transparent 65%);
+      pointer-events: none;
+    }
 
     h1 {
       font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.3rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+      letter-spacing: -0.5px;
+      position: relative;
+
+      @media (max-width: 480px) { font-size: 1.6rem; }
     }
 
     p {
-      color: rgba(255,255,255,0.6);
-      font-size: 0.95rem;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.92rem;
+      position: relative;
     }
   }
 
