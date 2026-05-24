@@ -7,6 +7,7 @@ import { useGetSettingsQuery } from '../../../store/ActionApi/settingsApi';
 import { useGetCustomerProfileQuery } from '../../../store/ActionApi/customerAuthApi';
 import { useAddAddressMutation, useSetDefaultAddressMutation } from '../../../store/ActionApi/customerApi';
 import { useCreateOrderMutation, useVerifyPaymentMutation } from '../../../store/ActionApi/orderApi';
+import { useValidateCouponMutation } from '../../../store/ActionApi/couponApi';
 import { useToast } from '../../../context/ToastContext';
 import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Checkout.scss';
@@ -68,6 +69,7 @@ const Checkout = () => {
   const [setDefaultApi] = useSetDefaultAddressMutation();
   const [createOrder, { isLoading: isCreating }] = useCreateOrderMutation();
   const [verifyPayment] = useVerifyPaymentMutation();
+  const [validateCouponApi, { isLoading: isValidatingCoupon }] = useValidateCouponMutation();
 
   const settings = settingsData?.data;
   const profile = profileData?.data;
@@ -80,8 +82,14 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponApplied, setCouponApplied] = useState(null); // { code, discount, message }
+  const [couponError, setCouponError] = useState('');
+
   const shipping = cartTotal >= 500 ? 0 : 50;
-  const total = cartTotal + shipping;
+  const total = cartTotal + shipping - couponDiscount;
   const normalizedItems = cartItems.map(getItemProps);
 
   // Redirect to cart if empty
@@ -130,6 +138,45 @@ const Checkout = () => {
       setPaymentMethod('cod');
     }
   }, [paymentMethods.onlinePayment, paymentMethods.cashOnDelivery]);
+
+  // Coupon handler
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponError('');
+    setCouponApplied(null);
+    setCouponDiscount(0);
+
+    try {
+      const cartItemsForValidation = normalizedItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const result = await validateCouponApi({ code: couponCode, cartItems: cartItemsForValidation }).unwrap();
+      const data = result.data || result;
+
+      if (data.valid) {
+        setCouponDiscount(data.discount);
+        setCouponApplied({ code: data.couponCode || couponCode, discount: data.discount, message: data.message });
+        showSuccess(data.message);
+      } else {
+        setCouponError(data.message || 'Invalid coupon');
+        showError(data.message || 'Invalid coupon');
+      }
+    } catch (err) {
+      const msg = err?.data?.message || 'Failed to validate coupon';
+      setCouponError(msg);
+      showError(msg);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponCode('');
+    setCouponDiscount(0);
+    setCouponApplied(null);
+    setCouponError('');
+  };
 
   const selectedAddress = addresses.find(a => a._id === selectedAddressId);
 
@@ -213,6 +260,7 @@ const Checkout = () => {
         })),
         paymentMethod,
         shippingAddress,
+        ...(couponApplied ? { couponCode: couponApplied.code } : {}),
       };
 
       const result = await createOrder(orderPayload).unwrap();
@@ -533,6 +581,47 @@ const Checkout = () => {
                 <span>Shipping</span>
                 <span>{shipping === 0 ? <span className="order-summary__free">FREE</span> : `₹${shipping.toFixed(2)}`}</span>
               </div>
+
+              {/* ── Coupon Section ── */}
+              <div className="order-summary__coupon">
+                {couponApplied ? (
+                  <div className="order-summary__coupon-applied">
+                    <div className="order-summary__coupon-info">
+                      <FiCheck className="order-summary__coupon-check" />
+                      <div>
+                        <strong>{couponApplied.code}</strong>
+                        <span>-₹{couponApplied.discount.toFixed(2)}</span>
+                      </div>
+                    </div>
+                    <button className="order-summary__coupon-remove" onClick={removeCoupon}>
+                      <FiX />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="order-summary__coupon-input">
+                    <input
+                      type="text"
+                      placeholder="Coupon code"
+                      value={couponCode}
+                      onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                    />
+                    <button onClick={handleApplyCoupon} disabled={isValidatingCoupon || !couponCode.trim()}>
+                      {isValidatingCoupon ? '...' : 'Apply'}
+                    </button>
+                  </div>
+                )}
+                {couponError && <p className="order-summary__coupon-error">{couponError}</p>}
+              </div>
+
+              {/* Discount row */}
+              {couponDiscount > 0 && (
+                <div className="order-summary__row order-summary__row--discount">
+                  <span>Coupon Discount</span>
+                  <span>-₹{couponDiscount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="order-summary__divider" />
               <div className="order-summary__row order-summary__row--total">
                 <span>Total</span>

@@ -89,7 +89,7 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
             </div>
 
             {/* Slug */}
-            <div className="admin-field">
+            <div className="admin-field admin-field--full">
               <label>Slug *</label>
               <input
                 type="text"
@@ -102,19 +102,6 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
                 Auto-generated from name. Used in URL: /category/{form.slug || 'your-slug'}
               </p>
             </div>
-
-            {/* Count */}
-            <div className="admin-field">
-              <label>Count *</label>
-              <input
-                type="number"
-                min="0"
-                value={form.count}
-                onChange={(e) => setForm((p) => ({ ...p, count: e.target.value }))}
-                required
-              />
-            </div>
-
             {/* Description (Optional) */}
             <div className="admin-field admin-field--full">
               <label>Description <span style={{ fontWeight: 400, color: 'var(--text-muted, #888)' }}>(Optional)</span></label>

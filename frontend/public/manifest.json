@@ -1,0 +1,46 @@
+{
+  "name": "Kidroo Toys - Premium Kids Toys Online India",
+  "short_name": "Kidroo Toys",
+  "description": "India's trusted online toy store. Shop premium quality educational toys, wooden toys, Montessori kits, action figures & more for kids of all ages.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#FF6B35",
+  "background_color": "#FFFFFF",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["shopping", "kids", "education"],
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shop All Toys",
+      "short_name": "Shop",
+      "url": "/shop",
+      "description": "Browse our full collection of kids toys"
+    },
+    {
+      "name": "Offers & Deals",
+      "short_name": "Offers",
+      "url": "/offers",
+      "description": "Check out the latest deals and coupons"
+    }
+  ],
+  "prefer_related_applications": false
+}

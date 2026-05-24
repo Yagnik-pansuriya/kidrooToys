@@ -1,11 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FiSearch, FiX, FiShoppingCart, FiFilter, FiGrid, FiList, FiArrowRight, FiChevronRight, FiHeart } from 'react-icons/fi';
+import { FiSearch, FiX, FiShoppingCart, FiFilter, FiGrid, FiList, FiArrowRight, FiChevronRight, FiHeart, FiChevronLeft } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
+import { useGetOffersByPageQuery } from '../../../store/ActionApi/offerApi';
 import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
 import { useCart } from '../../../context/CartContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
@@ -31,6 +32,98 @@ const AGE_GROUPS = [
   { value: '6-8', label: '6–8 years' },
   { value: '8+',  label: '8+ years'  },
 ];
+
+const safeColor = (c, fb) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fb;
+
+// ── Shop Offers Banner ──────────────────────────────────────────
+const ShopOffersBanner = () => {
+  const { data: offersResp } = useGetOffersByPageQuery('shop');
+  const offers = useMemo(() => {
+    const raw = offersResp?.data || offersResp || [];
+    return Array.isArray(raw) ? [...raw].sort((a, b) => (a.placement?.position || 0) - (b.placement?.position || 0)) : [];
+  }, [offersResp]);
+
+  const [idx, setIdx] = useState(0);
+  const [imgIdx, setImgIdx] = useState(0);
+  const total = offers.length;
+
+  const goNext = useCallback(() => { if (total > 0) setIdx(i => (i + 1) % total); }, [total]);
+  const goPrev = useCallback(() => { if (total > 0) setIdx(i => (i - 1 + total) % total); }, [total]);
+
+  // Auto-slide offers
+  useEffect(() => {
+    if (total <= 1) return;
+    const t = setInterval(goNext, 5000);
+    return () => clearInterval(t);
+  }, [goNext, total]);
+
+  // Reset offer index when list changes
+  useEffect(() => { setIdx(0); }, [total]);
+
+  // Reset image index when offer changes
+  useEffect(() => { setImgIdx(0); }, [idx]);
+
+  // Derive current offer data safely
+  const offer = total > 0 ? offers[idx] : null;
+  const allImages = offer
+    ? (offer.displayType === 'slider' ? (offer.images || []) : (offer.images?.slice(0, 1) || []))
+    : [];
+  const imgTotal = allImages.length;
+
+  // Auto-cycle images for slider offers
+  useEffect(() => {
+    if (imgTotal <= 1) return;
+    const t = setInterval(() => setImgIdx(i => (i + 1) % imgTotal), 3000);
+    return () => clearInterval(t);
+  }, [imgTotal]);
+
+  // Don't render if no offers
+  if (!offer) return null;
+
+  const bg = safeColor(offer.styling?.bgColor, '#6C3CE1');
+  const txt = safeColor(offer.styling?.textColor, '#FFFFFF');
+  const currentImg = allImages[imgIdx]?.url || allImages[imgIdx];
+
+  return (
+    <section className="shop-offer-banner">
+      <div className="shop-offer-banner__inner" style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc)` }}>
+        {currentImg && (
+          <div className="shop-offer-banner__img-wrap">
+            <img src={currentImg} alt={offer.title} />
+          </div>
+        )}
+        <div className="shop-offer-banner__text" style={{ color: txt }}>
+          <h3>{offer.title}</h3>
+          {offer.subtitle && <p>{offer.subtitle}</p>}
+          <Link to={offer.targetUrl || '/offers'} className="shop-offer-banner__cta">
+            View Deal <FiArrowRight />
+          </Link>
+        </div>
+
+        {total > 1 && (
+          <>
+            <button className="shop-offer-banner__arrow shop-offer-banner__arrow--l" onClick={goPrev}><FiChevronLeft /></button>
+            <button className="shop-offer-banner__arrow shop-offer-banner__arrow--r" onClick={goNext}><FiChevronRight /></button>
+            <div className="shop-offer-banner__dots">
+              {offers.map((_, i) => (
+                <button key={i} className={`shop-offer-banner__dot${i === idx ? ' shop-offer-banner__dot--on' : ''}`}
+                  onClick={() => setIdx(i)} />
+              ))}
+            </div>
+          </>
+        )}
+
+        {imgTotal > 1 && (
+          <div className="shop-offer-banner__img-dots">
+            {allImages.map((_, i) => (
+              <span key={i} className={`shop-offer-banner__img-dot${i === imgIdx ? ' shop-offer-banner__img-dot--on' : ''}`} />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
 
 const Shop = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -214,6 +307,9 @@ const Shop = () => {
           </nav>
         </div>
       </div>
+
+      {/* ═══ Shop Offers Banner ═══ */}
+      <ShopOffersBanner />
 
       {/* ═══ Hero Banner ═══ */}
       <section className="shop-page__hero">

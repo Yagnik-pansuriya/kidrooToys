@@ -7,6 +7,7 @@ import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
+import { useGetOffersByPageQuery } from '../../../store/ActionApi/offerApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
@@ -18,6 +19,7 @@ const Home = () => {
   useGetCategoriesQuery();
   const { data: newArrivalResp } = useGetProductsQuery({ page: 1, limit: 8, newArrival: 'true', isActive: 'true' });
   const { data: bannerResp } = useGetBannersQuery({ activeOnly: true });
+  const { data: homeOffersResp } = useGetOffersByPageQuery('home');
 
   const categories = useSelector((s) => s.category.categories) || [];
   const allCategories = Array.isArray(categories) ? categories : categories?.data || [];
@@ -32,6 +34,15 @@ const Home = () => {
   const bannersRaw = bannerResp?.data || bannerResp || [];
   const bannerList = Array.isArray(bannersRaw) ? bannersRaw : [];
   const heroBanner = bannerList[0] || null;
+
+  // Parse home page offers — sorted by position
+  const homeOffers = (homeOffersResp?.data || homeOffersResp || []);
+  const allHomeOffers = Array.isArray(homeOffers)
+    ? [...homeOffers].sort((a, b) => (a.placement?.position || 0) - (b.placement?.position || 0))
+    : [];
+
+  // Safe color helper
+  const safeColor = (c, fallback) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fallback;
 
   // ── Ref for smooth scroll ─────────────────────────────────────
   const themeSectionRef = useRef(null);
@@ -180,6 +191,34 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ═══════════ HOME OFFERS (sorted by position) ═══════════ */}
+      {allHomeOffers.length > 0 && (
+        <section className="home-offers-section">
+          <div className="home-offers-section__container">
+            <div className="home-offers-section__grid">
+              {allHomeOffers.map(offer => {
+                const bg = safeColor(offer.styling?.bgColor, '#FF6B35');
+                const txt = safeColor(offer.styling?.textColor, '#FFFFFF');
+                return (
+                  <Link key={offer._id || offer.id} to={offer.targetUrl || '/offers'}
+                    className="home-offer-banner"
+                    style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, color: txt }}>
+                    {offer.images?.[0] && (
+                      <img src={offer.images[0].url || offer.images[0]} alt={offer.title} className="home-offer-banner__img" />
+                    )}
+                    <div className="home-offer-banner__content">
+                      <h3>{offer.title}</h3>
+                      {offer.subtitle && <p>{offer.subtitle}</p>}
+                      <span className="home-offer-banner__cta">Shop Now <FiArrowRight /></span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ═══════════════════ DISCOVERY BY THEME ═══════════════════ */}
       <section className="theme-section" ref={themeSectionRef}>
         <div className="theme-section__container">
@@ -223,6 +262,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+
 
       {/* ═══════════════════ NEW ARRIVALS ═══════════════════ */}
       <section className="featured-section">
@@ -292,7 +333,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ═══════════════════ NEWSLETTER ═══════════════════ */}
+
+
       <section className="newsletter-section">
         <div className="newsletter-section__container">
           <div className="newsletter-section__content">

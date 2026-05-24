@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════
 # Kidroo Toys - Robots.txt
 # https://www.robotstxt.org/robotstxt.html
-# Last updated: 2026-05-17
+# Last updated: 2026-05-24
 # ═══════════════════════════════════════════════════════
 
 # Allow all crawlers to access public pages
@@ -27,17 +27,29 @@ Disallow: /*?sort=
 Disallow: /*?page=
 Disallow: /*?limit=
 
-# Crawl-delay for polite crawling (optional, respected by some bots)
+# Block internal assets from indexing
+Disallow: /assets/
+Disallow: /*.js$
+Disallow: /*.css$
+
+# Crawl-delay for polite crawling
 Crawl-delay: 1
 
 # Google specific rules
 User-agent: Googlebot
 Allow: /
+Allow: /*.js$
+Allow: /*.css$
 Disallow: /admin
 Disallow: /cart
 Disallow: /checkout
 Disallow: /profile
 Disallow: /wishlist
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /
+Disallow: /admin
 
 # Bing specific rules
 User-agent: Bingbot
@@ -48,7 +60,15 @@ Disallow: /checkout
 Disallow: /profile
 Disallow: /wishlist
 
-# Block AI training crawlers (optional, privacy-focused)
+# Yandex
+User-agent: Yandex
+Allow: /
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Crawl-delay: 2
+
+# Block AI training crawlers
 User-agent: GPTBot
 Disallow: /
 
@@ -58,8 +78,15 @@ Disallow: /
 User-agent: CCBot
 Disallow: /
 
-# Sitemap (served from the backend API)
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+# Sitemaps
+Sitemap: https://kidrootoys.com/sitemap.xml
 Sitemap: https://kidroo-backend.vercel.app/api/sitemap.xml
 
-# Host directive (for Yandex and other bots)
+# Host directive
 Host: https://kidrootoys.com

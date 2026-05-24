@@ -1,86 +1,73 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { FiChevronRight, FiCopy, FiCheck, FiShoppingCart, FiArrowRight } from 'react-icons/fi';
-import { useSelector } from 'react-redux';
+import { FiCopy, FiCheck, FiArrowRight, FiTag, FiChevronLeft, FiChevronRight, FiClock, FiGift, FiPercent } from 'react-icons/fi';
 
-import { useGetOffersQuery } from '../../../store/ActionApi/offerApi';
-import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
+import { useGetActiveOffersQuery } from '../../../store/ActionApi/offerApi';
+import { useGetPublicCouponsQuery } from '../../../store/ActionApi/couponApi';
 import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
-import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Offers.scss';
 
+const safeColor = (c, fb) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fb;
+
 const Offers = () => {
-  // ── API data ────────────────────────────────────────────────────
-  const { isFetching: offersLoading } = useGetOffersQuery();
-  useGetProductsQuery({ page: 1, limit: 8 });
+  const { data: offersResp, isFetching: offersLoading } = useGetActiveOffersQuery();
+  const { data: couponsResp } = useGetPublicCouponsQuery();
 
-  const offers = useSelector((s) => s.offer.offers) || [];
-  const offerList = Array.isArray(offers) ? offers : offers?.data || [];
-  const activeOffers = offerList.filter((o) => o.isActive);
+  const offerList = useMemo(() => {
+    const raw = offersResp?.data || offersResp || [];
+    return Array.isArray(raw) ? raw : [];
+  }, [offersResp]);
 
-  const products = useSelector((s) => s.product.products) || [];
-  const productList = Array.isArray(products) ? products : products?.data || [];
+  const publicCoupons = useMemo(() => {
+    const raw = couponsResp?.data || couponsResp || [];
+    return Array.isArray(raw) ? raw : [];
+  }, [couponsResp]);
 
-  // ── State ───────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState('all-deals');
+  // ── Carousel state ────────────────────────────────────────────
+  const [slideIdx, setSlideIdx] = useState(0);
+  const total = offerList.length;
+  const goNext = useCallback(() => setSlideIdx(i => (i + 1) % total), [total]);
+  const goPrev = useCallback(() => setSlideIdx(i => (i - 1 + total) % total), [total]);
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (total <= 1) return;
+    const t = setInterval(goNext, 5000);
+    return () => clearInterval(t);
+  }, [goNext, total]);
+
+  // Reset index if offers change
+  useEffect(() => { setSlideIdx(0); }, [total]);
+
+  // Countdown
+  const activeOffer = offerList[slideIdx] || null;
+  const [countdown, setCountdown] = useState({ d: 0, h: 0, m: 0 });
+  useEffect(() => {
+    if (!activeOffer?.validity?.to) return;
+    const end = new Date(activeOffer.validity.to).getTime();
+    const tick = () => {
+      const diff = Math.max(0, end - Date.now());
+      setCountdown({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff / 3600000) % 24),
+        m: Math.floor((diff / 60000) % 60),
+      });
+    };
+    tick();
+    const iv = setInterval(tick, 60000);
+    return () => clearInterval(iv);
+  }, [activeOffer]);
+
+  // ── Other state ───────────────────────────────────────────────
   const [copiedCode, setCopiedCode] = useState('');
   const [email, setEmail] = useState('');
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
-  const { addToCart } = useCart();
   const { showSuccess, showError } = useToast();
   const { requireAuth } = useCustomerAuth();
 
-  // ── Derived data ────────────────────────────────────────────────
-  const heroOffer = useMemo(() => activeOffers.find((o) => o.isFeatured) || activeOffers[0], [activeOffers]);
-
-  const filteredOffers = useMemo(() => {
-    if (activeTab === 'all-deals') return activeOffers;
-    return activeOffers.filter((o) => o.offerCategory === activeTab);
-  }, [activeOffers, activeTab]);
-
-  // Find the first buyable/post offer for featured spotlight
-  const spotlightOffer = useMemo(() => filteredOffers.find((o) => o.type === 'buyable' || o.type === 'post'), [filteredOffers]);
-
-  // Find a coupon offer for the coupon card
-  const couponOffer = useMemo(() => activeOffers.find((o) => o.couponCode), [activeOffers]);
-
-  // Products with discounts for the "All Offers" grid
-  const discountedProducts = useMemo(() =>
-    productList.filter((p) => {
-      const price = Number(p.price || 0);
-      const original = Number(p.originalPrice || 0);
-      return original > price || p.discountPercentage > 0;
-    }).slice(0, 8),
-    [productList]
-  );
-
-  // ── Countdown Timer ─────────────────────────────────────────────
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    if (!heroOffer?.validity?.to) return;
-    const endDate = new Date(heroOffer.validity.to);
-
-    const tick = () => {
-      const now = new Date();
-      const diff = Math.max(0, endDate.getTime() - now.getTime());
-      setCountdown({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      });
-    };
-
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [heroOffer]);
-
-  // ── Handlers ────────────────────────────────────────────────────
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
@@ -89,7 +76,7 @@ const Offers = () => {
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
-    if (!requireAuth('Please login to subscribe to our newsletter')) return;
+    if (!requireAuth('Please login to subscribe')) return;
     if (!email.trim()) return;
     try {
       await subscribe(email.trim()).unwrap();
@@ -100,264 +87,198 @@ const Offers = () => {
     }
   };
 
-  const tabs = [
-    { key: 'all-deals', label: 'All Deals' },
-    { key: 'flash-sale', label: 'Flash Sale' },
-    { key: 'clearance', label: 'Clearance' },
-  ];
-
-  // ── Render ──────────────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────
   if (offersLoading) {
     return (
-      <div className="offers-v3">
-        <div className="offers-v3__loading">
-          <div className="offers-v3__spinner" />
-          <p>Loading amazing deals...</p>
-        </div>
+      <div className="offpg">
+        <div className="offpg__loading"><div className="offpg__spinner" /><p>Loading deals...</p></div>
       </div>
     );
   }
 
+  const hasContent = offerList.length > 0 || publicCoupons.length > 0;
+
   return (
-    <div className="offers-v3">
-      {/* ── SEO Head ── */}
+    <div className="offpg">
       <SEOHead
-        title="Offers & Deals - Save Big on Kids Toys"
-        description="Discover amazing deals and discounts on kids toys at Kidroo. Flash sales, clearance offers, and exclusive coupon codes. Save big on educational and fun toys!"
-        keywords="toy deals, kids toy offers, discount toys, toy sale India, cheap kids toys, toy coupon codes, flash sale toys"
+        title="Offers & Deals - Kidroo Toys"
+        description="Discover amazing deals on kids toys at Kidroo."
+        keywords="toy deals, kids toy offers, discount toys"
         canonicalUrl={`${window.location.origin}/offers`}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'OfferCatalog',
-          name: 'Kidroo Toys - Offers & Deals',
-          description: 'Amazing deals and discounts on premium kids toys.',
-          url: `${window.location.origin}/offers`,
-        }}
       />
 
-      {/* ═══════════ HERO BANNER ═══════════ */}
-      {heroOffer && (
-        <section
-          className="offers-v3__hero"
-          style={{ background: `linear-gradient(135deg, ${heroOffer.bgColor || '#FF6B35'}, ${heroOffer.bgColor || '#FF6B35'}cc, #F7931E)` }}
-        >
-          <div className="offers-v3__hero-container">
-            <div className="offers-v3__hero-left">
-              {heroOffer.offerTag && (
-                <span className="offers-v3__hero-tag">{heroOffer.offerTag}</span>
-              )}
-              <h1 className="offers-v3__hero-title" style={{ color: heroOffer.textColor || '#fff' }}>
-                {heroOffer.title}
-              </h1>
-              {heroOffer.subtitle && (
-                <p className="offers-v3__hero-subtitle" style={{ color: heroOffer.textColor || '#fff' }}>{heroOffer.subtitle}</p>
-              )}
-
-              {/* Countdown Timer */}
-              {heroOffer.validity?.to && (
-                <div className="offers-v3__countdown">
-                  <div className="offers-v3__countdown-item">
-                    <span className="offers-v3__countdown-num">{String(countdown.days).padStart(2, '0')}</span>
-                    <span className="offers-v3__countdown-label">DAYS</span>
-                  </div>
-                  <div className="offers-v3__countdown-item">
-                    <span className="offers-v3__countdown-num">{String(countdown.hours).padStart(2, '0')}</span>
-                    <span className="offers-v3__countdown-label">HOURS</span>
-                  </div>
-                  <div className="offers-v3__countdown-item">
-                    <span className="offers-v3__countdown-num">{String(countdown.minutes).padStart(2, '0')}</span>
-                    <span className="offers-v3__countdown-label">MINS</span>
-                  </div>
-                </div>
-              )}
-
-              <Link to={heroOffer.targetUrl || '/shop'} className="offers-v3__hero-btn">
-                Shop the Sale
-              </Link>
-            </div>
-
-            <div className="offers-v3__hero-right">
-              {(heroOffer.image || heroOffer.images || [])[0] && (
-                <img
-                  src={(heroOffer.image || heroOffer.images)[0]}
-                  alt={heroOffer.title}
-                  className="offers-v3__hero-img"
-                />
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════ FILTER TABS ═══════════ */}
-      <section className="offers-v3__tabs-section">
-        <div className="offers-v3__container">
-          <div className="offers-v3__tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                className={`offers-v3__tab ${activeTab === tab.key ? 'offers-v3__tab--active' : ''}`}
-                onClick={() => setActiveTab(tab.key)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      {/* ════════ PAGE HEADER ════════ */}
+      <div className="offpg__header">
+        <div className="offpg__header-inner">
+          <h1><FiGift /> Offers & Deals</h1>
+          <p>Grab the best deals on premium kids toys before they're gone!</p>
         </div>
-      </section>
+      </div>
 
-      {/* ═══════════ SPOTLIGHT + COUPON ═══════════ */}
-      {(spotlightOffer || couponOffer) && (
-        <section className="offers-v3__spotlight-section">
-          <div className="offers-v3__container offers-v3__spotlight-grid">
+      {/* ════════ HERO CAROUSEL ════════ */}
+      {offerList.length > 0 && activeOffer && (() => {
+        const bg = safeColor(activeOffer.styling?.bgColor, '#6C3CE1');
+        const txt = safeColor(activeOffer.styling?.textColor, '#FFFFFF');
+        const img = activeOffer.images?.[0]?.url || activeOffer.images?.[0];
+        return (
+          <section className="offpg__hero">
+            <div className="offpg__hero-slide" style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg}dd 50%, ${bg}aa 100%)` }}>
+              {/* Decorative circles */}
+              <div className="offpg__hero-deco offpg__hero-deco--1" />
+              <div className="offpg__hero-deco offpg__hero-deco--2" />
 
-            {/* Spotlight Product Card */}
-            {spotlightOffer && (
-              <div className="offers-v3__spotlight-card">
-                <div className="offers-v3__spotlight-img-wrap">
-                  {(spotlightOffer.image || spotlightOffer.images || [])[0] && (
-                    <img
-                      src={(spotlightOffer.image || spotlightOffer.images)[0]}
-                      alt={spotlightOffer.title}
-                      className="offers-v3__spotlight-img"
-                    />
+              <div className="offpg__hero-body">
+                <div className="offpg__hero-text" style={{ color: txt }}>
+                  <span className="offpg__hero-badge">🔥 Limited Time</span>
+                  <h2 className="offpg__hero-title">{activeOffer.title}</h2>
+                  {activeOffer.subtitle && <p className="offpg__hero-sub">{activeOffer.subtitle}</p>}
+                  {activeOffer.description && <p className="offpg__hero-desc">{activeOffer.description}</p>}
+
+                  {activeOffer.validity?.to && (
+                    <div className="offpg__hero-timer">
+                      <FiClock />
+                      <div className="offpg__hero-timer-item"><span>{String(countdown.d).padStart(2,'0')}</span><small>Days</small></div>
+                      <div className="offpg__hero-timer-sep">:</div>
+                      <div className="offpg__hero-timer-item"><span>{String(countdown.h).padStart(2,'0')}</span><small>Hrs</small></div>
+                      <div className="offpg__hero-timer-sep">:</div>
+                      <div className="offpg__hero-timer-item"><span>{String(countdown.m).padStart(2,'0')}</span><small>Min</small></div>
+                    </div>
                   )}
-                </div>
-                <div className="offers-v3__spotlight-content">
-                  <div className="offers-v3__spotlight-tags">
-                    {spotlightOffer.offerTag && (
-                      <span className="offers-v3__stag offers-v3__stag--stock">{spotlightOffer.offerTag}</span>
-                    )}
-                    {spotlightOffer.offerCategory === 'flash-sale' && (
-                      <span className="offers-v3__stag offers-v3__stag--flash">Flash Deal</span>
-                    )}
-                  </div>
-                  <h3 className="offers-v3__spotlight-title">{spotlightOffer.title}</h3>
-                  <p className="offers-v3__spotlight-desc">{spotlightOffer.description}</p>
-                  <div className="offers-v3__spotlight-pricing">
-                    {spotlightOffer.discountPercentage > 0 && (
-                      <span className="offers-v3__spotlight-discount">-{spotlightOffer.discountPercentage}%</span>
-                    )}
-                  </div>
-                  <Link to={spotlightOffer.targetUrl || '/shop'} className="offers-v3__spotlight-btn">
-                    Shop Now <FiArrowRight />
+
+                  <Link to={activeOffer.targetUrl || '/shop'} className="offpg__hero-cta">
+                    Shop This Deal <FiArrowRight />
                   </Link>
                 </div>
-              </div>
-            )}
 
-            {/* Coupon Code Card */}
-            {couponOffer && (
-              <div className="offers-v3__coupon-card">
-                <div className="offers-v3__coupon-icon">🏷️</div>
-                <h3 className="offers-v3__coupon-title">
-                  Extra {couponOffer.discountPercentage || 10}% OFF
-                </h3>
-                <p className="offers-v3__coupon-desc">
-                  {couponOffer.couponDescription || 'Apply this code at checkout for additional savings on all items.'}
-                </p>
-                <div className="offers-v3__coupon-code-wrap">
-                  <span className="offers-v3__coupon-code">{couponOffer.couponCode}</span>
-                  <button
-                    className="offers-v3__coupon-copy"
-                    onClick={() => copyCode(couponOffer.couponCode)}
-                  >
-                    {copiedCode === couponOffer.couponCode ? <><FiCheck /> Copied!</> : <><FiCopy /> Copy Code</>}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════ ALL OFFERS GRID ═══════════ */}
-      <section className="offers-v3__products-section">
-        <div className="offers-v3__container">
-          <div className="offers-v3__products-header">
-            <h2 className="offers-v3__section-title">
-              All <span>Offers</span>
-            </h2>
-            <div className="offers-v3__products-sort">
-              Sort By: <strong>Biggest Discount</strong>
-            </div>
-          </div>
-
-          {discountedProducts.length === 0 && activeOffers.length === 0 ? (
-            <div className="offers-v3__empty">
-              <div className="offers-v3__empty-icon">🎁</div>
-              <h3>No Offers Available</h3>
-              <p>Check back soon for amazing deals!</p>
-              <Link to="/shop" className="offers-v3__empty-btn">Browse Products</Link>
-            </div>
-          ) : (
-            <div className="offers-v3__products-grid">
-              {discountedProducts.map((product) => {
-                const name = product.productName || product.name;
-                const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
-                const price = Number(product.price || 0);
-                const originalPrice = Number(product.originalPrice || 0);
-                const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
-
-                return (
-                  <div className="offers-v3__product-card" key={product._id || product.id}>
-                    {discount > 0 && (
-                      <span className="offers-v3__product-badge">{discount}% OFF</span>
-                    )}
-                    <div className="offers-v3__product-img-wrap">
-                      {imgSrc ? (
-                        <img src={imgSrc} alt={name} className="offers-v3__product-img" loading="lazy" />
-                      ) : (
-                        <div className="offers-v3__product-placeholder">📦</div>
-                      )}
-                      <div className="offers-v3__product-overlay">
-                        <button
-                          className="offers-v3__product-cart-btn"
-                          onClick={() => addToCart(product)}
-                        >
-                          <FiShoppingCart /> Add to Cart
-                        </button>
-                      </div>
-                    </div>
-                    <Link to={`/product/${product.slug || product._id || product.id}`} className="offers-v3__product-info">
-                      <h4 className="offers-v3__product-name">{name}</h4>
-                      <div className="offers-v3__product-pricing">
-                        <span className="offers-v3__product-price">₹{price.toFixed(0)}</span>
-                        {originalPrice > price && (
-                          <span className="offers-v3__product-original">₹{originalPrice.toFixed(0)}</span>
-                        )}
-                      </div>
-                    </Link>
+                {img && (
+                  <div className="offpg__hero-visual">
+                    <img src={img} alt={activeOffer.title} />
                   </div>
+                )}
+              </div>
+
+              {/* Carousel controls */}
+              {total > 1 && (
+                <>
+                  <button className="offpg__hero-arrow offpg__hero-arrow--l" onClick={goPrev}><FiChevronLeft /></button>
+                  <button className="offpg__hero-arrow offpg__hero-arrow--r" onClick={goNext}><FiChevronRight /></button>
+                  <div className="offpg__hero-dots">
+                    {offerList.map((_, i) => (
+                      <button key={i} className={`offpg__hero-dot${i === slideIdx ? ' offpg__hero-dot--on' : ''}`}
+                        onClick={() => setSlideIdx(i)} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ════════ OFFERS GRID ════════ */}
+      {offerList.length > 1 && (
+        <section className="offpg__deals">
+          <div className="offpg__container">
+            <div className="offpg__sec-head">
+              <h2><FiPercent /> All <span>Deals</span></h2>
+              <p>Don't miss out on these exclusive offers</p>
+            </div>
+            <div className="offpg__grid">
+              {offerList.map((offer, i) => {
+                const bg = safeColor(offer.styling?.bgColor, ['#6C3CE1','#E84393','#00B894','#0984E3','#FF6B35'][i % 5]);
+                const txt = safeColor(offer.styling?.textColor, '#fff');
+                const img = offer.images?.[0]?.url || offer.images?.[0];
+                return (
+                  <Link key={offer._id || offer.id} to={offer.targetUrl || '/shop'} className="offpg__card">
+                    <div className="offpg__card-img-wrap" style={{ background: `linear-gradient(145deg, ${bg}, ${bg}99)` }}>
+                      {img ? (
+                        <img src={img} alt={offer.title} className="offpg__card-img" />
+                      ) : (
+                        <div className="offpg__card-placeholder"><FiGift /></div>
+                      )}
+                    </div>
+                    <div className="offpg__card-body" style={{ borderTop: `3px solid ${bg}` }}>
+                      <h3 style={{ color: bg }}>{offer.title}</h3>
+                      {offer.subtitle && <p>{offer.subtitle}</p>}
+                      <span className="offpg__card-cta" style={{ color: bg }}>
+                        View Deal <FiArrowRight />
+                      </span>
+                    </div>
+                  </Link>
                 );
               })}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* ═══════════ NEWSLETTER ═══════════ */}
-      <section className="offers-v3__newsletter">
-        <div className="offers-v3__container offers-v3__newsletter-inner">
-          <div className="offers-v3__newsletter-text">
-            <h2>Join Kidroo Club</h2>
-            <p>Sign up for our newsletter and get an extra <strong>₹200 OFF</strong> on your first order over ₹999.</p>
           </div>
-          <form className="offers-v3__newsletter-form" onSubmit={handleSubscribe}>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <button type="submit" disabled={subscribing}>
-              {subscribing ? 'Joining...' : 'Join Now'}
-            </button>
-          </form>
+        </section>
+      )}
+
+      {/* ════════ COUPONS ════════ */}
+      {publicCoupons.length > 0 && (
+        <section className="offpg__coupons">
+          <div className="offpg__container">
+            <div className="offpg__sec-head">
+              <h2><FiTag /> Coupon <span>Codes</span></h2>
+              <p>Copy & apply at checkout for instant savings</p>
+            </div>
+            <div className="offpg__coupon-grid">
+              {publicCoupons.map(c => (
+                <div key={c._id || c.id} className="offpg__coupon">
+                  <div className="offpg__coupon-left">
+                    <div className="offpg__coupon-amount">
+                      {c.discountType === 'percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`}
+                    </div>
+                    <div className="offpg__coupon-off">OFF</div>
+                  </div>
+                  <div className="offpg__coupon-right">
+                    <p className="offpg__coupon-desc">{c.description}</p>
+                    <div className="offpg__coupon-meta">
+                      {c.minOrderAmount > 0 && <span>Min ₹{c.minOrderAmount}</span>}
+                      <span>Till {new Date(c.validTo).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                    </div>
+                    <div className="offpg__coupon-code-row">
+                      <code>{c.code}</code>
+                      <button onClick={() => copyCode(c.code)}>
+                        {copiedCode === c.code ? <><FiCheck /> Copied</> : <><FiCopy /> Copy</>}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ════════ EMPTY ════════ */}
+      {!hasContent && (
+        <section className="offpg__empty">
+          <div className="offpg__empty-box">
+            <span>🎁</span>
+            <h3>No Offers Right Now</h3>
+            <p>Check back soon — we're always cooking up new deals!</p>
+            <Link to="/shop" className="offpg__empty-btn">Browse Products</Link>
+          </div>
+        </section>
+      )}
+
+      {/* ════════ NEWSLETTER ════════ */}
+      <section className="offpg__news">
+        <div className="offpg__container">
+          <div className="offpg__news-inner">
+            <div>
+              <h2>🎉 Get Exclusive Deals</h2>
+              <p>Subscribe and get <strong>₹200 OFF</strong> your first order over ₹999</p>
+            </div>
+            <form onSubmit={handleSubscribe} className="offpg__news-form">
+              <input type="email" placeholder="your@email.com" value={email}
+                onChange={e => setEmail(e.target.value)} required />
+              <button type="submit" disabled={subscribing}>
+                {subscribing ? '...' : 'Subscribe'}
+              </button>
+            </form>
+          </div>
         </div>
       </section>
-
     </div>
   );
 };

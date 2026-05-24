@@ -1,8 +1,8 @@
 import { baseApi, API_ENDPOINTS } from '../Api';
-import { setOffers } from '../ReducerApi/offerSlice';
 
 export const offerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Admin: Get all offers
     getOffers: builder.query({
       query: ({ search } = {}) => {
         const params = new URLSearchParams();
@@ -11,17 +11,27 @@ export const offerApi = baseApi.injectEndpoints({
         return `${API_ENDPOINTS.OFFERS}${qs ? `?${qs}` : ''}`;
       },
       providesTags: ['Offers'],
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          const offerArray = data?.data || data;
-          dispatch(setOffers(offerArray));
-        } catch (err) {
-          console.error('Failed to load offers automatically', err);
-        }
-      },
     }),
 
+    // Public: Get offers by page
+    getOffersByPage: builder.query({
+      query: (page) => `${API_ENDPOINTS.OFFERS}/page/${page}`,
+      providesTags: ['Offers'],
+    }),
+
+    // Public: Get ALL active offers (for /offers page)
+    getActiveOffers: builder.query({
+      query: () => `${API_ENDPOINTS.OFFERS}/active`,
+      providesTags: ['Offers'],
+    }),
+
+    // Admin: Get offer by ID
+    getOfferById: builder.query({
+      query: (id) => `${API_ENDPOINTS.OFFERS}/${id}`,
+      providesTags: ['Offers'],
+    }),
+
+    // Admin: Create offer
     addOffer: builder.mutation({
       query: (formData) => ({
         url: API_ENDPOINTS.OFFERS,
@@ -32,6 +42,7 @@ export const offerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Offers'],
     }),
 
+    // Admin: Update offer
     updateOffer: builder.mutation({
       query: ({ id, formData }) => ({
         url: `${API_ENDPOINTS.OFFERS}/${id}`,
@@ -42,6 +53,17 @@ export const offerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Offers'],
     }),
 
+    // Admin: Reorder offers
+    reorderOffers: builder.mutation({
+      query: ({ page, orderedIds }) => ({
+        url: `${API_ENDPOINTS.OFFERS}/reorder`,
+        method: 'PUT',
+        body: { page, orderedIds },
+      }),
+      invalidatesTags: ['Offers'],
+    }),
+
+    // Admin: Delete offer
     deleteOffer: builder.mutation({
       query: (id) => ({
         url: `${API_ENDPOINTS.OFFERS}/${id}`,
@@ -54,7 +76,11 @@ export const offerApi = baseApi.injectEndpoints({
 
 export const {
   useGetOffersQuery,
+  useGetOffersByPageQuery,
+  useGetActiveOffersQuery,
+  useGetOfferByIdQuery,
   useAddOfferMutation,
   useUpdateOfferMutation,
+  useReorderOffersMutation,
   useDeleteOfferMutation,
 } = offerApi;

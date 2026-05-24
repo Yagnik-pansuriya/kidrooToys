@@ -26,7 +26,7 @@ const allNavItems = [
   { to: '/admin/categories', icon: <MdCategory />, label: 'Categories', permRoute: '/categories' },
   { to: '/admin/products', icon: <MdInventory />, label: 'Products', permRoute: '/products' },
   { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null },
-  { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers', permRoute: '/offers' },
+  { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers & Coupons', permRoute: '/offers' },
   { to: '/admin/banners', icon: <MdViewCarousel />, label: 'Banners', permRoute: '/banners' },
   { to: '/admin/skills', icon: <MdExtension />, label: 'Skills', permRoute: '/skills' },
   { to: '/admin/newsletter', icon: <MdEmail />, label: 'Newsletter', permRoute: '/newsletter' },

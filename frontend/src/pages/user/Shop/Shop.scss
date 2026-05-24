@@ -809,3 +809,208 @@
     transform: translateY(0);
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// SHOP OFFER BANNER — Full-width promotional carousel
+// ═══════════════════════════════════════════════════════════════════
+.shop-offer-banner {
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: 0 $container-padding;
+
+  &__inner {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    min-height: 280px;
+
+    @media (min-width: $bp-sm) {
+      grid-template-columns: 1fr 1fr;
+      min-height: 300px;
+    }
+
+    @media (min-width: $bp-md) {
+      min-height: 340px;
+    }
+
+    // Subtle pattern overlay
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 20% 80%, rgba(0,0,0,0.08) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+  &__img-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    z-index: 2;
+    order: 2;
+
+    @media (min-width: $bp-sm) {
+      order: 2;
+      padding: 32px;
+    }
+
+    img {
+      width: 100%;
+      max-width: 300px;
+      max-height: 260px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 32px rgba(0,0,0,0.25));
+      border-radius: 12px;
+      animation: shopBannerFloat 3s ease-in-out infinite alternate;
+
+      @media (min-width: $bp-md) {
+        max-width: 360px;
+        max-height: 300px;
+      }
+    }
+  }
+
+  &__text {
+    padding: 32px 28px;
+    position: relative;
+    z-index: 2;
+    order: 1;
+
+    @media (min-width: $bp-sm) {
+      padding: 40px 36px;
+    }
+
+    h3 {
+      font-family: $font-heading;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 800;
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+
+    p {
+      font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+      opacity: 0.85;
+      margin-bottom: 16px;
+      max-width: 360px;
+      line-height: 1.5;
+    }
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: 2px solid rgba(255,255,255,0.35);
+    transition: all 0.25s;
+
+    &:hover {
+      background: rgba(255,255,255,0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    svg { transition: transform 0.2s; }
+    &:hover svg { transform: translateX(4px); }
+  }
+
+  &__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255,255,255,0.3);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    z-index: 4;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(255,255,255,0.35);
+      transform: translateY(-50%) scale(1.08);
+    }
+
+    &--l { left: 12px; }
+    &--r { right: 12px; }
+  }
+
+  &__dots {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 4;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.5);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s;
+
+    &--on {
+      background: #fff;
+      border-color: #fff;
+      width: 24px;
+    }
+  }
+
+  &__img-dots {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    display: flex;
+    gap: 5px;
+    z-index: 4;
+  }
+
+  &__img-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.3s;
+
+    &--on {
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 0 6px rgba(255,255,255,0.5);
+    }
+  }
+}
+
+@keyframes shopBannerFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
+}
+
+

@@ -4,20 +4,21 @@ import { logout } from './ReducerApi/authSlice';
 // ── Auto-switch: localhost in dev, Vercel backend in production ───────────────
 // This prevents Chrome's "Private Network Access" permission popup on Vercel.
 const BASE_URL = 
-// import.meta.env.DEV
-  // ? 'http://localhost:5000/api/'
-  // : (
-    // import.meta.env.VITE_API_URL 
+import.meta.env.DEV
+  ? 'http://localhost:5000/api/'
+  : (
+    import.meta.env.VITE_API_URL 
     
-    // || 
+    || 
     'https://kidroo-backend.vercel.app/api/'
-  // );
+  );
 
 export const API_ENDPOINTS = {
   LOGIN: 'auth/login',
   PRODUCTS: 'products',
   CATEGORIES: 'categories',
   OFFERS: 'offers',
+  COUPONS: 'coupons',
   VARIANTS: 'products',   
   SITE_SETTINGS: 'site-settings',
   BANNERS: 'banners',
@@ -89,6 +90,6 @@ const baseQueryWithReauth = async (args, api, extraOptions) => {
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Products', 'Categories', 'Offers', 'Variants', 'SiteSettings', 'Users', 'Permissions', 'PermissionRoutes', 'Newsletter', 'Reviews', 'Banners', 'CustomerProfile', 'Wishlist', 'Skills', 'Orders', 'CustomerOrders'],
+  tagTypes: ['Products', 'Categories', 'Offers', 'Coupons', 'Variants', 'SiteSettings', 'Users', 'Permissions', 'PermissionRoutes', 'Newsletter', 'Reviews', 'Banners', 'CustomerProfile', 'Wishlist', 'Skills', 'Orders', 'CustomerOrders'],
   endpoints: () => ({}),
 });
