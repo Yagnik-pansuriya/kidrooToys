@@ -1,0 +1,538 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+// ── Page ──────────────────────────────────────────────────────
+.acd-page {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+}
+
+// ── Back Button ───────────────────────────────────────────────
+.acd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-xs;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding: $space-xs $space-md;
+  border-radius: $radius;
+  border: 2px solid #E2E4EC;
+  background: white;
+  width: fit-content;
+  transition: all $transition-base;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+}
+
+// ── Profile Card ──────────────────────────────────────────────
+.acd-profile-card {
+  background: white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  padding: $space-xl;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $space-lg;
+
+  &__left {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-lg;
+    flex: 1;
+    flex-wrap: wrap;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 200px;
+  }
+}
+
+// ── Avatar ────────────────────────────────────────────────────
+.acd-big-avatar {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, var(--color-primary), #818CF8);
+  @include flex-center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+  flex-shrink: 0;
+  overflow: visible;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: $radius-full;
+    object-fit: cover;
+  }
+}
+
+.acd-verified-ring {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: $radius-full;
+  @include flex-center;
+  color: #3B82F6;
+  font-size: 1rem;
+  box-shadow: 0 0 0 2px white;
+}
+
+// ── Profile Info ──────────────────────────────────────────────
+.acd-name {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  font-family: $font-heading;
+  font-size: 1.5rem;
+  margin-bottom: $space-sm;
+  flex-wrap: wrap;
+}
+
+.acd-status-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &--active   { background: #D1FAE5; color: #059669; }
+  &--inactive { background: #FEE2E2; color: #DC2626; }
+}
+
+.acd-contact-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-md;
+  margin-bottom: $space-sm;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
+
+    em {
+      font-size: 0.72rem;
+      color: var(--color-text-muted);
+      font-style: normal;
+      background: #F3F4F6;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    svg { color: var(--color-primary); flex-shrink: 0; }
+  }
+}
+
+.acd-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-md;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+
+    svg { font-size: 0.8rem; }
+  }
+}
+
+.acd-unverified-tag {
+  background: #FEF3C7;
+  color: #92400E;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.72rem !important;
+  font-weight: 600;
+}
+
+// ── Toggle Button ─────────────────────────────────────────────
+.acd-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: $space-sm $space-lg;
+  border-radius: $radius;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: all $transition-base;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &--deactivate {
+    background: #FEE2E2;
+    color: #DC2626;
+    border: 2px solid #FCA5A5;
+
+    &:hover:not(:disabled) {
+      background: #EF4444;
+      color: white;
+      border-color: #EF4444;
+    }
+  }
+
+  &--activate {
+    background: #D1FAE5;
+    color: #059669;
+    border: 2px solid #6EE7B7;
+
+    &:hover:not(:disabled) {
+      background: #10B981;
+      color: white;
+      border-color: #10B981;
+    }
+  }
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Stats Grid ────────────────────────────────────────────────
+.acd-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-md;
+
+  @include md { grid-template-columns: repeat(3, 1fr); }
+  @include lg { grid-template-columns: repeat(6, 1fr); }
+}
+
+.acd-stat-card {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  background: white;
+  border-radius: $radius-xl;
+  padding: $space-md $space-lg;
+  box-shadow: $shadow-sm;
+  border-left: 4px solid transparent;
+  transition: transform $transition-base;
+
+  &:hover { transform: translateY(-2px); }
+
+  svg {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+}
+
+.acd-stat-val {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: $font-heading;
+  line-height: 1.1;
+}
+
+.acd-stat-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.acd-stat-card--indigo  { border-color: #6366F1; svg { color: #6366F1; } .acd-stat-val { color: #4F46E5; } }
+.acd-stat-card--green   { border-color: #10B981; svg { color: #10B981; } .acd-stat-val { color: #059669; } }
+.acd-stat-card--emerald { border-color: #34D399; svg { color: #34D399; } .acd-stat-val { color: #047857; } }
+.acd-stat-card--amber   { border-color: #F59E0B; svg { color: #F59E0B; } .acd-stat-val { color: #D97706; } }
+.acd-stat-card--red     { border-color: #EF4444; svg { color: #EF4444; } .acd-stat-val { color: #DC2626; } }
+.acd-stat-card--purple  { border-color: #8B5CF6; svg { color: #8B5CF6; } .acd-stat-val { color: #7C3AED; } }
+
+// ── Tabs ──────────────────────────────────────────────────────
+.acd-tabs {
+  display: flex;
+  gap: $space-xs;
+  border-bottom: 2px solid #E2E4EC;
+  padding-bottom: 0;
+}
+
+.acd-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: $space-sm $space-lg;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all $transition-base;
+  cursor: pointer;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+
+  svg { font-size: 0.9rem; }
+
+  &:hover { color: var(--color-primary); }
+
+  &--active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+  }
+}
+
+// ── Section ───────────────────────────────────────────────────
+.acd-section {
+  background: white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+  overflow: hidden;
+}
+
+// ── Orders Table ──────────────────────────────────────────────
+.acd-orders-table-wrap {
+  overflow-x: auto;
+}
+
+.acd-order-id {
+  font-family: monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: #EEF2FF;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.acd-td-date    { font-size: 0.82rem; color: var(--color-text-muted); white-space: nowrap; }
+.acd-td-center  { text-align: center; font-weight: 600; }
+.acd-td-total   { font-weight: 700; color: var(--color-text-primary); }
+.acd-td-discount { color: #059669; font-weight: 600; }
+
+// ── Badges ────────────────────────────────────────────────────
+.acd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-transform: capitalize;
+
+  svg { font-size: 0.7rem; }
+
+  &--success { background: #D1FAE5; color: #059669; }
+  &--warning { background: #FEF3C7; color: #D97706; }
+  &--danger  { background: #FEE2E2; color: #DC2626; }
+  &--info    { background: #DBEAFE; color: #2563EB; }
+  &--primary { background: #E0E7FF; color: #4F46E5; }
+  &--online  { background: #EDE9FE; color: #7C3AED; }
+  &--cod     { background: #FEF3C7; color: #92400E; }
+}
+
+// ── Orders Footer ─────────────────────────────────────────────
+.acd-orders-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-lg;
+  padding: $space-md $space-lg;
+  background: #F8F9FC;
+  border-top: 1px solid #E5E7EB;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+
+    strong {
+      color: var(--color-text-primary);
+      font-size: 1rem;
+    }
+
+    &--spent strong {
+      color: #059669;
+      font-size: 1.1rem;
+    }
+  }
+
+  &__repeat {
+    margin-left: auto;
+    background: #EDE9FE;
+    color: #7C3AED;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+}
+
+// ── Addresses Grid ────────────────────────────────────────────
+.acd-address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $space-lg;
+  padding: $space-lg;
+}
+
+.acd-address-card {
+  border: 2px solid #E5E7EB;
+  border-radius: $radius-lg;
+  padding: $space-md;
+  transition: border-color $transition-base, box-shadow $transition-base;
+
+  &:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.08);
+  }
+
+  &--default {
+    border-color: var(--color-primary);
+    background: #F5F3FF;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $space-sm;
+  }
+}
+
+.acd-addr-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--color-text-secondary);
+}
+
+.acd-default-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.acd-addr-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.acd-addr-line {
+  font-size: 0.83rem;
+  color: var(--color-text-secondary);
+  margin: 2px 0;
+  line-height: 1.5;
+}
+
+.acd-addr-landmark {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 2px 0;
+}
+
+.acd-addr-phone {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.83rem;
+  color: var(--color-text-secondary);
+  margin-top: $space-xs;
+
+  svg { color: var(--color-primary); font-size: 0.8rem; }
+}
+
+// ── Empty State ───────────────────────────────────────────────
+.acd-empty {
+  text-align: center;
+  padding: $space-2xl;
+  color: var(--color-text-muted);
+
+  svg {
+    font-size: 3rem;
+    margin-bottom: $space-md;
+  }
+
+  p { font-size: 1rem; }
+}
+
+// ── Not Found ─────────────────────────────────────────────────
+.acd-not-found {
+  text-align: center;
+  padding: $space-2xl;
+  color: var(--color-text-muted);
+
+  svg { font-size: 3rem; margin-bottom: $space-md; display: block; margin-inline: auto; }
+
+  p { font-size: 1.1rem; margin-bottom: $space-lg; }
+
+  button {
+    padding: $space-sm $space-lg;
+    border-radius: $radius;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity $transition-base;
+
+    &:hover { opacity: 0.85; }
+  }
+}
+
+// ── Shared Admin Table (local copy for this page) ─────────────
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th, td {
+    padding: $space-sm $space-md;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead {
+    background: #F8F9FC;
+    border-bottom: 2px solid #E2E4EC;
+
+    th {
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-muted);
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #F0F2F8;
+    transition: background $transition-base;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #FAFBFE; }
+  }
+}
+
