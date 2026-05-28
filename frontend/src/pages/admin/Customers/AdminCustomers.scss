@@ -1,0 +1,452 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+// ── Page wrapper ──────────────────────────────────────────────
+.admin-customers {
+  &__header {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+    margin-bottom: $space-lg;
+
+    h1 {
+      font-family: $font-heading;
+      font-size: 1.8rem;
+      margin-bottom: 4px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+    background: white;
+    border: 2px solid #E2E4EC;
+    border-radius: $radius-lg;
+    padding: $space-sm $space-md;
+    min-width: 300px;
+    transition: border-color $transition-base;
+
+    &:focus-within { border-color: var(--color-primary); }
+
+    input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 0.85rem;
+      background: transparent;
+    }
+
+    svg { color: var(--color-text-muted); flex-shrink: 0; }
+  }
+
+  &__toolbar {
+    @include flex-between;
+    flex-wrap: wrap;
+    gap: $space-md;
+    margin-bottom: $space-lg;
+  }
+
+  &__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-xs;
+  }
+
+  &__sort {
+    display: flex;
+    align-items: center;
+    gap: $space-xs;
+    background: white;
+    border: 2px solid #E2E4EC;
+    border-radius: $radius-lg;
+    padding: $space-xs $space-md;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+
+    select {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.85rem;
+      color: var(--color-text-primary);
+      cursor: pointer;
+    }
+  }
+
+  &__table-wrap {
+    overflow-x: auto;
+    background: white;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $space-2xl;
+    color: var(--color-text-muted);
+    background: white;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-sm;
+
+    svg {
+      font-size: 3rem;
+      margin-bottom: $space-md;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: $space-md;
+    }
+  }
+}
+
+// ── Stats Cards ───────────────────────────────────────────────
+.ac-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-md;
+  margin-bottom: $space-lg;
+
+  @include md { grid-template-columns: repeat(4, 1fr); }
+}
+
+.ac-stat-card {
+  display: flex;
+  align-items: center;
+  gap: $space-md;
+  background: white;
+  border-radius: $radius-xl;
+  padding: $space-lg;
+  box-shadow: $shadow-sm;
+  border-left: 4px solid transparent;
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-card;
+  }
+
+  &__icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  &__val {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: $font-heading;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+
+  &--blue   { border-color: #3B82F6; .ac-stat-card__icon { color: #3B82F6; } .ac-stat-card__val { color: #1D4ED8; } }
+  &--green  { border-color: #10B981; .ac-stat-card__icon { color: #10B981; } .ac-stat-card__val { color: #059669; } }
+  &--purple { border-color: #8B5CF6; .ac-stat-card__icon { color: #8B5CF6; } .ac-stat-card__val { color: #7C3AED; } }
+  &--orange { border-color: #F59E0B; .ac-stat-card__icon { color: #F59E0B; } .ac-stat-card__val { color: #D97706; } }
+}
+
+// ── Filter Buttons ────────────────────────────────────────────
+.ac-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 2px solid #E2E4EC;
+  background: white;
+  color: var(--color-text-secondary);
+  transition: all $transition-base;
+  cursor: pointer;
+
+  svg { font-size: 0.9rem; }
+
+  &:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &--active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+  }
+}
+
+// ── Table rows ────────────────────────────────────────────────
+.admin-table__row--clickable {
+  cursor: pointer;
+  transition: background $transition-base;
+
+  &:hover { background: #F8F9FF; }
+}
+
+// ── Customer cell ─────────────────────────────────────────────
+.ac-customer-cell {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+}
+
+.ac-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: $radius-full;
+  background: linear-gradient(135deg, var(--color-primary), #818CF8);
+  @include flex-center;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: white;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ac-customer-name {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--color-text-primary);
+}
+
+.ac-customer-email {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.ac-verified-icon {
+  color: #3B82F6;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+// ── Orders cell ───────────────────────────────────────────────
+.ac-orders-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  svg { color: var(--color-text-muted); font-size: 0.85rem; }
+}
+
+.ac-order-count {
+  font-weight: 700;
+  font-size: 0.9rem;
+
+  &--repeat { color: #7C3AED; }
+}
+
+.ac-repeat-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: #EDE9FE;
+  color: #7C3AED;
+  padding: 1px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+// ── Misc cells ────────────────────────────────────────────────
+.ac-td-num  { color: var(--color-text-muted); font-size: 0.8rem; width: 40px; }
+.ac-mobile  { font-size: 0.85rem; font-family: monospace; color: var(--color-text-secondary); }
+.ac-spent   { font-weight: 700; color: #059669; }
+.ac-date    { font-size: 0.82rem; color: var(--color-text-muted); white-space: nowrap; }
+
+// ── Status Badge ──────────────────────────────────────────────
+.ac-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  &--active   { background: #D1FAE5; color: #059669; }
+  &--inactive { background: #FEE2E2; color: #DC2626; }
+}
+
+// ── Actions ───────────────────────────────────────────────────
+.ac-actions {
+  display: flex;
+  gap: $space-xs;
+}
+
+.admin-action-btn--success {
+  background: #D1FAE5;
+  color: #059669;
+  &:hover { background: #10B981; color: white; }
+}
+
+.admin-action-btn--danger {
+  background: #FEE2E2;
+  color: #DC2626;
+  &:hover { background: #EF4444; color: white; }
+}
+
+// ── Pagination ────────────────────────────────────────────────
+.ac-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-lg;
+  margin-top: $space-xl;
+  padding: $space-md;
+  background: white;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-sm;
+}
+
+.ac-page-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: $space-sm $space-md;
+  border-radius: $radius;
+  border: 2px solid #E2E4EC;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all $transition-base;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+
+.ac-page-info {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+
+  strong { color: var(--color-text-primary); }
+}
+
+.ac-page-total {
+  margin-left: $space-xs;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+// ── Fetching bar ──────────────────────────────────────────────
+.ac-fetching-bar {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--color-primary), #818CF8, var(--color-primary));
+  background-size: 200%;
+  animation: ac-fetch-bar 1.2s linear infinite;
+  border-radius: 2px;
+  margin-bottom: $space-md;
+}
+
+@keyframes ac-fetch-bar {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+// ── Clear Button ──────────────────────────────────────────────
+.ac-clear-btn {
+  padding: $space-sm $space-lg;
+  border-radius: $radius;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+}
+
+// ── Shared Admin Table ────────────────────────────────────────
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+
+  th, td {
+    padding: $space-sm $space-md;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  thead {
+    background: #F8F9FC;
+    border-bottom: 2px solid #E2E4EC;
+
+    th {
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--color-text-muted);
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #F0F2F8;
+    transition: background $transition-base;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #FAFBFE; }
+  }
+
+  .td-bold { font-weight: 700; }
+}
+
+// ── Shared Admin Action Buttons ───────────────────────────────
+.admin-action-btn {
+  @include flex-center;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius;
+  font-size: 0.95rem;
+  transition: all $transition-base;
+  cursor: pointer;
+
+  &--edit {
+    background: #EEF2FF;
+    color: #4F46E5;
+    &:hover { background: #4F46E5; color: white; }
+  }
+
+  &--delete {
+    background: #FEE2E2;
+    color: #DC2626;
+    &:hover { background: #EF4444; color: white; }
+  }
+}
