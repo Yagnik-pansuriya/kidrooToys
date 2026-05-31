@@ -9,6 +9,7 @@ import { useAddAddressMutation, useSetDefaultAddressMutation } from '../../../st
 import { useCreateOrderMutation, useVerifyPaymentMutation } from '../../../store/ActionApi/orderApi';
 import { useValidateCouponMutation } from '../../../store/ActionApi/couponApi';
 import { useToast } from '../../../context/ToastContext';
+
 import SEOHead from '../../../components/SEOHead/SEOHead';
 import './Checkout.scss';
 
@@ -88,7 +89,10 @@ const Checkout = () => {
   const [couponApplied, setCouponApplied] = useState(null); // { code, discount, message }
   const [couponError, setCouponError] = useState('');
 
-  const shipping = cartTotal >= 500 ? 0 : 50;
+  // Apply Free Shipping Threshold from settings (defaults to free over ₹1000 if enabled, else flat ₹50 shipping)
+  const isFreeShipping = !!(settings?.freeShippingEnabled && cartTotal >= (settings?.freeShippingThreshold ?? 1000));
+  const shipping = isFreeShipping ? 0 : 50;
+
   const total = cartTotal + shipping - couponDiscount;
   const normalizedItems = cartItems.map(getItemProps);
 
@@ -627,9 +631,17 @@ const Checkout = () => {
                 <span>Total</span>
                 <span>₹{total.toFixed(2)}</span>
               </div>
-              {shipping > 0 && cartTotal < 500 && (
-                <p className="order-summary__note">Add ₹{(500 - cartTotal).toFixed(2)} more for free shipping!</p>
+              {settings?.freeShippingEnabled && cartTotal < settings.freeShippingThreshold && (
+                <p className="order-summary__note" style={{ color: '#FF6B35', fontWeight: '500', fontSize: '0.875rem', marginTop: '0.5rem', textAlign: 'center' }}>
+                  Add ₹{(settings.freeShippingThreshold - cartTotal).toFixed(2)} more for FREE shipping!
+                </p>
               )}
+              {settings?.freeShippingEnabled && cartTotal >= settings.freeShippingThreshold && (
+                <p className="order-summary__note" style={{ color: '#4CAF50', fontWeight: '600', fontSize: '0.875rem', marginTop: '0.5rem', textAlign: 'center' }}>
+                  🎉 You get FREE shipping on this order!
+                </p>
+              )}
+
 
               {/* Selected address preview */}
               {selectedAddress && !showAddressForm && (

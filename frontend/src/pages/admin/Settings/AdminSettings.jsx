@@ -29,6 +29,8 @@ const AdminSettings = () => {
     cashOnDelivery: false,
     razorpayKeyId: '',
     razorpayKeySecret: '',
+    freeShippingEnabled: false,
+    freeShippingThreshold: 1000,
   });
 
   const [saved, setSaved] = useState(false);
@@ -54,6 +56,8 @@ const AdminSettings = () => {
         cashOnDelivery:  payment.cashOnDelivery !== undefined ? payment.cashOnDelivery : false,
         razorpayKeyId:   apiSettings.razorpayConfig?.keyId || '',
         razorpayKeySecret: '', // Never pre-fill secret from API
+        freeShippingEnabled: apiSettings.freeShippingEnabled !== undefined ? apiSettings.freeShippingEnabled : false,
+        freeShippingThreshold: apiSettings.freeShippingThreshold !== undefined ? apiSettings.freeShippingThreshold : 1000,
       });
     }
   }, [settingsData]);
@@ -85,6 +89,8 @@ const AdminSettings = () => {
         },
         razorpayKeyId: form.razorpayKeyId,
         razorpayKeySecret: form.razorpayKeySecret,
+        freeShippingEnabled: form.freeShippingEnabled,
+        freeShippingThreshold: Number(form.freeShippingThreshold) || 0,
       };
 
       await updateSettingsMutation(payload).unwrap();
@@ -162,6 +168,48 @@ const AdminSettings = () => {
           <div className="admin-field">
             <label>Contact Phone</label>
             <input type="tel" value={form.contactPhone} onChange={(e) => setForm(p => ({ ...p, contactPhone: e.target.value }))} />
+          </div>
+        </div>
+
+        {/* Shipping Settings */}
+        <div className="settings-card">
+          <h2 className="settings-card__title">🚚 Shipping Settings</h2>
+          <p className="settings-card__desc">Configure free shipping threshold rules for your store orders.</p>
+          
+          <div className="payment-toggle">
+            <div className="payment-toggle__item">
+              <div className="payment-toggle__info">
+                <span className="payment-toggle__icon">🎁</span>
+                <div>
+                  <strong>Enable Free Shipping Threshold</strong>
+                  <p>Waive all product shipment charges when order subtotal meets a threshold</p>
+                </div>
+              </div>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={form.freeShippingEnabled}
+                  onChange={(e) => setForm(p => ({ ...p, freeShippingEnabled: e.target.checked }))}
+                />
+                <span className="toggle-switch__slider"></span>
+              </label>
+            </div>
+
+            {form.freeShippingEnabled && (
+              <div className="payment-toggle__config" style={{ marginTop: '1rem' }}>
+                <div className="admin-field">
+                  <label>Free Shipping Threshold Amount (₹)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.freeShippingThreshold}
+                    onChange={(e) => setForm(p => ({ ...p, freeShippingThreshold: e.target.value }))}
+                    placeholder="e.g. 1000"
+                  />
+                  <small className="admin-field__hint">Orders with actual product subtotal equal or greater than this will get free shipping.</small>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
