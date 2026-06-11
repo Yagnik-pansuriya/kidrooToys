@@ -1,0 +1,4 @@
+
+# KidrooToys Local Development
+127.0.0.1   localtesting.local
+127.0.0.1   api.localtesting.local

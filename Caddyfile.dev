@@ -1,0 +1,41 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# Caddyfile.dev — Local Development Reverse Proxy (Single-Domain Setup)
+# ══════════════════════════════════════════════════════════════════════════════
+#
+# SETUP:
+#   1. Start your dev servers first:
+#        npm start
+#
+#   2. Start Caddy (in a separate terminal):
+#        caddy run --config Caddyfile.dev
+#
+#   3. Open in Chrome:
+#        http://localhost/          → Frontend (React App)
+#        http://localhost/docs      → Backend Swagger Docs
+#        http://localhost/health    → Backend Health Check
+#
+# ══════════════════════════════════════════════════════════════════════════════
+
+http://localhost {
+    # Route API requests to Express backend
+    handle /api/* {
+        reverse_proxy localhost:5000
+    }
+
+    # Route Swagger Docs to Express backend
+    handle /docs* {
+        reverse_proxy localhost:5000
+    }
+
+    # Route Health Check to Express backend
+    handle /health {
+        reverse_proxy localhost:5000
+    }
+
+    # Route everything else to Vite dev server
+    handle {
+        reverse_proxy localhost:5173 {
+            header_up Host {upstream_hostport}
+        }
+    }
+}
