@@ -31,6 +31,8 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
           discountValue: editingCoupon.discountValue ?? '',
           minOrderAmount: editingCoupon.minOrderAmount ?? '',
           maxDiscount: editingCoupon.maxDiscount ?? '',
+          minQuantity: editingCoupon.minQuantity ?? '',
+          isSpecificProduct: (editingCoupon.applicableProducts || []).length > 0,
           applicableProducts: (editingCoupon.applicableProducts || []).map(p =>
             typeof p === 'object' ? (p._id || p.id) : p
           ),
@@ -161,44 +163,81 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
                 onChange={(e) => setForm(p => ({ ...p, perUserLimit: parseInt(e.target.value) || 1 }))} />
             </div>
 
-            {/* Applicable Products */}
-            <div className="admin-field admin-field--full">
-              <label>Applicable Products (leave empty = all products)</label>
-              <div className="coupon-products-section">
-                <div className="coupon-products__search">
-                  <FiSearch />
-                  <input type="text" placeholder="Search products..." value={productSearch}
-                    onChange={(e) => setProductSearch(e.target.value)} />
-                </div>
-                {form.applicableProducts.length > 0 && (
-                  <div className="coupon-products__selected">
-                    <span>{form.applicableProducts.length} product(s) selected</span>
-                    <button type="button" className="coupon-products__clear"
-                      onClick={() => setForm(p => ({ ...p, applicableProducts: [] }))}>
-                      Clear all
-                    </button>
-                  </div>
-                )}
-                <div className="coupon-products__list">
-                  {productList.map(product => {
-                    const pid = product._id || product.id;
-                    const isSelected = form.applicableProducts.includes(pid);
-                    return (
-                      <label key={pid} className={`coupon-products__item ${isSelected ? 'coupon-products__item--selected' : ''}`}>
-                        <input type="checkbox" checked={isSelected} onChange={() => toggleProduct(pid)} />
-                        <span className="coupon-products__name">
-                          {product.productName || product.name}
-                        </span>
-                        <span className="coupon-products__price">₹{product.price}</span>
-                      </label>
-                    );
-                  })}
-                  {productList.length === 0 && (
-                    <p className="coupon-products__empty">No products found</p>
-                  )}
+            {/* Quantity-Based Discount (BOGO) Rules */}
+            <div className="admin-field admin-field--full" style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '8px' }}>
+              <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
+                Quantity-Based Discount Rules (BOGO)
+              </h4>
+              <div className="admin-form-grid" style={{ marginTop: '4px' }}>
+                <div className="admin-field">
+                  <label>Minimum Product Quantity</label>
+                  <input type="number" min="0" value={form.minQuantity}
+                    onChange={(e) => setForm(p => ({ ...p, minQuantity: e.target.value }))}
+                    placeholder="e.g. 3 (leave empty or 0 for no limit)" />
+                  <span className="admin-field__hint">
+                    Requires buying at least this many items to activate the coupon. E.g., Buy 3, get discount.
+                  </span>
                 </div>
               </div>
             </div>
+
+            {/* Coupon Applicability Scope */}
+            <div className="admin-field admin-field--full" style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '8px' }}>
+              <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>Coupon Scope *</label>
+              <div style={{ display: 'flex', gap: '24px', marginTop: '6px' }}>
+                <label className="admin-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>
+                  <input type="radio" name="couponScope" checked={!form.isSpecificProduct}
+                    onChange={() => setForm(p => ({ ...p, isSpecificProduct: false, applicableProducts: [] }))} />
+                  Any Product (Applies to all products in cart)
+                </label>
+                <label className="admin-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>
+                  <input type="radio" name="couponScope" checked={form.isSpecificProduct}
+                    onChange={() => setForm(p => ({ ...p, isSpecificProduct: true }))} />
+                  Specific Products (Choose from product list)
+                </label>
+              </div>
+            </div>
+
+            {/* Applicable Products (Conditional on Specific Products) */}
+            {form.isSpecificProduct && (
+              <div className="admin-field admin-field--full">
+                <label>Select Applicable Products *</label>
+                <div className="coupon-products-section">
+                  <div className="coupon-products__search">
+                    <FiSearch />
+                    <input type="text" placeholder="Search products..." value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)} />
+                  </div>
+                  {form.applicableProducts.length > 0 && (
+                    <div className="coupon-products__selected">
+                      <span>{form.applicableProducts.length} product(s) selected</span>
+                      <button type="button" className="coupon-products__clear"
+                        onClick={() => setForm(p => ({ ...p, applicableProducts: [] }))}>
+                        Clear all
+                      </button>
+                    </div>
+                  )}
+                  <div className="coupon-products__list">
+                    {productList.map(product => {
+                      const pid = product._id || product.id;
+                      const isSelected = form.applicableProducts.includes(pid);
+                      return (
+                        <label key={pid} className={`coupon-products__item ${isSelected ? 'coupon-products__item--selected' : ''}`}>
+                          <input type="checkbox" checked={isSelected} onChange={() => toggleProduct(pid)} />
+                          <span className="coupon-products__name">
+                            {product.productName || product.name}
+                          </span>
+                          <span className="coupon-products__price">₹{product.price}</span>
+                        </label>
+                      );
+                    })}
+                    {productList.length === 0 && (
+                      <p className="coupon-products__empty">No products found</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Active */}
             <div className="admin-field">

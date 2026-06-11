@@ -80,6 +80,8 @@ export const initialCouponForm = {
   discountValue: '',
   minOrderAmount: '',
   maxDiscount: '',
+  minQuantity: '',
+  isSpecificProduct: false,
   applicableProducts: [],
   validFrom: '',
   validTo: '',

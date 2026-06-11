@@ -232,7 +232,8 @@ const Offers = () => {
                   <div className="offpg__coupon-right">
                     <p className="offpg__coupon-desc">{c.description}</p>
                     <div className="offpg__coupon-meta">
-                      {c.minOrderAmount > 0 && <span>Min ₹{c.minOrderAmount}</span>}
+                      {c.minOrderAmount > 0 && <span>Min Order: ₹{c.minOrderAmount}</span>}
+                      {c.minQuantity > 0 && <span>Min Qty: {c.minQuantity} items</span>}
                       <span>Till {new Date(c.validTo).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
                     </div>
                     <div className="offpg__coupon-code-row">

@@ -43,6 +43,9 @@ const CouponCard = ({ coupon, onEdit, onDelete }) => {
         {coupon.maxDiscount && coupon.discountType === 'percentage' && (
           <span className="coupon-card__max">Max ₹{coupon.maxDiscount}</span>
         )}
+        {coupon.minQuantity > 0 && (
+          <span className="coupon-card__min">Min Qty: {coupon.minQuantity}</span>
+        )}
       </div>
 
       <div className="coupon-card__meta">
