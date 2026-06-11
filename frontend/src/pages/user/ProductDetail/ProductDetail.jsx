@@ -374,6 +374,7 @@ const ProductDetail = () => {
             {discount > 0 && <span className="pdp__discount-tag">{discount}% OFF</span>}
           </div>
 
+
           <div className="pdp__desc" dangerouslySetInnerHTML={{ __html: product.description }} />
 
           {/* Categories */}

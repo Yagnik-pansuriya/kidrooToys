@@ -28,6 +28,12 @@ const buildSettingsFormData = (body) => {
   if (body.razorpayKeySecret !== undefined && body.razorpayKeySecret !== '') {
     fd.append('razorpayKeySecret', body.razorpayKeySecret);
   }
+  if (body.freeShippingThreshold !== undefined) {
+    fd.append('freeShippingThreshold', String(body.freeShippingThreshold));
+  }
+  if (body.freeShippingEnabled !== undefined) {
+    fd.append('freeShippingEnabled', String(body.freeShippingEnabled));
+  }
 
   // Logo file handling
   if (body.logoFile instanceof File) {
