@@ -157,6 +157,7 @@ const AdminOffers = () => {
       discountValue: Number(form.discountValue),
       minOrderAmount: form.minOrderAmount ? Number(form.minOrderAmount) : 0,
       maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
+      minQuantity: form.minQuantity ? Number(form.minQuantity) : 0,
       applicableProducts: form.applicableProducts,
       validFrom: form.validFrom,
       validTo: form.validTo,
