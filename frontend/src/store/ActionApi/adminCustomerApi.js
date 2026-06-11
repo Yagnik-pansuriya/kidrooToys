@@ -3,6 +3,13 @@ import { baseApi } from '../Api';
 export const adminCustomerApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
 
+    // GET /api/admin/customers/summary  — global KPI stats (cached 5 min)
+    getAdminCustomerSummary: builder.query({
+      query: () => 'admin/customers/summary',
+      providesTags: ['AdminCustomers'],
+      keepUnusedDataFor: 300,
+    }),
+
     // GET /api/admin/customers
     getAllAdminCustomers: builder.query({
       query: (params = {}) => {
@@ -37,6 +44,7 @@ export const adminCustomerApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetAdminCustomerSummaryQuery,
   useGetAllAdminCustomersQuery,
   useGetAdminCustomerByIdQuery,
   useToggleAdminCustomerStatusMutation,
