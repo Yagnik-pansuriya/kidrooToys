@@ -7,7 +7,7 @@ import {
   FiMessageSquare, FiSend, FiX, FiTrash2, FiCheckSquare,
   FiAlertCircle, FiPlus,
 } from 'react-icons/fi';
-import { RiVipCrownLine, RiVipDiamondLine } from 'react-icons/ri';
+import { RiVipCrownLine, RiVipDiamondLine, RiWhatsappLine } from 'react-icons/ri';
 import { MdVerified, MdBlock, MdCampaign } from 'react-icons/md';
 import { HiOutlineLightningBolt } from 'react-icons/hi';
 import {
@@ -94,12 +94,12 @@ const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
   const [createCampaign, { isLoading }]   = useCreateSmsCampaignMutation();
 
   const charCount = message.length;
-  const isOverLimit = charCount > 160;
+  const isOverLimit = charCount > 1024;
 
   const handleSend = async () => {
     if (!campaignName.trim()) { showError('Campaign name is required'); return; }
-    if (!message.trim())      { showError('Message is required'); return; }
-    if (isOverLimit)          { showError('Message exceeds 160 characters'); return; }
+    if (!message.trim())      { showError('WhatsApp message is required'); return; }
+    if (isOverLimit)          { showError('Message exceeds 1024 characters'); return; }
     try {
       const body = {
         name: campaignName,
@@ -120,9 +120,9 @@ const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
       <div className="sms-modal" onClick={(e) => e.stopPropagation()}>
         <div className="sms-modal__header">
           <div className="sms-modal__title-row">
-            <FiMessageSquare className="sms-modal__icon" />
+            <RiWhatsappLine className="sms-modal__icon sms-modal__icon--wa" />
             <div>
-              <h2>New SMS Campaign</h2>
+              <h2>New WhatsApp Campaign</h2>
               <p>{selectedCount > 0 ? `${selectedCount} customers selected` : 'Choose a target group'}</p>
             </div>
           </div>
@@ -169,28 +169,28 @@ const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
           {/* Message */}
           <div className="sms-modal__field">
             <label htmlFor="campaign-msg">
-              Message
+              WhatsApp Message
               <span className={`sms-modal__char ${isOverLimit ? 'sms-modal__char--over' : ''}`}>
-                {charCount}/160
+                {charCount}/1024
               </span>
             </label>
             <textarea
               id="campaign-msg"
-              rows={4}
-              placeholder="Hi {name}, Exciting offer from Kidroo Toys! Get 20% off on all toys this weekend. Shop now: kidrootoys.com"
+              rows={5}
+              placeholder={`Hi {name}, 🎉 Exciting offer from Kidroo Toys!\nGet 20% off on all toys this weekend.\nShop now 👉 kidrootoys.com`}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
             {isOverLimit && (
-              <span className="sms-modal__warn"><FiAlertCircle /> Message is too long — will be split into 2 SMS</span>
+              <span className="sms-modal__warn"><FiAlertCircle /> Message exceeds 1024 character limit</span>
             )}
           </div>
 
           {/* Preview */}
           {message.trim() && (
             <div className="sms-modal__preview">
-              <span className="sms-modal__preview-label">Preview</span>
-              <div className="sms-modal__bubble">{message}</div>
+              <span className="sms-modal__preview-label">📱 WhatsApp Preview</span>
+              <div className="sms-modal__bubble sms-modal__bubble--wa">{message}</div>
             </div>
           )}
         </div>
@@ -203,7 +203,7 @@ const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
             disabled={isLoading || !message.trim() || !campaignName.trim()}
             id="campaign-send-btn"
           >
-            {isLoading ? 'Sending…' : <><FiSend /> Send Campaign</>}
+            {isLoading ? 'Sending…' : <><RiWhatsappLine /> Send WhatsApp Broadcast</>}
           </button>
         </div>
       </div>
@@ -222,7 +222,7 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
   const campaigns = campaignsData?.data || [];
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete campaign "${name}"?`)) return;
+    if (!window.confirm(`Delete WhatsApp campaign "${name}"?`)) return;
     try {
       await deleteCampaign(id).unwrap();
       showSuccess('Campaign deleted');
@@ -242,7 +242,7 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
           <div className="sms-kpi-card__body">
             <span className="sms-kpi-card__title">TOTAL SENT</span>
             <span className="sms-kpi-card__value">{(stats.totalSent || 0).toLocaleString('en-IN')}</span>
-            <span className="sms-kpi-card__sub">All campaigns</span>
+            <span className="sms-kpi-card__sub">All WhatsApp campaigns</span>
           </div>
           <div className="sms-kpi-card__sep sms-kpi-card__sep--blue" />
         </div>
@@ -258,7 +258,7 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
           <div className="sms-kpi-card__body">
             <span className="sms-kpi-card__title">FAILED</span>
             <span className="sms-kpi-card__value sms-kpi-card__value--red">{(stats.totalFailed || 0).toLocaleString('en-IN')}</span>
-            <span className="sms-kpi-card__sub">Delivery failures</span>
+            <span className="sms-kpi-card__sub">WhatsApp delivery failures</span>
           </div>
           <div className="sms-kpi-card__sep sms-kpi-card__sep--red" />
         </div>
@@ -275,7 +275,7 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
       {/* ── New Campaign button ── */}
       <div className="sms-tab__actions">
         <button className="sms-new-btn" onClick={onNewCampaign} id="new-campaign-btn">
-          <FiPlus /> New Campaign
+          <RiWhatsappLine /> New WhatsApp Campaign
         </button>
       </div>
 
@@ -283,10 +283,10 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
       {campaigns.length === 0 ? (
         <div className="sms-empty">
           <MdCampaign />
-          <p>No campaigns yet</p>
-          <span>Create your first campaign to start engaging customers</span>
+          <p>No WhatsApp campaigns yet</p>
+          <span>Send your first WhatsApp broadcast to engage customers via WhatsApp</span>
           <button className="sms-new-btn" onClick={onNewCampaign}>
-            <FiPlus /> Create Campaign
+            <RiWhatsappLine /> Create Campaign
           </button>
         </div>
       ) : (
@@ -303,6 +303,7 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
                     <span className={`sms-status-dot sms-status-dot--${c.status}`}>
                       • {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
                     </span>
+                    <span className="sms-wa-badge"><RiWhatsappLine /> WhatsApp</span>
                   </div>
                   <div className="sms-campaign-row__meta">
                     {c.targetLabel} · {fmtShort(c.sentAt || c.createdAt)}
@@ -472,7 +473,7 @@ const AdminCustomers = () => {
           onClick={() => setActiveTab('sms')}
           id="tab-sms-campaigns"
         >
-          <MdCampaign /> SMS Campaigns
+          <RiWhatsappLine /> WhatsApp Campaigns
         </button>
       </div>
 
@@ -783,7 +784,7 @@ const AdminCustomers = () => {
               onClick={() => setShowSmsModal(true)}
               id="bulk-send-sms-btn"
             >
-              <FiSend /> Send SMS to Selected
+              <RiWhatsappLine /> Send WhatsApp to Selected
             </button>
           </div>
         </div>

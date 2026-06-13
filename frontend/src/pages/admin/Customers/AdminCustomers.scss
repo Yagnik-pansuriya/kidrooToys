@@ -1190,3 +1190,97 @@
     &:hover { background: #EF4444; color: white; }
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+// WHATSAPP SPECIFIC STYLES
+// ══════════════════════════════════════════════════════════════════
+
+// WhatsApp green colour token
+$wa-green: #25D366;
+$wa-dark:  #128C7E;
+$wa-light: #DCF8C6;
+$wa-bg:    #ECE5DD;  // WA chat bg
+
+// ── Icon colour override ──
+.sms-modal__icon--wa {
+  color: $wa-green !important;
+  font-size: 1.6rem;
+}
+
+// ── WhatsApp-styled preview bubble ──
+.sms-modal__bubble--wa {
+  background: $wa-light;
+  border: none;
+  border-radius: 0 $radius-lg $radius-lg $radius-lg;
+  position: relative;
+  padding: $space-md $space-lg;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #111B21;
+  white-space: pre-wrap;       // preserve line breaks in WA messages
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+
+  // Chat bubble tail
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -8px;
+    border-width: 0 10px 10px 0;
+    border-style: solid;
+    border-color: transparent $wa-light transparent transparent;
+  }
+}
+
+// ── New Campaign / send button — WhatsApp green ──
+.sms-new-btn,
+.sms-modal__btn-send {
+  &:has(svg.ri-whatsapp-line),
+  &:has([class*="RiWhatsapp"]) {
+    background: $wa-green;
+    &:hover:not(:disabled) { background: $wa-dark; }
+  }
+}
+
+// Override send button to WhatsApp green globally in modal
+.sms-modal__btn-send {
+  background: $wa-green;
+  &:hover:not(:disabled) { background: $wa-dark; }
+}
+
+// Override new campaign button
+.sms-new-btn {
+  background: $wa-green;
+  &:hover { background: $wa-dark; }
+}
+
+// ── WhatsApp badge on campaign rows ──
+.sms-wa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: $radius-full;
+  background: #E7F8EE;
+  color: $wa-dark;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+
+  svg { font-size: 0.85rem; }
+}
+
+// ── Bulk bar — WhatsApp green send button ──
+.ac-bulk-bar__send {
+  background: $wa-green;
+  &:hover { background: $wa-dark !important; }
+}
+
+// ── Tab active — WhatsApp green for WA tab ──
+// (Targets the second tab specifically)
+#tab-sms-campaigns.ac-tab--active {
+  color: $wa-dark;
+  &::after { background: $wa-green; }
+}
+
