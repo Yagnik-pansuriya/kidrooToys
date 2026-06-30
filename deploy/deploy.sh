@@ -3,7 +3,11 @@
 # KidrooToys — Deployment Script
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Run this to deploy or update your application:
+# Deploys the application natively:
+#   - Builds React frontend → static files served by Nginx
+#   - Compiles TypeScript backend → runs via PM2
+#
+# Run this to deploy or update:
 #   chmod +x deploy/deploy.sh
 #   ./deploy/deploy.sh
 #
@@ -13,8 +17,9 @@ set -euo pipefail
 
 # ── Configuration ───────────────────────────────────────────────────────────
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-COMPOSE_FILE="docker-compose.prod.yml"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+FRONTEND_DIR="$PROJECT_DIR/frontend"
+BACKEND_DIR="$PROJECT_DIR/kidrooBackend"
 
 echo "═══════════════════════════════════════════════════════════════"
 echo "  KidrooToys — Deploying from: $PROJECT_DIR"
@@ -27,32 +32,42 @@ cd "$PROJECT_DIR"
 echo ""
 echo "🔍 Pre-flight checks..."
 
-# Check Docker
-if ! command -v docker &> /dev/null; then
-    echo "   ❌ Docker not found. Run setup-server.sh first."
+if ! command -v node &> /dev/null; then
+    echo "   ❌ Node.js not found. Run setup-server.sh first."
     exit 1
 fi
-echo "   ✅ Docker available"
+echo "   ✅ Node.js $(node --version)"
 
-# Check required files
-for file in "$COMPOSE_FILE" "Caddyfile" "kidrooBackend/.env"; do
-    if [ ! -f "$file" ]; then
-        echo "   ❌ Missing: $file"
-        exit 1
-    fi
-done
-echo "   ✅ All config files present"
-
-# Check Caddyfile has real domain (not placeholder)
-if grep -q "kidrootoys.co" Caddyfile && grep -q "your-email@example.com" Caddyfile; then
-    echo "   ⚠️  WARNING: Caddyfile still has placeholder values!"
-    echo "      Edit Caddyfile and set your real domain + email before deploying."
-    read -p "      Continue anyway? (y/N): " -n 1 -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        exit 1
-    fi
+if ! command -v pm2 &> /dev/null; then
+    echo "   ❌ PM2 not found. Run: npm install -g pm2"
+    exit 1
 fi
+echo "   ✅ PM2 available"
+
+if ! command -v nginx &> /dev/null; then
+    echo "   ❌ Nginx not found. Run setup-server.sh first."
+    exit 1
+fi
+echo "   ✅ Nginx available"
+
+if ! systemctl is-active --quiet mongod; then
+    echo "   ⚠️  MongoDB not running. Starting..."
+    sudo systemctl start mongod
+fi
+echo "   ✅ MongoDB running"
+
+if ! systemctl is-active --quiet redis-server; then
+    echo "   ⚠️  Redis not running. Starting..."
+    sudo systemctl start redis-server
+fi
+echo "   ✅ Redis running"
+
+if [ ! -f "$BACKEND_DIR/.env" ]; then
+    echo "   ❌ Missing: kidrooBackend/.env"
+    echo "      Run: cp .env.production.example kidrooBackend/.env && nano kidrooBackend/.env"
+    exit 1
+fi
+echo "   ✅ All config files present"
 
 # ── Pull Latest Code ───────────────────────────────────────────────────────
 echo ""
@@ -64,40 +79,88 @@ else
     echo "   ⏩ Not a git repo — skipping pull"
 fi
 
-# ── Build & Deploy ─────────────────────────────────────────────────────────
+# ── Build Frontend ─────────────────────────────────────────────────────────
 echo ""
-echo "🏗️  Building containers..."
-docker compose -f "$COMPOSE_FILE" build --no-cache
+echo "🏗️  Building frontend..."
+cd "$FRONTEND_DIR"
+npm ci --prefer-offline
+npm run build
+echo "   ✅ Frontend built → $FRONTEND_DIR/dist"
 
+# ── Build Backend ──────────────────────────────────────────────────────────
 echo ""
-echo "🚀 Starting services..."
-docker compose -f "$COMPOSE_FILE" up -d
+echo "🏗️  Building backend..."
+cd "$BACKEND_DIR"
+npm ci --prefer-offline
+npm run build
+echo "   ✅ Backend compiled (TypeScript → JavaScript)"
+
+# ── Setup Nginx Config ────────────────────────────────────────────────────
+echo ""
+echo "🌐 Updating Nginx configuration..."
+cd "$PROJECT_DIR"
+
+if [ -f deploy/nginx.conf ]; then
+    sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidrootoys
+
+    # Enable site if not already enabled
+    if [ ! -L /etc/nginx/sites-enabled/kidrootoys ]; then
+        sudo ln -sf /etc/nginx/sites-available/kidrootoys /etc/nginx/sites-enabled/kidrootoys
+    fi
+
+    # Remove default site if it exists
+    if [ -f /etc/nginx/sites-enabled/default ]; then
+        sudo rm -f /etc/nginx/sites-enabled/default
+    fi
+
+    # Test and reload Nginx
+    if sudo nginx -t; then
+        sudo systemctl reload nginx
+        echo "   ✅ Nginx config updated and reloaded"
+    else
+        echo "   ❌ Nginx config has errors! Check: sudo nginx -t"
+        exit 1
+    fi
+else
+    echo "   ⚠️  deploy/nginx.conf not found — skipping Nginx update"
+fi
+
+# ── Start/Restart Backend with PM2 ────────────────────────────────────────
+echo ""
+echo "🚀 Starting backend with PM2..."
+cd "$BACKEND_DIR"
+
+if pm2 describe kidroo-backend &> /dev/null; then
+    pm2 restart kidroo-backend --update-env
+    echo "   ✅ Backend restarted"
+else
+    pm2 start dist/index.js \
+        --name "kidroo-backend" \
+        --max-memory-restart 500M \
+        --time \
+        --env production
+    echo "   ✅ Backend started"
+fi
+
+pm2 save
+echo "   ✅ PM2 process list saved"
 
 # ── Health Check ────────────────────────────────────────────────────────────
 echo ""
 echo "🏥 Waiting for services to be healthy..."
-sleep 10
+sleep 5
 
-# Check if containers are running
-RUNNING=$(docker compose -f "$COMPOSE_FILE" ps --status running -q | wc -l)
-TOTAL=$(docker compose -f "$COMPOSE_FILE" ps -q | wc -l)
-
-if [ "$RUNNING" -eq "$TOTAL" ] && [ "$TOTAL" -gt 0 ]; then
-    echo "   ✅ All $TOTAL services running"
+if curl -sf http://localhost:5000/health > /dev/null 2>&1; then
+    echo "   ✅ Backend is healthy"
 else
-    echo "   ⚠️  Only $RUNNING/$TOTAL services running"
-    echo ""
-    echo "   Checking logs for failed services..."
-    docker compose -f "$COMPOSE_FILE" ps
-    echo ""
-    docker compose -f "$COMPOSE_FILE" logs --tail=20
+    echo "   ⚠️  Backend health check failed. Check: pm2 logs kidroo-backend --lines 20"
 fi
 
-# ── Clean Up Old Images ────────────────────────────────────────────────────
-echo ""
-echo "🧹 Cleaning up old images..."
-docker image prune -f
-echo "   ✅ Cleanup done"
+if systemctl is-active --quiet nginx; then
+    echo "   ✅ Nginx is running"
+else
+    echo "   ⚠️  Nginx is not running. Check: sudo systemctl status nginx"
+fi
 
 # ── Summary ─────────────────────────────────────────────────────────────────
 echo ""
@@ -105,10 +168,23 @@ echo "════════════════════════�
 echo "  ✅ Deployment complete!"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
+echo "  Services:"
+echo "    ✅ Frontend → static files served by Nginx"
+echo "    ✅ Backend  → PM2 process (kidroo-backend)"
+echo "    ✅ MongoDB  → systemd service (mongod)"
+echo "    ✅ Redis    → systemd service (redis-server)"
+echo "    ✅ Nginx    → reverse proxy + static files + SSL"
+echo ""
 echo "  Useful commands:"
-echo "    Logs:      docker compose -f $COMPOSE_FILE logs -f"
-echo "    Status:    docker compose -f $COMPOSE_FILE ps"
-echo "    Restart:   docker compose -f $COMPOSE_FILE restart"
-echo "    Stop:      docker compose -f $COMPOSE_FILE down"
-echo "    Rollback:  git checkout <previous-commit> && ./deploy/deploy.sh"
+echo "    Backend logs:   pm2 logs kidroo-backend"
+echo "    PM2 status:     pm2 status"
+echo "    Restart app:    pm2 restart kidroo-backend"
+echo "    Nginx status:   sudo systemctl status nginx"
+echo "    Nginx logs:     sudo tail -f /var/log/nginx/kidrootoys_access.log"
+echo "    Nginx errors:   sudo tail -f /var/log/nginx/kidrootoys_error.log"
+echo "    MongoDB:        sudo systemctl status mongod"
+echo "    Redis:          sudo systemctl status redis-server"
+echo ""
+echo "  If you haven't set up SSL yet, run:"
+echo "    sudo certbot --nginx -d kidrootoys.co -d www.kidrootoys.co"
 echo ""

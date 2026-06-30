@@ -3,7 +3,15 @@
 # KidrooToys — VPS First-Time Setup Script
 # ══════════════════════════════════════════════════════════════════════════════
 #
-# Run this ONCE on a fresh Ubuntu 22.04/24.04 VPS:
+# Installs everything natively on Ubuntu 22.04/24.04:
+#   - Node.js 18 LTS
+#   - MongoDB 7
+#   - Redis 7
+#   - Nginx (reverse proxy + static file server)
+#   - Certbot (free SSL via Let's Encrypt)
+#   - PM2 (Node.js process manager)
+#
+# Run ONCE on a fresh VPS:
 #   chmod +x deploy/setup-server.sh
 #   sudo ./deploy/setup-server.sh
 #
@@ -29,59 +37,111 @@ apt install -y \
     ufw \
     htop \
     fail2ban \
-    unzip
+    unzip \
+    gnupg \
+    build-essential \
+    software-properties-common
 
-# ── 3. Install Docker ──────────────────────────────────────────────────────
+# ── 3. Install Node.js 18 LTS ──────────────────────────────────────────────
 echo ""
-echo "🐳 Installing Docker..."
-if ! command -v docker &> /dev/null; then
-    curl -fsSL https://get.docker.com | sh
-    systemctl enable docker
-    systemctl start docker
-    echo "   ✅ Docker installed successfully"
+echo "🟢 Installing Node.js 18 LTS..."
+if ! command -v node &> /dev/null; then
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+    apt install -y nodejs
+    echo "   ✅ Node.js $(node --version) installed"
 else
-    echo "   ⏩ Docker already installed"
+    echo "   ⏩ Node.js $(node --version) already installed"
 fi
 
-# ── 4. Install Docker Compose Plugin ───────────────────────────────────────
+# ── 4. Install PM2 (Process Manager) ───────────────────────────────────────
 echo ""
-echo "🔌 Checking Docker Compose..."
-if docker compose version &> /dev/null; then
-    echo "   ✅ Docker Compose plugin available"
+echo "⚡ Installing PM2..."
+if ! command -v pm2 &> /dev/null; then
+    npm install -g pm2
+    echo "   ✅ PM2 installed"
 else
-    echo "   📦 Installing Docker Compose plugin..."
-    apt install -y docker-compose-plugin
+    echo "   ⏩ PM2 already installed"
 fi
 
-# ── 5. Add Current User to Docker Group ────────────────────────────────────
+# ── 5. Install MongoDB 7 ───────────────────────────────────────────────────
 echo ""
-echo "👤 Adding current user to docker group..."
-if [ -n "${SUDO_USER:-}" ]; then
-    usermod -aG docker "$SUDO_USER"
-    echo "   ✅ Added $SUDO_USER to docker group (re-login to take effect)"
+echo "🍃 Installing MongoDB 7..."
+if ! command -v mongod &> /dev/null; then
+    curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
+        gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | \
+        tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+    apt update
+    apt install -y mongodb-org
+
+    systemctl start mongod
+    systemctl enable mongod
+    echo "   ✅ MongoDB 7 installed and running"
+else
+    echo "   ⏩ MongoDB already installed"
 fi
 
-# ── 6. Configure Firewall (UFW) ────────────────────────────────────────────
+# ── 6. Install Redis ───────────────────────────────────────────────────────
+echo ""
+echo "🔴 Installing Redis..."
+if ! command -v redis-server &> /dev/null; then
+    apt install -y redis-server
+
+    # Configure Redis for production
+    sed -i 's/^supervised no/supervised systemd/' /etc/redis/redis.conf
+    sed -i 's/^# maxmemory .*/maxmemory 256mb/' /etc/redis/redis.conf
+    sed -i 's/^# maxmemory-policy .*/maxmemory-policy allkeys-lru/' /etc/redis/redis.conf
+
+    systemctl restart redis-server
+    systemctl enable redis-server
+    echo "   ✅ Redis installed and running"
+else
+    echo "   ⏩ Redis already installed"
+fi
+
+# ── 7. Install Nginx ───────────────────────────────────────────────────────
+echo ""
+echo "🌐 Installing Nginx..."
+if ! command -v nginx &> /dev/null; then
+    apt install -y nginx
+    systemctl enable nginx
+    systemctl start nginx
+    echo "   ✅ Nginx installed and running"
+else
+    echo "   ⏩ Nginx already installed"
+fi
+
+# ── 8. Install Certbot (Let's Encrypt SSL) ─────────────────────────────────
+echo ""
+echo "🔒 Installing Certbot..."
+if ! command -v certbot &> /dev/null; then
+    apt install -y certbot python3-certbot-nginx
+    echo "   ✅ Certbot installed"
+else
+    echo "   ⏩ Certbot already installed"
+fi
+
+# ── 9. Configure Firewall (UFW) ────────────────────────────────────────────
 echo ""
 echo "🔒 Configuring firewall..."
 ufw --force reset
 ufw default deny incoming
 ufw default allow outgoing
-ufw allow 22/tcp    # SSH
-ufw allow 80/tcp    # HTTP  (Caddy)
-ufw allow 443/tcp   # HTTPS (Caddy)
-ufw allow 443/udp   # HTTP/3 QUIC (Caddy)
+ufw allow 22/tcp       # SSH
+ufw allow 'Nginx Full' # HTTP + HTTPS
 ufw --force enable
 echo "   ✅ Firewall configured (SSH, HTTP, HTTPS allowed)"
 
-# ── 7. Configure Fail2Ban ──────────────────────────────────────────────────
+# ── 10. Configure Fail2Ban ─────────────────────────────────────────────────
 echo ""
 echo "🛡️  Configuring Fail2Ban..."
 systemctl enable fail2ban
 systemctl start fail2ban
 echo "   ✅ Fail2Ban active (protects SSH from brute force)"
 
-# ── 8. Create Swap File (for small VPS with <= 2GB RAM) ────────────────────
+# ── 11. Create Swap File ───────────────────────────────────────────────────
 echo ""
 echo "💾 Setting up swap file..."
 if [ ! -f /swapfile ]; then
@@ -90,7 +150,6 @@ if [ ! -f /swapfile ]; then
     mkswap /swapfile
     swapon /swapfile
     echo '/swapfile none swap sw 0 0' >> /etc/fstab
-    # Optimize swap usage
     sysctl vm.swappiness=10
     echo 'vm.swappiness=10' >> /etc/sysctl.conf
     echo "   ✅ 2GB swap file created"
@@ -98,15 +157,19 @@ else
     echo "   ⏩ Swap file already exists"
 fi
 
-# ── 9. Create Project Directory ────────────────────────────────────────────
+# ── 12. Create Project Directory ───────────────────────────────────────────
 echo ""
 echo "📁 Creating project directory..."
 PROJECT_DIR="/opt/kidrootoys"
 mkdir -p "$PROJECT_DIR"
-if [ -n "${SUDO_USER:-}" ]; then
-    chown -R "$SUDO_USER:$SUDO_USER" "$PROJECT_DIR"
-fi
+mkdir -p /var/log/caddy  # legacy cleanup — can be ignored
 echo "   ✅ Project directory: $PROJECT_DIR"
+
+# ── 13. Setup PM2 Startup ──────────────────────────────────────────────────
+echo ""
+echo "🔄 Configuring PM2 startup..."
+pm2 startup systemd -u root --hp /root
+echo "   ✅ PM2 will auto-start on reboot"
 
 # ── Done ────────────────────────────────────────────────────────────────────
 echo ""
@@ -114,12 +177,23 @@ echo "════════════════════════�
 echo "  ✅ Server setup complete!"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
+echo "  Installed:"
+echo "    ✅ Node.js $(node --version)"
+echo "    ✅ PM2 (process manager)"
+echo "    ✅ MongoDB 7 (database)"
+echo "    ✅ Redis (cache)"
+echo "    ✅ Nginx (web server + reverse proxy)"
+echo "    ✅ Certbot (SSL certificates)"
+echo "    ✅ UFW firewall + Fail2Ban"
+echo ""
 echo "  Next steps:"
-echo "    1. Log out and back in (for docker group to take effect)"
-echo "    2. Clone your repo:  cd /opt/kidrootoys && git clone <repo-url> ."
-echo "    3. Copy env file:    cp .env.production.example kidrooBackend/.env"
-echo "    4. Edit env file:    nano kidrooBackend/.env"
-echo "    5. Edit Caddyfile:   nano Caddyfile  (set your domain + email)"
-echo "    6. Edit frontend:    nano frontend/.env.production (set API URL)"
-echo "    7. Deploy:           ./deploy/deploy.sh"
+echo "    1. Clone your repo:    cd /opt/kidrootoys && git clone <repo-url> ."
+echo "    2. Copy env file:      cp .env.production.example kidrooBackend/.env"
+echo "    3. Edit env file:      nano kidrooBackend/.env"
+echo "    4. Setup MongoDB:      sudo mongosh < deploy/mongo-init.js"
+echo "    5. Copy Nginx config:  sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidrootoys"
+echo "    6. Enable site:        sudo ln -s /etc/nginx/sites-available/kidrootoys /etc/nginx/sites-enabled/"
+echo "    7. Remove default:     sudo rm /etc/nginx/sites-enabled/default"
+echo "    8. Get SSL:            sudo certbot --nginx -d kidrootoys.co -d www.kidrootoys.co"
+echo "    9. Deploy:             ./deploy/deploy.sh"
 echo ""
