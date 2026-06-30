@@ -12,6 +12,8 @@ const monthLaterStr = () => {
 const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmitting }) => {
   const [form, setForm] = useState(initialCouponForm);
   const [productSearch, setProductSearch] = useState('');
+  const [modalStep, setModalStep] = useState(1);
+  const [errors, setErrors] = useState({});
 
   const { data: productsResp } = useGetProductsQuery(
     { page: 1, limit: 50, search: productSearch, isActive: 'true' },
@@ -46,6 +48,8 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
       } else {
         setForm({ ...initialCouponForm, validFrom: todayStr(), validTo: monthLaterStr() });
       }
+      setModalStep(1);
+      setErrors({});
     }
   }, [isOpen, editingCoupon]);
 
@@ -58,205 +62,242 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
     }));
   };
 
+  const validateStep = () => {
+    const errs = {};
+    if (modalStep === 1) {
+      if (!form.code.trim()) errs.code = 'Coupon Code is required';
+      if (!form.description.trim()) errs.description = 'Description is required';
+    }
+    if (modalStep === 2) {
+      if (!form.discountValue || form.discountValue <= 0) errs.discountValue = 'Valid discount is required';
+      if (!form.validFrom) errs.validFrom = 'Start date is required';
+      if (!form.validTo) errs.validTo = 'End date is required';
+    }
+    if (modalStep === 3) {
+      if (form.isSpecificProduct && form.applicableProducts.length === 0) {
+        errs.applicableProducts = 'Select at least one product';
+      }
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const nextStep = () => { if (validateStep() && modalStep < 3) setModalStep(s => s + 1); };
+  const prevStep = () => { if (modalStep > 1) setModalStep(s => s - 1); };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!validateStep()) return;
     onSubmit(form);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="admin-modal-overlay" onClick={onClose}>
-      <div className="admin-modal admin-modal--wide" onClick={(e) => e.stopPropagation()}>
-        <div className="admin-modal__header">
+    <div className="offer-modal-overlay" onClick={onClose}>
+      <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
           <h2>{editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}</h2>
-          <button onClick={onClose}><FiX /></button>
+          <button className="modal-close" onClick={onClose}><FiX /></button>
         </div>
-        <form className="admin-modal__form" onSubmit={handleSubmit}>
-          <div className="admin-form-grid">
-            {/* Code & Visibility */}
-            <div className="admin-field">
-              <label>Coupon Code *</label>
-              <input type="text" value={form.code} placeholder="e.g. SUMMER20"
-                onChange={(e) => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))} required
-                style={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }} />
-            </div>
-            <div className="admin-field">
-              <label>Visibility</label>
-              <div className="coupon-visibility-toggle">
-                <button type="button"
-                  className={`coupon-vis-btn ${form.visibility === 'public' ? 'coupon-vis-btn--active' : ''}`}
+
+        <div className="modal-body">
+          {/* Step indicator */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
+            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 1 ? 'var(--primary)' : '#EEE' }}></div>
+            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 2 ? 'var(--primary)' : '#EEE' }}></div>
+            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 3 ? 'var(--primary)' : '#EEE' }}></div>
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+            Step {modalStep} of 3 — {modalStep === 1 ? 'Basic Details' : modalStep === 2 ? 'Rules & Limits' : 'Applicability & Review'}
+          </div>
+
+          <form id="couponForm" onSubmit={handleSubmit}>
+            
+            {/* STEP 1: Basic Details */}
+            <div style={{ display: modalStep === 1 ? 'block' : 'none' }}>
+              <div className="section-divider">Coupon Identity</div>
+              <div className="form-group">
+                <label>Coupon Code *</label>
+                <input type="text" value={form.code} placeholder="e.g. SUMMER20"
+                  onChange={(e) => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                  style={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }} />
+                {errors.code && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.code}</span>}
+              </div>
+
+              <div className="form-group">
+                <label>Description *</label>
+                <textarea value={form.description} rows={2} placeholder="e.g. Get 20% off on all summer toys!"
+                  onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} />
+                {errors.description && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.description}</span>}
+              </div>
+
+              <div className="section-divider">Visibility</div>
+              <div className="display-picker">
+                <div className={`display-opt ${form.visibility === 'public' ? 'selected' : ''}`}
                   onClick={() => setForm(p => ({ ...p, visibility: 'public' }))}>
-                  🌐 Public
-                </button>
-                <button type="button"
-                  className={`coupon-vis-btn ${form.visibility === 'private' ? 'coupon-vis-btn--active' : ''}`}
+                  <div className="d-icon">🌐</div>
+                  <div>
+                    <div className="d-label">Public</div>
+                    <div className="d-sub">Visible to everyone</div>
+                  </div>
+                </div>
+                <div className={`display-opt ${form.visibility === 'private' ? 'selected' : ''}`}
                   onClick={() => setForm(p => ({ ...p, visibility: 'private' }))}>
-                  🔒 Private
-                </button>
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="admin-field admin-field--full">
-              <label>Description *</label>
-              <textarea value={form.description}
-                onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={2} required
-                placeholder="e.g. Get 20% off on all summer toys!" />
-            </div>
-
-            {/* Discount Type & Value */}
-            <div className="admin-field">
-              <label>Discount Type *</label>
-              <select value={form.discountType}
-                onChange={(e) => setForm(p => ({ ...p, discountType: e.target.value }))}>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed Amount (₹)</option>
-              </select>
-            </div>
-            <div className="admin-field">
-              <label>Discount Value *</label>
-              <input type="number" min="0" value={form.discountValue}
-                onChange={(e) => setForm(p => ({ ...p, discountValue: e.target.value }))} required
-                placeholder={form.discountType === 'percentage' ? 'e.g. 20' : 'e.g. 200'} />
-            </div>
-
-            {/* Min Order & Max Discount */}
-            <div className="admin-field">
-              <label>Min Order Amount (₹)</label>
-              <input type="number" min="0" value={form.minOrderAmount}
-                onChange={(e) => setForm(p => ({ ...p, minOrderAmount: e.target.value }))}
-                placeholder="0 = no minimum" />
-            </div>
-            {form.discountType === 'percentage' && (
-              <div className="admin-field">
-                <label>Max Discount Cap (₹)</label>
-                <input type="number" min="0" value={form.maxDiscount}
-                  onChange={(e) => setForm(p => ({ ...p, maxDiscount: e.target.value }))}
-                  placeholder="No cap" />
-              </div>
-            )}
-
-            {/* Validity */}
-            <div className="admin-field">
-              <label>Valid From *</label>
-              <input type="date" value={form.validFrom}
-                min={todayStr()}
-                onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} required />
-            </div>
-            <div className="admin-field">
-              <label>Valid To *</label>
-              <input type="date" value={form.validTo}
-                min={form.validFrom || todayStr()}
-                onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} required />
-            </div>
-
-            {/* Usage Limits */}
-            <div className="admin-field">
-              <label>Total Usage Limit</label>
-              <input type="number" min="1" value={form.usageLimit}
-                onChange={(e) => setForm(p => ({ ...p, usageLimit: parseInt(e.target.value) || 1 }))} />
-            </div>
-            <div className="admin-field">
-              <label>Per User Limit</label>
-              <input type="number" min="1" value={form.perUserLimit}
-                onChange={(e) => setForm(p => ({ ...p, perUserLimit: parseInt(e.target.value) || 1 }))} />
-            </div>
-
-            {/* Quantity-Based Discount (BOGO) Rules */}
-            <div className="admin-field admin-field--full" style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '8px' }}>
-              <h4 style={{ fontSize: '0.9rem', fontWeight: '600', color: '#1f2937', marginBottom: '8px' }}>
-                Quantity-Based Discount Rules (BOGO)
-              </h4>
-              <div className="admin-form-grid" style={{ marginTop: '4px' }}>
-                <div className="admin-field">
-                  <label>Minimum Product Quantity</label>
-                  <input type="number" min="0" value={form.minQuantity}
-                    onChange={(e) => setForm(p => ({ ...p, minQuantity: e.target.value }))}
-                    placeholder="e.g. 3 (leave empty or 0 for no limit)" />
-                  <span className="admin-field__hint">
-                    Requires buying at least this many items to activate the coupon. E.g., Buy 3, get discount.
-                  </span>
+                  <div className="d-icon">🔒</div>
+                  <div>
+                    <div className="d-label">Private</div>
+                    <div className="d-sub">Hidden, requires code</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Coupon Applicability Scope */}
-            <div className="admin-field admin-field--full" style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '8px' }}>
-              <label style={{ fontWeight: '600', marginBottom: '8px', display: 'block' }}>Coupon Scope *</label>
-              <div style={{ display: 'flex', gap: '24px', marginTop: '6px' }}>
-                <label className="admin-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>
-                  <input type="radio" name="couponScope" checked={!form.isSpecificProduct}
-                    onChange={() => setForm(p => ({ ...p, isSpecificProduct: false, applicableProducts: [] }))} />
-                  Any Product (Applies to all products in cart)
-                </label>
-                <label className="admin-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem' }}>
-                  <input type="radio" name="couponScope" checked={form.isSpecificProduct}
-                    onChange={() => setForm(p => ({ ...p, isSpecificProduct: true }))} />
-                  Specific Products (Choose from product list)
-                </label>
+            {/* STEP 2: Rules & Limits */}
+            <div style={{ display: modalStep === 2 ? 'block' : 'none' }}>
+              <div className="section-divider">Discount Value</div>
+              <div className="form-row">
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Discount Type *</label>
+                  <select value={form.discountType} onChange={(e) => setForm(p => ({ ...p, discountType: e.target.value }))}>
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (₹)</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Discount Value *</label>
+                  <input type="number" min="0" value={form.discountValue}
+                    onChange={(e) => setForm(p => ({ ...p, discountValue: e.target.value }))}
+                    placeholder={form.discountType === 'percentage' ? 'e.g. 20' : 'e.g. 200'} />
+                  {errors.discountValue && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.discountValue}</span>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Min Order Amount (₹)</label>
+                  <input type="number" min="0" value={form.minOrderAmount}
+                    onChange={(e) => setForm(p => ({ ...p, minOrderAmount: e.target.value }))} placeholder="0 = no min" />
+                </div>
+                {form.discountType === 'percentage' && (
+                  <div className="form-group" style={{ margin: 0 }}>
+                    <label>Max Discount (₹)</label>
+                    <input type="number" min="0" value={form.maxDiscount}
+                      onChange={(e) => setForm(p => ({ ...p, maxDiscount: e.target.value }))} placeholder="No cap" />
+                  </div>
+                )}
+              </div>
+
+              <div className="section-divider">Validity & Limits</div>
+              <div className="form-row">
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Valid From *</label>
+                  <input type="date" value={form.validFrom} min={todayStr()}
+                    onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} />
+                  {errors.validFrom && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.validFrom}</span>}
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Valid To *</label>
+                  <input type="date" value={form.validTo} min={form.validFrom || todayStr()}
+                    onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} />
+                  {errors.validTo && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.validTo}</span>}
+                </div>
+              </div>
+
+              <div className="form-row">
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Total Uses Limit</label>
+                  <input type="number" min="1" value={form.usageLimit}
+                    onChange={(e) => setForm(p => ({ ...p, usageLimit: parseInt(e.target.value) || 1 }))} />
+                </div>
+                <div className="form-group" style={{ margin: 0 }}>
+                  <label>Per User Limit</label>
+                  <input type="number" min="1" value={form.perUserLimit}
+                    onChange={(e) => setForm(p => ({ ...p, perUserLimit: parseInt(e.target.value) || 1 }))} />
+                </div>
               </div>
             </div>
 
-            {/* Applicable Products (Conditional on Specific Products) */}
-            {form.isSpecificProduct && (
-              <div className="admin-field admin-field--full">
-                <label>Select Applicable Products *</label>
-                <div className="coupon-products-section">
-                  <div className="coupon-products__search">
-                    <FiSearch />
-                    <input type="text" placeholder="Search products..." value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)} />
+            {/* STEP 3: Applicability */}
+            <div style={{ display: modalStep === 3 ? 'block' : 'none' }}>
+              <div className="section-divider">Coupon Scope</div>
+              <div className="display-picker">
+                <div className={`display-opt ${!form.isSpecificProduct ? 'selected' : ''}`}
+                  onClick={() => setForm(p => ({ ...p, isSpecificProduct: false, applicableProducts: [] }))}>
+                  <div className="d-icon">🛒</div>
+                  <div>
+                    <div className="d-label">Any Product</div>
+                    <div className="d-sub">Applies to all products in cart</div>
                   </div>
-                  {form.applicableProducts.length > 0 && (
-                    <div className="coupon-products__selected">
-                      <span>{form.applicableProducts.length} product(s) selected</span>
-                      <button type="button" className="coupon-products__clear"
-                        onClick={() => setForm(p => ({ ...p, applicableProducts: [] }))}>
-                        Clear all
-                      </button>
-                    </div>
-                  )}
-                  <div className="coupon-products__list">
+                </div>
+                <div className={`display-opt ${form.isSpecificProduct ? 'selected' : ''}`}
+                  onClick={() => setForm(p => ({ ...p, isSpecificProduct: true }))}>
+                  <div className="d-icon">🎁</div>
+                  <div>
+                    <div className="d-label">Specific Products</div>
+                    <div className="d-sub">Only applies to chosen products</div>
+                  </div>
+                </div>
+              </div>
+
+              {form.isSpecificProduct && (
+                <div className="form-group">
+                  <label>Select Products</label>
+                  <div style={{ position: 'relative', marginBottom: '10px' }}>
+                    <FiSearch style={{ position: 'absolute', left: '10px', top: '12px', color: '#888' }} />
+                    <input type="text" placeholder="Search..." value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      style={{ paddingLeft: '32px' }} />
+                  </div>
+                  {errors.applicableProducts && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.applicableProducts}</span>}
+                  
+                  <div style={{ maxHeight: '160px', overflowY: 'auto', border: '1px solid #EEE', borderRadius: '8px', padding: '8px' }}>
                     {productList.map(product => {
                       const pid = product._id || product.id;
                       const isSelected = form.applicableProducts.includes(pid);
                       return (
-                        <label key={pid} className={`coupon-products__item ${isSelected ? 'coupon-products__item--selected' : ''}`}>
+                        <label key={pid} className="check-row" style={{ padding: '6px', borderRadius: '4px', background: isSelected ? '#FAFAFA' : 'transparent', marginBottom: 0 }}>
                           <input type="checkbox" checked={isSelected} onChange={() => toggleProduct(pid)} />
-                          <span className="coupon-products__name">
-                            {product.productName || product.name}
-                          </span>
-                          <span className="coupon-products__price">₹{product.price}</span>
+                          <span style={{ flex: 1 }}>{product.productName || product.name}</span>
+                          <span style={{ fontWeight: 700, fontSize: '12px' }}>₹{product.price}</span>
                         </label>
                       );
                     })}
-                    {productList.length === 0 && (
-                      <p className="coupon-products__empty">No products found</p>
-                    )}
+                    {productList.length === 0 && <div style={{ fontSize: '12px', color: '#888', padding: '10px', textAlign: 'center' }}>No products found</div>}
                   </div>
+                  {form.applicableProducts.length > 0 && (
+                    <div style={{ fontSize: '12px', color: 'var(--success)', marginTop: '6px' }}>{form.applicableProducts.length} product(s) selected</div>
+                  )}
                 </div>
+              )}
+
+              <div className="section-divider">Options</div>
+              <div className="check-row">
+                <input type="checkbox" id="chk_active_c" checked={form.isActive} onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} />
+                <label htmlFor="chk_active_c">Make coupon active immediately</label>
               </div>
-            )}
 
-            {/* Active */}
-            <div className="admin-field">
-              <label className="admin-checkbox">
-                <input type="checkbox" checked={form.isActive}
-                  onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} /> Active
-              </label>
+              <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius)', padding: '14px', marginTop: '20px', fontSize: '13px', color: 'var(--primary)', fontWeight: 700 }}>
+                ✅ Review your coupon settings. 
+                <br/>Code: <strong>{form.code}</strong> - {form.discountType === 'percentage' ? `${form.discountValue}%` : `₹${form.discountValue}`} Off
+              </div>
             </div>
-          </div>
 
-          <div className="admin-modal__actions">
-            <button type="button" className="admin-btn admin-btn--secondary" onClick={onClose} disabled={isSubmitting}>
-              Cancel
+          </form>
+        </div>
+        
+        <div className="modal-footer">
+          {modalStep > 1 && (
+            <button className="btn btn-outline" type="button" onClick={prevStep}>← Back</button>
+          )}
+          {modalStep < 3 ? (
+            <button className="btn btn-primary" type="button" onClick={nextStep}>Next →</button>
+          ) : (
+            <button className="btn btn-primary" type="submit" form="couponForm" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : '✅ Save Coupon'}
             </button>
-            <button type="submit" className="admin-btn admin-btn--primary" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : (editingCoupon ? 'Update Coupon' : 'Create Coupon')}
-            </button>
-          </div>
-        </form>
+          )}
+        </div>
       </div>
     </div>
   );
