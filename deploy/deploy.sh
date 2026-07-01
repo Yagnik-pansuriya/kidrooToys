@@ -101,11 +101,11 @@ echo "🌐 Updating Nginx configuration..."
 cd "$PROJECT_DIR"
 
 if [ -f deploy/nginx.conf ]; then
-    sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidrootoys
+    sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidroo
 
     # Enable site if not already enabled
-    if [ ! -L /etc/nginx/sites-enabled/kidrootoys ]; then
-        sudo ln -sf /etc/nginx/sites-available/kidrootoys /etc/nginx/sites-enabled/kidrootoys
+    if [ ! -L /etc/nginx/sites-enabled/kidroo ]; then
+        sudo ln -sf /etc/nginx/sites-available/kidroo /etc/nginx/sites-enabled/kidroo
     fi
 
     # Remove default site if it exists
@@ -180,11 +180,11 @@ echo "    Backend logs:   pm2 logs kidroo-backend"
 echo "    PM2 status:     pm2 status"
 echo "    Restart app:    pm2 restart kidroo-backend"
 echo "    Nginx status:   sudo systemctl status nginx"
-echo "    Nginx logs:     sudo tail -f /var/log/nginx/kidrootoys_access.log"
-echo "    Nginx errors:   sudo tail -f /var/log/nginx/kidrootoys_error.log"
+echo "    Nginx logs:     sudo tail -f /var/log/nginx/kidroo_access.log"
+echo "    Nginx errors:   sudo tail -f /var/log/nginx/kidroo_error.log"
 echo "    MongoDB:        sudo systemctl status mongod"
 echo "    Redis:          sudo systemctl status redis-server"
 echo ""
 echo "  If you haven't set up SSL yet, run:"
-echo "    sudo certbot --nginx -d kidrootoys.co -d www.kidrootoys.co"
+echo "    sudo certbot --nginx -d kidroo.in -d www.kidroo.in"
 echo ""
