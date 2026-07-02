@@ -101,25 +101,30 @@ echo "🌐 Updating Nginx configuration..."
 cd "$PROJECT_DIR"
 
 if [ -f deploy/nginx.conf ]; then
-    sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidroo
-
-    # Enable site if not already enabled
-    if [ ! -L /etc/nginx/sites-enabled/kidroo ]; then
-        sudo ln -sf /etc/nginx/sites-available/kidroo /etc/nginx/sites-enabled/kidroo
-    fi
-
-    # Remove default site if it exists
-    if [ -f /etc/nginx/sites-enabled/default ]; then
-        sudo rm -f /etc/nginx/sites-enabled/default
-    fi
-
-    # Test and reload Nginx
-    if sudo nginx -t; then
-        sudo systemctl reload nginx
-        echo "   ✅ Nginx config updated and reloaded"
+    if [ -f /etc/nginx/sites-available/kidroo ] && grep -q "managed by Certbot" /etc/nginx/sites-available/kidroo; then
+        echo "   ⏩ Nginx config is managed by Certbot (SSL active) — skipping overwrite to protect SSL configuration."
+        echo "      To manually apply Nginx changes, edit /etc/nginx/sites-available/kidroo"
     else
-        echo "   ❌ Nginx config has errors! Check: sudo nginx -t"
-        exit 1
+        sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidroo
+
+        # Enable site if not already enabled
+        if [ ! -L /etc/nginx/sites-enabled/kidroo ]; then
+            sudo ln -sf /etc/nginx/sites-available/kidroo /etc/nginx/sites-enabled/kidroo
+        fi
+
+        # Remove default site if it exists
+        if [ -f /etc/nginx/sites-enabled/default ]; then
+            sudo rm -f /etc/nginx/sites-enabled/default
+        fi
+
+        # Test and reload Nginx
+        if sudo nginx -t; then
+            sudo systemctl reload nginx
+            echo "   ✅ Nginx config updated and reloaded"
+        else
+            echo "   ❌ Nginx config has errors! Check: sudo nginx -t"
+            exit 1
+        fi
     fi
 else
     echo "   ⚠️  deploy/nginx.conf not found — skipping Nginx update"
