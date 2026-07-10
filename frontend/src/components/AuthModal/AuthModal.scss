@@ -336,6 +336,19 @@
     margin-top: 0.3rem;
     font-weight: 500;
   }
+
+  &__optional {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: #aab0c4;
+    text-transform: none;
+    letter-spacing: 0;
+    background: #f0f1f5;
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+  }
 }
 
 /* ── Submit Button ─────────────────────────────────────────── */
