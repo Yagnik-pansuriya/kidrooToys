@@ -30,7 +30,6 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
   const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(0);
   const [signupMobile, setSignupMobile] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
 
   // Form data
   const [form, setForm] = useState({
@@ -38,7 +37,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     lastName: '',
     mobile: '',
     password: '',
-    email: '',
+    email: '',   // optional
   });
 
   // Reset when modal opens
@@ -51,7 +50,6 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
       setShowPwdSignup(false);
       setCountdown(0);
       setSignupMobile('');
-      setSignupEmail('');
     }
   }, [isOpen]);
 
@@ -98,7 +96,7 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     e.preventDefault();
     const { firstName, lastName, mobile, password, email } = form;
 
-    if (!firstName || !lastName || !mobile || !password || !email) {
+    if (!firstName || !lastName || !mobile || !password) {
       showError('Please fill all required fields');
       return;
     }
@@ -122,18 +120,21 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
       showError('Password must contain at least one special character');
       return;
     }
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      showError('Please enter a valid email address');
+    // Email is optional — only validate format if provided
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+      showError('Please enter a valid email address or leave it blank');
       return;
     }
 
     try {
-      await customerSignup({ firstName, lastName, mobile, password, email }).unwrap();
+      const payload = { firstName, lastName, mobile, password };
+      if (email) payload.email = email;  // only send email if provided
+
+      await customerSignup(payload).unwrap();
       setSignupMobile(mobile);
-      setSignupEmail(email);
       setStep(STEPS.OTP);
-      setCountdown(300);
-      showSuccess('OTP sent to your email!');
+      setCountdown(60);  // 60s matches backend cooldown
+      showSuccess('OTP sent to your mobile number via SMS!');
     } catch (err) {
       showError(err?.data?.message || 'Signup failed');
     }
@@ -183,10 +184,10 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
   const handleResendOTP = async () => {
     if (countdown > 0) return;
     try {
-      await sendOTPApi({ mobile: signupMobile || form.mobile, email: signupEmail }).unwrap();
-      setCountdown(300);
+      await sendOTPApi({ mobile: signupMobile || form.mobile }).unwrap();
+      setCountdown(60);  // 60s cooldown
       setOtpValues(['', '', '', '', '', '']);
-      showSuccess('New OTP sent to your email');
+      showSuccess('New OTP sent to your mobile number');
     } catch (err) {
       showError(err?.data?.message || 'Failed to resend OTP');
     }
@@ -197,14 +198,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+    return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}s`;
   };
 
-  // Mask email for display
-  const maskEmail = (email) => {
-    if (!email) return '';
-    const [user, domain] = email.split('@');
-    return `${user[0]}${'•'.repeat(Math.max(user.length - 2, 2))}${user.slice(-1)}@${domain}`;
+  // Mask mobile for display: e.g. 9876543210 → +91 98765•••10
+  const maskMobile = (mobile) => {
+    if (!mobile || mobile.length < 4) return mobile;
+    return `+91 ${mobile.slice(0, 5)}${'•'.repeat(3)}${mobile.slice(-2)}`;
   };
 
   return (
@@ -333,15 +333,24 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
                   <span className="auth-input__prefix">+91</span>
                   <input type="tel" name="mobile" placeholder="10-digit mobile" value={form.mobile} onChange={handleChange} maxLength={10} required />
                 </div>
+                <span className="auth-input__hint">📱 OTP will be sent to this number via SMS</span>
               </label>
 
               <label className="auth-input">
-                <span className="auth-input__label">Email Address *</span>
+                <span className="auth-input__label">
+                  Email Address <span className="auth-input__optional">(Optional)</span>
+                </span>
                 <div className="auth-input__wrap">
                   <FiMail className="auth-input__icon" />
-                  <input type="email" name="email" placeholder="your@email.com — OTP will be sent here" value={form.email} onChange={handleChange} required />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="your@email.com — optional"
+                    value={form.email}
+                    onChange={handleChange}
+                  />
                 </div>
-                <span className="auth-input__hint">📧 Verification OTP will be sent to this email</span>
+                <span className="auth-input__hint">💡 You can skip this — only mobile OTP is required</span>
               </label>
 
               {/* Password with strength rules */}
@@ -407,11 +416,13 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
               <FiArrowLeft /> Back
             </button>
             <div className="auth-step__header">
-              <div className="auth-step__icon-circle auth-step__icon-circle--blue">📧</div>
-              <h2>Check Your Email</h2>
+              <div className="auth-step__icon-circle auth-step__icon-circle--blue">📱</div>
+              <h2>Verify Your Mobile</h2>
               <p>
-                We've sent a 6-digit code to<br />
-                <strong>{maskEmail(signupEmail)}</strong>
+                We've sent a 6-digit OTP to<br />
+                <strong>{maskMobile(signupMobile)}</strong>
+                <br />
+                <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>via SMS</span>
               </p>
             </div>
 
@@ -435,19 +446,19 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
 
               {countdown > 0 && (
                 <p className="auth-otp__timer">
-                  Code expires in <strong>{formatTime(countdown)}</strong>
+                  Resend available in <strong>{formatTime(countdown)}</strong>
                 </p>
               )}
 
               <button type="submit" className="auth-submit" disabled={verifyingOTP || otpValues.join('').length !== 6}>
-                {verifyingOTP ? <span className="auth-spinner" /> : <>Verify & Continue <FiCheck /></>}
+                {verifyingOTP ? <span className="auth-spinner" /> : <>Verify &amp; Continue <FiCheck /></>}
               </button>
             </form>
 
             <p className="auth-switch">
-              Didn't receive the code?{' '}
+              Didn't receive the SMS?{' '}
               <button onClick={handleResendOTP} disabled={countdown > 0 || sendingOTP}>
-                {sendingOTP ? 'Sending...' : countdown > 0 ? `Wait ${formatTime(countdown)}` : 'Resend Code'}
+                {sendingOTP ? 'Sending...' : countdown > 0 ? `Resend in ${formatTime(countdown)}` : 'Resend OTP'}
               </button>
             </p>
           </div>
