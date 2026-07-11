@@ -29,7 +29,6 @@ import AdminLayout from './pages/admin/AdminLayout/AdminLayout';
 import Dashboard from './pages/admin/Dashboard/Dashboard';
 import AdminCategories from './pages/admin/Categories/AdminCategories';
 import AdminProducts from './pages/admin/Products/AdminProducts';
-import AdminOrders from './pages/admin/Orders/AdminOrders';
 import AdminOffers from './pages/admin/Offers/AdminOffers';
 import AdminSettings from './pages/admin/Settings/AdminSettings';
 import AdminUsers from './pages/admin/Users/AdminUsers';
@@ -39,6 +38,7 @@ import AdminBanners from './pages/admin/Banners/AdminBanners';
 import AdminSkills from './pages/admin/Skills/AdminSkills';
 import AdminCustomers from './pages/admin/Customers/AdminCustomers';
 import AdminCustomerDetail from './pages/admin/Customers/AdminCustomerDetail';
+import AdminOrders from './pages/admin/Orders/AdminOrders';
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
@@ -110,7 +110,7 @@ function App() {
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="categories" element={<PermissionRoute permRoute="/categories"><AdminCategories /></PermissionRoute>} />
                   <Route path="products" element={<PermissionRoute permRoute="/products"><AdminProducts /></PermissionRoute>} />
-                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="orders" element={<PermissionRoute><AdminOrders /></PermissionRoute>} />
                   <Route path="offers" element={<PermissionRoute permRoute="/offers"><AdminOffers /></PermissionRoute>} />
                   <Route path="newsletter" element={<PermissionRoute permRoute="/newsletter"><AdminNewsletter /></PermissionRoute>} />
                   <Route path="reviews" element={<PermissionRoute permRoute="/reviews"><AdminReviews /></PermissionRoute>} />

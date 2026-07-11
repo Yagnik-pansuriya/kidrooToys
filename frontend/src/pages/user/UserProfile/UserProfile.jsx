@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiPhone, FiMapPin, FiPackage, FiHeart, FiEdit, FiPlus, FiTrash2, FiCheck, FiX, FiHome, FiBriefcase, FiStar, FiLock, FiArrowRight, FiShoppingCart, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiMapPin, FiPackage, FiHeart, FiEdit, FiPlus, FiTrash2, FiCheck, FiX, FiHome, FiBriefcase, FiStar, FiLock, FiArrowRight, FiShoppingCart, FiEye, FiEyeOff, FiTruck } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 import { useGetCustomerProfileQuery } from '../../../store/ActionApi/customerAuthApi';
 import { useUpdateCustomerProfileMutation, useChangeCustomerPasswordMutation, useAddAddressMutation, useUpdateAddressMutation, useDeleteAddressMutation, useSetDefaultAddressMutation, useGetWishlistQuery, useToggleWishlistMutation, useClearWishlistMutation } from '../../../store/ActionApi/customerApi';
+import { useGetMyOrdersQuery, useGetMyOrderByIdQuery } from '../../../store/ActionApi/orderApi';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { updateCustomerProfile, toggleWishlistId, setWishlistIds } from '../../../store/ReducerApi/customerAuthSlice';
@@ -59,6 +60,20 @@ const UserProfile = () => {
     skip: !isCustomerAuthenticated || !wishlistTabActive,
   });
   const wishlistItems = wishlistResp?.data || wishlistResp || [];
+
+  // Orders API
+  const [ordersTabActive, setOrdersTabActive] = useState(false);
+  const { data: ordersResp, isLoading: ordersLoading } = useGetMyOrdersQuery(undefined, {
+    skip: !isCustomerAuthenticated || !ordersTabActive,
+  });
+  const myOrders = ordersResp?.data || ordersResp || [];
+
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const { data: orderDetailResp, isLoading: orderDetailLoading } = useGetMyOrderByIdQuery(selectedOrderId, {
+    skip: !selectedOrderId,
+  });
+  const orderDetail = orderDetailResp?.data?.order || orderDetailResp?.data || null;
+  const trackingData = orderDetailResp?.data?.tracking || null;
 
   const customer = profileResp?.data || profileResp || null;
 
@@ -256,6 +271,9 @@ const UserProfile = () => {
               </button>
               <button className={activeTab === 'wishlist' ? 'active' : ''} onClick={() => { setActiveTab('wishlist'); setWishlistTabActive(true); }}>
                 <FiHeart /> Wishlist
+              </button>
+              <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => { setActiveTab('orders'); setOrdersTabActive(true); setSelectedOrderId(null); }}>
+                <FiPackage /> Orders
               </button>
               <button className={activeTab === 'security' ? 'active' : ''} onClick={() => setActiveTab('security')}>
                 <FiLock /> Security
@@ -653,6 +671,198 @@ const UserProfile = () => {
                     );
                   })()}
                 </div>
+              </div>
+            )}
+
+            {/* TAB: Orders */}
+            {activeTab === 'orders' && (
+              <div className="profile-section">
+                <div className="profile-section__header">
+                  <h3>
+                    <FiPackage /> {selectedOrderId ? `Order Details: ${orderDetail?.orderId || ''}` : 'My Order History'}
+                  </h3>
+                  {selectedOrderId && (
+                    <button className="profile-section__edit-btn" onClick={() => setSelectedOrderId(null)}>
+                      <FiArrowRight style={{ transform: 'rotate(180deg)', marginRight: '6px' }} /> Back to Orders
+                    </button>
+                  )}
+                </div>
+
+                {ordersLoading ? (
+                  <div className="profile-section__loader" style={{ padding: '40px 0', textAlign: 'center' }}>
+                    <Loader message="Loading orders..." />
+                  </div>
+                ) : !selectedOrderId ? (
+                  myOrders.length === 0 ? (
+                    <div className="orders-empty-state" style={{ padding: '60px 20px', textAlign: 'center' }}>
+                      <div className="orders-empty-state__icon" style={{ fontSize: '3rem', marginBottom: '16px' }}>🛍️</div>
+                      <h4 style={{ fontSize: '1.25rem', marginBottom: '8px', color: 'var(--color-header)' }}>No Orders Placed Yet</h4>
+                      <p style={{ color: '#6B6E7E', marginBottom: '24px' }}>Browse our exciting toys and check out to see your orders here!</p>
+                      <Link to="/shop" className="btn-primary" style={{ padding: '12px 28px', borderRadius: '8px', textDecoration: 'none', display: 'inline-block' }}>Shop Now</Link>
+                    </div>
+                  ) : (
+                    <div className="orders-list">
+                      <div className="orders-list__header-row">
+                        <span>Order ID</span>
+                        <span>Date</span>
+                        <span>Total</span>
+                        <span>Status</span>
+                        <span>Action</span>
+                      </div>
+                      {myOrders.map(order => (
+                        <div className="orders-list__row" key={order._id}>
+                          <span className="orders-list__id">{order.orderId}</span>
+                          <span className="orders-list__date">{new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                          <span className="orders-list__amount">₹{(order.netAmount || 0).toFixed(2)}</span>
+                          <span>
+                            <span className={`status-badge status-badge--${order.status.toLowerCase()}`}>
+                              {order.status}
+                            </span>
+                          </span>
+                          <span>
+                            <button className="orders-list__view-btn" onClick={() => setSelectedOrderId(order._id)}>
+                              <FiEye /> View Details
+                            </button>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : orderDetailLoading ? (
+                  <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                    <Loader message="Loading order details..." />
+                  </div>
+                ) : !orderDetail ? (
+                  <p>Order details could not be found.</p>
+                ) : (
+                  <div className="order-detail-view">
+                    <div className="order-detail-grid">
+                      {/* Left Info Panel */}
+                      <div className="order-detail-left">
+                        <div className="order-detail-card">
+                          <h4>Items Ordered</h4>
+                          <div className="order-detail-items">
+                            {orderDetail.items.map((item, idx) => (
+                              <div className="order-detail-item" key={item._id || idx}>
+                                <img src={item.image || 'placeholder.jpg'} alt={item.productName} />
+                                <div className="order-detail-item__info">
+                                  <h5>{item.productName}</h5>
+                                  {item.skuCode && <span className="order-detail-item__sku">SKU: {item.skuCode}</span>}
+                                  <span className="order-detail-item__qty">Qty: {item.quantity} × ₹{(item.price || 0).toFixed(2)}</span>
+                                </div>
+                                <span className="order-detail-item__total">₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Tracking Section */}
+                        <div className="order-detail-card order-detail-card--tracking">
+                          <h4>Live Parcel Tracking</h4>
+                          {orderDetail.shiprocketAwbNumber ? (
+                            <div className="tracking-section">
+                              <div className="tracking-meta">
+                                <div><strong>Courier:</strong> {orderDetail.shiprocketCourierCompany || 'Shiprocket'}</div>
+                                <div><strong>AWB Number:</strong> {orderDetail.shiprocketAwbNumber}</div>
+                                {orderDetail.shiprocketStatus && (
+                                  <div><strong>Status:</strong> <span className="status-badge status-badge--confirmed">{orderDetail.shiprocketStatus}</span></div>
+                                )}
+                              </div>
+
+                              {/* Progress bar */}
+                              {trackingData?.history ? (
+                                <div className="tracking-timeline">
+                                  {trackingData.history.map((step, idx) => (
+                                    <div key={idx} className={`tracking-step ${step.done ? 'tracking-step--done' : ''}`}>
+                                      <div className="tracking-step__dot">
+                                        {step.done ? <FiCheck /> : null}
+                                      </div>
+                                      <div className="tracking-step__content">
+                                        <div className="tracking-step__title">{step.status}</div>
+                                        {step.activity && <div className="tracking-step__desc">{step.activity}</div>}
+                                        {step.date && (
+                                          <div className="tracking-step__time">
+                                            {new Date(step.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="tracking-pending">Tracking details are being updated by courier partner. Check back shortly.</p>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="tracking-pending-box">
+                              <FiTruck className="tracking-pending-icon" />
+                              <p>Order is pending confirmation. Courier live tracking starts once shipment is booked.</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Right Summary Panel */}
+                      <div className="order-detail-right">
+                        <div className="order-detail-card">
+                          <h4>Shipping Address</h4>
+                          <p className="address-text">
+                            <strong>{orderDetail.shippingAddress.fullName}</strong><br />
+                            {orderDetail.shippingAddress.houseNo && `${orderDetail.shippingAddress.houseNo}, `}
+                            {orderDetail.shippingAddress.street}<br />
+                            {orderDetail.shippingAddress.landmark && `Landmark: ${orderDetail.shippingAddress.landmark}`}
+                            {orderDetail.shippingAddress.landmark && <br />}
+                            {orderDetail.shippingAddress.city}, {orderDetail.shippingAddress.state} - {orderDetail.shippingAddress.zipCode}<br />
+                            <strong>Phone:</strong> {orderDetail.shippingAddress.phone}
+                          </p>
+                        </div>
+
+                        <div className="order-detail-card">
+                          <h4>Payment Information</h4>
+                          <p className="payment-text">
+                            <strong>Method:</strong> {orderDetail.paymentMethod === 'cod' ? 'Cash on Delivery (COD)' : 'Online Payment'}<br />
+                            <strong>Payment Status:</strong> <span className={`status-badge status-badge--${orderDetail.paymentStatus.toLowerCase()}`}>{orderDetail.paymentStatus}</span>
+                          </p>
+                        </div>
+
+                        <div className="order-detail-card">
+                          <h4>Bill Summary</h4>
+                          <div className="bill-summary-row">
+                            <span>Subtotal</span>
+                            <span>₹{(orderDetail.totalItemsPrice || 0).toFixed(2)}</span>
+                          </div>
+                          <div className="bill-summary-row">
+                            <span>Shipping charges</span>
+                            <span>₹{(orderDetail.shippingCharges || 0).toFixed(2)}</span>
+                          </div>
+                          {(orderDetail.couponDiscount || 0) > 0 && (
+                            <div className="bill-summary-row bill-summary-row--discount">
+                              <span>Discount ({orderDetail.couponCode})</span>
+                              <span>-₹{(orderDetail.couponDiscount || 0).toFixed(2)}</span>
+                            </div>
+                          )}
+                          <div className="bill-summary-divider" />
+                          <div className="bill-summary-row bill-summary-row--total">
+                            <span>Total Paid</span>
+                            <span>₹{(orderDetail.netAmount || 0).toFixed(2)}</span>
+                          </div>
+                        </div>
+
+                        {/* Invoice download link */}
+                        {orderDetail.shiprocketInvoiceUrl && (
+                          <a
+                            href={orderDetail.shiprocketInvoiceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-outline order-detail-invoice-btn"
+                          >
+                            <FiPackage /> Download Official Invoice (PDF)
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

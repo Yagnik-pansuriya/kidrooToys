@@ -6,7 +6,7 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useGetSettingsQuery } from '../../../store/ActionApi/settingsApi';
 import { useGetCustomerProfileQuery } from '../../../store/ActionApi/customerAuthApi';
 import { useAddAddressMutation, useSetDefaultAddressMutation } from '../../../store/ActionApi/customerApi';
-import { useCreateOrderMutation, useVerifyPaymentMutation } from '../../../store/ActionApi/orderApi';
+import { useCreateOrderMutation, useVerifyPaymentMutation, useGetShippingEstimateQuery } from '../../../store/ActionApi/orderApi';
 import { useValidateCouponMutation } from '../../../store/ActionApi/couponApi';
 import { useToast } from '../../../context/ToastContext';
 
@@ -89,12 +89,21 @@ const Checkout = () => {
   const [couponApplied, setCouponApplied] = useState(null); // { code, discount, message }
   const [couponError, setCouponError] = useState('');
 
-  // Apply Free Shipping Threshold from settings (defaults to free over ₹1000 if enabled, else flat ₹50 shipping)
+  const normalizedItems = cartItems.map(getItemProps);
+  const selectedAddress = addresses.find(a => a._id === selectedAddressId);
+  const zipCode = selectedAddress?.zipCode || '';
+
+  // Dynamic Shipping Estimate
+  const { data: shippingEst, isFetching: isFetchingShipping } = useGetShippingEstimateQuery(
+    { pincode: zipCode, weight: 0.5 * normalizedItems.length, cod: paymentMethod === 'cod' },
+    { skip: !zipCode || !/^\d{6}$/.test(zipCode) }
+  );
+
+  // Apply Free Shipping Threshold from settings (defaults to free over ₹1000 if enabled, else Shiprocket rate)
   const isFreeShipping = !!(settings?.freeShippingEnabled && cartTotal >= (settings?.freeShippingThreshold ?? 1000));
-  const shipping = isFreeShipping ? 0 : 50;
+  const shipping = isFreeShipping ? 0 : (shippingEst?.data?.shippingCost ?? 50);
 
   const total = cartTotal + shipping - couponDiscount;
-  const normalizedItems = cartItems.map(getItemProps);
 
   // Redirect to cart if empty
   useEffect(() => {
@@ -182,7 +191,7 @@ const Checkout = () => {
     setCouponError('');
   };
 
-  const selectedAddress = addresses.find(a => a._id === selectedAddressId);
+  // selectedAddress is declared at the top of Checkout
 
   const handleNewAddressChange = (field, value) => {
     setNewAddress(prev => ({ ...prev, [field]: value }));
@@ -582,8 +591,23 @@ const Checkout = () => {
                 <span>₹{cartTotal.toFixed(2)}</span>
               </div>
               <div className="order-summary__row">
-                <span>Shipping</span>
-                <span>{shipping === 0 ? <span className="order-summary__free">FREE</span> : `₹${shipping.toFixed(2)}`}</span>
+                <span>
+                  Shipping
+                  {shippingEst?.data?.estimatedDelivery && (
+                    <small style={{ display: 'block', color: '#6B6E7E', fontWeight: 'normal', fontSize: '0.75rem', marginTop: '2px' }}>
+                      Est: {new Date(shippingEst.data.estimatedDelivery).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })} via {shippingEst.data.cheapestCarrier}
+                    </small>
+                  )}
+                </span>
+                <span>
+                  {isFetchingShipping ? (
+                    <span style={{ fontSize: '0.85rem', color: '#8A8D9E' }}>Calculating...</span>
+                  ) : shipping === 0 ? (
+                    <span className="order-summary__free">FREE</span>
+                  ) : (
+                    `₹${shipping.toFixed(2)}`
+                  )}
+                </span>
               </div>
 
               {/* ── Coupon Section ── */}

@@ -75,6 +75,21 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ['Orders'],
     }),
 
+    // POST /api/orders/:id/confirm
+    confirmAdminOrder: builder.mutation({
+      query: (id) => ({
+        url: `${API_ENDPOINTS.ORDERS}/${id}/confirm`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Orders'],
+    }),
+
+    // GET /api/customer/orders/shipping-estimate
+    getShippingEstimate: builder.query({
+      query: ({ pincode, weight = 0.5, cod = false }) => 
+        `${API_ENDPOINTS.CUSTOMER_ORDERS}/shipping-estimate?pincode=${pincode}&weight=${weight}&cod=${cod}`,
+    }),
+
   }),
 });
 
@@ -84,8 +99,12 @@ export const {
   useVerifyPaymentMutation,
   useGetMyOrdersQuery,
   useGetMyOrderByIdQuery,
+  useGetShippingEstimateQuery,
+  useLazyGetShippingEstimateQuery,
   // Admin hooks
   useGetAllOrdersQuery,
   useGetAdminOrderByIdQuery,
   useUpdateOrderStatusMutation,
+  useConfirmAdminOrderMutation,
 } = orderApi;
+

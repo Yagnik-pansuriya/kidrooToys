@@ -575,6 +575,109 @@
   100% { transform: scale(1); }
 }
 
+.pdp__pincode-checker {
+  margin-top: $space-md;
+  padding: $space-md;
+  background: #FAF8F5;
+  border-radius: $radius-xl;
+  border: 1px solid #EAE5DB;
+
+  .pdp__pincode-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-header);
+    margin: 0 0 $space-sm 0;
+
+    svg {
+      color: var(--color-primary);
+    }
+  }
+
+  .pdp__pincode-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: $space-sm;
+  }
+
+  .pdp__pincode-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #D1C7BD;
+    border-radius: $radius-lg;
+    font-size: 0.9rem;
+    color: var(--color-header);
+    background: white;
+    outline: none;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.15);
+    }
+  }
+
+  .pdp__pincode-btn {
+    padding: 10px 20px;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: $radius-lg;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: darkgoldenrod;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .pdp__pincode-results {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: $space-xs;
+    border-top: 1px dashed #E2DACF;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .pdp__pincode-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+
+  .pdp__pincode-label {
+    color: #6B6E7E;
+    font-weight: 500;
+  }
+
+  .pdp__pincode-val {
+    color: var(--color-header);
+    font-weight: 700;
+
+    &--success {
+      color: #15803d;
+    }
+  }
+
+  .pdp__pincode-error {
+    font-size: 0.82rem;
+    color: #b91c1c;
+    font-weight: 600;
+    margin-top: $space-xs;
+    animation: fadeIn 0.3s ease;
+  }
+}
+
 .pdp__trust {
   display: flex;
   gap: $space-xl;

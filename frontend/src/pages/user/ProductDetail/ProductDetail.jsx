@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { useGetProductByIdQuery, useGetRelatedProductsQuery, useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetProductReviewsQuery, useGetProductReviewStatsQuery, useAddReviewMutation } from '../../../store/ActionApi/reviewApi';
 import { useToggleWishlistMutation } from '../../../store/ActionApi/customerApi';
+import { useLazyGetShippingEstimateQuery } from '../../../store/ActionApi/orderApi';
 import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
@@ -79,6 +80,24 @@ const ProductDetail = () => {
 
   // Review form
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, title: '', comment: '' });
+
+  // Pincode shipping estimate state
+  const [pincode, setPincode] = useState('');
+  const [shippingEstimateTrigger, { data: shippingEst, isFetching: shippingEstLoading, error: shippingEstError }] = useLazyGetShippingEstimateQuery();
+
+  const handlePincodeCheck = async (e) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(pincode)) {
+      showError('Please enter a valid 6-digit Indian PIN code');
+      return;
+    }
+    try {
+      await shippingEstimateTrigger({ pincode }).unwrap();
+      showSuccess('Shipping details loaded!');
+    } catch (err) {
+      showError(err?.data?.message || 'Failed to fetch shipping details for this PIN code');
+    }
+  };
 
 
 
@@ -523,6 +542,51 @@ const ProductDetail = () => {
             >
               <FiHeart />
             </button>
+          </div>
+
+          {/* Pincode eligibility checker */}
+          <div className="pdp__pincode-checker">
+            <h4 className="pdp__pincode-title"><FiTruck /> Check Delivery & Shipping</h4>
+            <form onSubmit={handlePincodeCheck} className="pdp__pincode-form">
+              <input
+                type="text"
+                maxLength={6}
+                placeholder="Enter 6-Digit Pin Code"
+                value={pincode}
+                onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                className="pdp__pincode-input"
+              />
+              <button type="submit" disabled={shippingEstLoading} className="pdp__pincode-btn">
+                {shippingEstLoading ? 'Checking...' : 'Check'}
+              </button>
+            </form>
+            
+            {shippingEst?.data && (
+              <div className="pdp__pincode-results">
+                <div className="pdp__pincode-row">
+                  <span className="pdp__pincode-label">Shipping Cost:</span>
+                  <span className="pdp__pincode-val pdp__pincode-val--success">
+                    {shippingEst.data.shippingCost === 0 ? 'FREE' : `₹${shippingEst.data.shippingCost}`}
+                  </span>
+                </div>
+                <div className="pdp__pincode-row">
+                  <span className="pdp__pincode-label">Estimated Delivery:</span>
+                  <span className="pdp__pincode-val">
+                    {shippingEst.data.estimatedDelivery ? new Date(shippingEst.data.estimatedDelivery).toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' }) : '3-5 Days'}
+                  </span>
+                </div>
+                <div className="pdp__pincode-row">
+                  <span className="pdp__pincode-label">Courier Partner:</span>
+                  <span className="pdp__pincode-val">{shippingEst.data.cheapestCarrier}</span>
+                </div>
+              </div>
+            )}
+            
+            {shippingEstError && (
+              <div className="pdp__pincode-error">
+                Delivery not available for PIN: {pincode}
+              </div>
+            )}
           </div>
 
           {/* Warranty & Guarantee badges */}

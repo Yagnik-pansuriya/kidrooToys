@@ -1,256 +1,455 @@
 import { useState } from 'react';
-import { FiEye, FiX, FiSearch, FiPackage, FiLoader } from 'react-icons/fi';
-import { useGetAllOrdersQuery, useUpdateOrderStatusMutation } from '../../../store/ActionApi/orderApi';
+import { 
+  useGetAllOrdersQuery, 
+  useGetAdminOrderByIdQuery, 
+  useUpdateOrderStatusMutation, 
+  useConfirmAdminOrderMutation 
+} from '../../../store/ActionApi/orderApi';
+import { 
+  FiEye, 
+  FiCheck, 
+  FiDownload, 
+  FiPrinter, 
+  FiSearch, 
+  FiFilter, 
+  FiX, 
+  FiClock, 
+  FiTruck, 
+  FiFileText,
+  FiLoader
+} from 'react-icons/fi';
 import { useToast } from '../../../context/ToastContext';
 import Loader from '../../../components/Loader/Loader';
 import './AdminOrders.scss';
 
 const AdminOrders = () => {
   const { showSuccess, showError } = useToast();
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const { data: ordersData, isLoading, refetch } = useGetAllOrdersQuery({
-    status: filterStatus !== 'all' ? filterStatus : undefined,
-    search: searchQuery || undefined,
+  // Search & Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [paymentFilter, setPaymentFilter] = useState('');
+  const [page, setPage] = useState(1);
+
+  // Queries
+  const { data: ordersResp, isLoading: isLoadingList, refetch: refetchList } = useGetAllOrdersQuery({
+    search: searchTerm,
+    status: statusFilter,
+    paymentStatus: paymentFilter,
+    page,
+    limit: 10
   });
-  const [updateOrderStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation();
 
-  const orders = ordersData?.data || [];
+  const orders = ordersResp?.data?.orders || [];
+  const pagination = ordersResp?.data?.pagination || { total: 0, pages: 1 };
 
-  const handleStatusChange = async (orderId, newStatus) => {
+  // Selected Order details
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const { data: detailResp, isLoading: isLoadingDetail } = useGetAdminOrderByIdQuery(selectedOrderId, {
+    skip: !selectedOrderId
+  });
+  const orderDetail = detailResp?.data?.order || null;
+  const trackingData = detailResp?.data?.tracking || null;
+
+  // Mutations
+  const [updateStatus, { isLoading: isUpdatingStatus }] = useUpdateOrderStatusMutation();
+  const [confirmOrder, { isLoading: isConfirming }] = useConfirmAdminOrderMutation();
+
+  // Shiprocket automated confirmation progress modal state
+  const [confirmingOrderId, setConfirmingOrderId] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0); // 0: Idle, 1: Creating Order, 2: Assigning AWB, 3: Printing Documents, 4: Scheduling Pickup, 5: Done
+
+  const handleManualStatusUpdate = async (id, status) => {
     try {
-      await updateOrderStatus({ id: orderId, orderStatus: newStatus }).unwrap();
-      showSuccess(`Order status updated to "${newStatus}"`);
-      if (selectedOrder?._id === orderId) {
-        setSelectedOrder(prev => ({ ...prev, orderStatus: newStatus }));
-      }
+      await updateStatus({ id, status }).unwrap();
+      showSuccess(`Order status updated to ${status}`);
     } catch (err) {
       showError(err?.data?.message || 'Failed to update order status');
     }
   };
 
-  const statuses = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
-
-  const getPaymentBadge = (method) => {
-    if (method === 'online') return <span className="badge badge--online">💳 Razorpay</span>;
-    return <span className="badge badge--cod">🚚 COD</span>;
+  const handleConfirmOrderPipeline = async (id) => {
+    setConfirmingOrderId(id);
+    setCurrentStep(1); // Creating Order in Shiprocket
+    
+    try {
+      // Step 1: Hit API (does order create + AWB assign + document generate + pickup schedule)
+      const res = await confirmOrder(id).unwrap();
+      
+      setCurrentStep(2); // Mock/real progress indicators for user wow-factor
+      await new Promise(r => setTimeout(r, 800));
+      
+      setCurrentStep(3); // Generating AWB
+      await new Promise(r => setTimeout(r, 800));
+      
+      setCurrentStep(4); // Generating Manifests & Labels
+      await new Promise(r => setTimeout(r, 800));
+      
+      setCurrentStep(5); // Scheduling Pickup
+      await new Promise(r => setTimeout(r, 500));
+      
+      showSuccess('Order verified, booked and scheduled via Shiprocket!');
+      refetchList();
+    } catch (err) {
+      showError(err?.data?.message || 'Failed during Shiprocket confirmation pipeline');
+    } finally {
+      // Keep confirmation overlay up for a moment, then close
+      setTimeout(() => {
+        setConfirmingOrderId(null);
+        setCurrentStep(0);
+      }, 1000);
+    }
   };
-
-  const getPaymentStatusBadge = (status) => {
-    const classes = {
-      pending: 'badge--warning',
-      paid: 'badge--success',
-      failed: 'badge--danger',
-      refunded: 'badge--info',
-    };
-    return <span className={`badge ${classes[status] || ''}`}>{status}</span>;
-  };
-
-  const getOrderStatusBadge = (status) => {
-    const classes = {
-      pending: 'badge--warning',
-      confirmed: 'badge--success',
-      processing: 'badge--info',
-      shipped: 'badge--primary',
-      delivered: 'badge--success',
-      cancelled: 'badge--danger',
-    };
-    return <span className={`badge ${classes[status] || ''}`}>{status}</span>;
-  };
-
-  if (isLoading) return <Loader inline message="Loading Orders…" />;
 
   return (
     <div className="admin-orders">
       <div className="admin-orders__header">
-        <h1>Orders 📦</h1>
-        <div className="admin-orders__search">
-          <FiSearch />
-          <input
-            type="text"
-            placeholder="Search by Order ID or customer name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+        <h1>Manage Orders</h1>
+        <p>Confirm orders, allocate courier services and track packages through Shiprocket API.</p>
+      </div>
+
+      {/* Filters & Actions bar */}
+      <div className="admin-orders__filters">
+        <div className="search-box">
+          <FiSearch className="search-icon" />
+          <input 
+            type="text" 
+            placeholder="Search by Order ID, Client Name or Mobile..." 
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
           />
         </div>
+
+        <div className="filter-group">
+          <div className="filter-item">
+            <FiFilter className="filter-icon" />
+            <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending Confirmation</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="filter-item">
+            <FiFilter className="filter-icon" />
+            <select value={paymentFilter} onChange={(e) => { setPaymentFilter(e.target.value); setPage(1); }}>
+              <option value="">Payment Status</option>
+              <option value="Pending">Unpaid</option>
+              <option value="Paid">Paid</option>
+              <option value="Failed">Failed</option>
+            </select>
+          </div>
+        </div>
       </div>
 
-      <div className="admin-orders__filters">
-        {statuses.map(s => (
-          <button
-            key={s}
-            className={`admin-filter-btn ${filterStatus === s ? 'admin-filter-btn--active' : ''}`}
-            onClick={() => setFilterStatus(s)}
-          >
-            {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {orders.length === 0 ? (
-        <div className="admin-orders__empty">
-          <FiPackage />
-          <p>No orders found</p>
+      {/* Main Order Table */}
+      {isLoadingList ? (
+        <Loader message="Loading orders..." />
+      ) : orders.length === 0 ? (
+        <div className="empty-orders">
+          <div className="empty-orders__icon">📦</div>
+          <h3>No Orders Found</h3>
+          <p>No customer orders match the selected filters.</p>
         </div>
       ) : (
-        <div className="admin-orders__table-wrap">
-          <table className="admin-table">
+        <div className="table-container">
+          <table className="admin-orders__table">
             <thead>
               <tr>
                 <th>Order ID</th>
                 <th>Customer</th>
-                <th>Items</th>
-                <th>Total</th>
-                <th>Payment</th>
-                <th>Status</th>
                 <th>Date</th>
+                <th>Amount</th>
+                <th>Payment</th>
+                <th>Order Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
+              {orders.map((order) => (
                 <tr key={order._id}>
-                  <td className="td-bold">{order.orderId}</td>
+                  <td className="order-id-cell">{order.orderId}</td>
                   <td>
-                    {order.customerId?.firstName
-                      ? `${order.customerId.firstName} ${order.customerId.lastName || ''}`
-                      : order.shippingAddress?.fullName || 'N/A'}
-                  </td>
-                  <td>{order.products?.length || 0} item(s)</td>
-                  <td className="td-bold">₹{order.totalAmount?.toFixed(2)}</td>
-                  <td>
-                    <div className="td-badges">
-                      {getPaymentBadge(order.paymentMethod)}
-                      {getPaymentStatusBadge(order.paymentStatus)}
+                    <div className="customer-info-cell">
+                      <strong>{order.customer?.firstName} {order.customer?.lastName}</strong>
+                      <span>{order.customer?.mobile}</span>
                     </div>
                   </td>
+                  <td>{new Date(order.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                  <td className="amount-cell">₹{(order.netAmount || 0).toFixed(2)}</td>
                   <td>
-                    <select
-                      className={`status-select status-select--${order.orderStatus}`}
-                      value={order.orderStatus}
-                      onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                      disabled={isUpdating}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
+                    <span className={`payment-badge payment-badge--${order.paymentStatus.toLowerCase()}`}>
+                      {order.paymentStatus}
+                    </span>
+                    <small className="payment-method-text">{order.paymentMethod === 'cod' ? 'COD' : 'Razorpay'}</small>
                   </td>
-                  <td>{new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
                   <td>
-                    <button className="admin-action-btn admin-action-btn--edit" onClick={() => setSelectedOrder(order)}>
-                      <FiEye />
-                    </button>
+                    <span className={`status-badge status-badge--${order.status.toLowerCase()}`}>
+                      {order.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className="btn-icon btn-icon--view" 
+                        title="View Details"
+                        onClick={() => setSelectedOrderId(order._id)}
+                      >
+                        <FiEye />
+                      </button>
+                      
+                      {order.status === 'Pending' && (
+                        <button 
+                          className="btn-confirm-action"
+                          onClick={() => handleConfirmOrderPipeline(order._id)}
+                          disabled={order.paymentStatus === 'Pending' && order.paymentMethod === 'online'}
+                        >
+                          <FiCheck /> Confirm Order
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {/* Pagination */}
+          {pagination.pages > 1 && (
+            <div className="pagination">
+              <button 
+                disabled={page === 1} 
+                onClick={() => setPage(page - 1)}
+                className="pagination__btn"
+              >
+                Previous
+              </button>
+              <span className="pagination__info">Page {page} of {pagination.pages}</span>
+              <button 
+                disabled={page === pagination.pages} 
+                onClick={() => setPage(page + 1)}
+                className="pagination__btn"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Order Detail Modal */}
-      {selectedOrder && (
-        <div className="admin-modal-overlay" onClick={() => setSelectedOrder(null)}>
-          <div className="admin-modal admin-modal--lg" onClick={(e) => e.stopPropagation()}>
-            <div className="admin-modal__header">
-              <h2>Order {selectedOrder.orderId}</h2>
-              <button onClick={() => setSelectedOrder(null)}><FiX /></button>
+      {/* Details Side-Drawer Panel */}
+      {selectedOrderId && (
+        <div className="details-drawer-overlay" onClick={() => setSelectedOrderId(null)}>
+          <div className="details-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="details-drawer__header">
+              <h3>Order Details: {orderDetail?.orderId}</h3>
+              <button className="close-btn" onClick={() => setSelectedOrderId(null)}>
+                <FiX />
+              </button>
             </div>
-            <div className="order-detail">
-              {/* Order Status & Payment Info */}
-              <div className="order-detail__info-bar">
-                <div>
-                  <span className="order-detail__label">Order Status</span>
-                  {getOrderStatusBadge(selectedOrder.orderStatus)}
-                </div>
-                <div>
-                  <span className="order-detail__label">Payment Method</span>
-                  {getPaymentBadge(selectedOrder.paymentMethod)}
-                </div>
-                <div>
-                  <span className="order-detail__label">Payment Status</span>
-                  {getPaymentStatusBadge(selectedOrder.paymentStatus)}
-                </div>
-                <div>
-                  <span className="order-detail__label">Date</span>
-                  <span>{new Date(selectedOrder.createdAt).toLocaleString('en-IN')}</span>
-                </div>
-              </div>
 
-              {/* Razorpay Details (if online payment) */}
-              {selectedOrder.paymentMethod === 'online' && selectedOrder.razorpayPaymentId && (
-                <div className="order-detail__section order-detail__section--razorpay">
-                  <h4>💳 Razorpay Payment Details</h4>
-                  <div className="order-detail__grid">
-                    <div><span className="order-detail__label">Razorpay Order ID</span><p>{selectedOrder.razorpayOrderId}</p></div>
-                    <div><span className="order-detail__label">Payment ID</span><p>{selectedOrder.razorpayPaymentId}</p></div>
-                    {selectedOrder.paidAt && (
-                      <div><span className="order-detail__label">Paid At</span><p>{new Date(selectedOrder.paidAt).toLocaleString('en-IN')}</p></div>
+            {isLoadingDetail ? (
+              <Loader message="Loading details..." />
+            ) : !orderDetail ? (
+              <div className="p-4">Failed to load order information.</div>
+            ) : (
+              <div className="details-drawer__content">
+                
+                {/* Status Update section */}
+                <div className="drawer-section drawer-section--status">
+                  <h4>Status Manager</h4>
+                  <div className="status-mgr-row">
+                    <div className="select-wrapper">
+                      <select 
+                        value={orderDetail.status} 
+                        onChange={(e) => handleManualStatusUpdate(orderDetail._id, e.target.value)}
+                        disabled={isUpdatingStatus}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                    
+                    {orderDetail.status === 'Pending' && (
+                      <button 
+                        className="btn-confirm-action" 
+                        onClick={() => handleConfirmOrderPipeline(orderDetail._id)}
+                      >
+                        Confirm & Book Shiprocket
+                      </button>
                     )}
                   </div>
                 </div>
-              )}
 
-              {/* Customer Info */}
-              <div className="order-detail__section">
-                <h4>👤 Customer Info</h4>
-                <p>
-                  <strong>
-                    {selectedOrder.customerId?.firstName
-                      ? `${selectedOrder.customerId.firstName} ${selectedOrder.customerId.lastName || ''}`
-                      : 'N/A'}
-                  </strong>
-                </p>
-                {selectedOrder.customerId?.email && <p>📧 {selectedOrder.customerId.email}</p>}
-                {selectedOrder.customerId?.mobile && <p>📱 {selectedOrder.customerId.mobile}</p>}
-              </div>
-
-              {/* Shipping Address */}
-              {selectedOrder.shippingAddress && (
-                <div className="order-detail__section">
-                  <h4>📍 Shipping Address</h4>
-                  <p><strong>{selectedOrder.shippingAddress.fullName}</strong></p>
-                  <p>{selectedOrder.shippingAddress.houseNo && `${selectedOrder.shippingAddress.houseNo}, `}{selectedOrder.shippingAddress.street}</p>
-                  {selectedOrder.shippingAddress.landmark && <p><em>{selectedOrder.shippingAddress.landmark}</em></p>}
-                  <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} - {selectedOrder.shippingAddress.zipCode}</p>
-                  <p>📱 {selectedOrder.shippingAddress.phone}</p>
-                </div>
-              )}
-
-              {/* Items */}
-              <div className="order-detail__section">
-                <h4>📦 Items</h4>
-                {selectedOrder.products?.map((item, i) => (
-                  <div className="order-detail__item" key={i}>
-                    <img src={item.productImage} alt={item.productName} />
-                    <div>
-                      <span className="order-detail__item-name">{item.productName}</span>
-                      {item.variantName && <span className="order-detail__item-variant">{item.variantName}</span>}
-                      <span className="order-detail__item-qty">Qty: {item.quantity} × ₹{item.price?.toFixed(2)}</span>
+                {/* Shiprocket Documents Download */}
+                {orderDetail.shiprocketOrderId && (
+                  <div className="drawer-section drawer-section--docs">
+                    <h4>Shiprocket Shipping Materials</h4>
+                    <div className="docs-grid">
+                      {orderDetail.shiprocketLabelUrl && (
+                        <a href={orderDetail.shiprocketLabelUrl} target="_blank" rel="noreferrer" className="doc-link">
+                          <FiPrinter /> Shipping Label
+                        </a>
+                      )}
+                      {orderDetail.shiprocketInvoiceUrl && (
+                        <a href={orderDetail.shiprocketInvoiceUrl} target="_blank" rel="noreferrer" className="doc-link">
+                          <FiFileText /> Customer Invoice
+                        </a>
+                      )}
+                      {orderDetail.shiprocketManifestUrl && (
+                        <a href={orderDetail.shiprocketManifestUrl} target="_blank" rel="noreferrer" className="doc-link">
+                          <FiDownload /> Courier Manifest
+                        </a>
+                      )}
                     </div>
-                    <span className="order-detail__item-total">₹{(item.quantity * item.price)?.toFixed(2)}</span>
                   </div>
-                ))}
-              </div>
+                )}
 
-              {/* Summary */}
-              <div className="order-detail__summary">
-                <div className="order-detail__row"><span>Subtotal</span><span>₹{selectedOrder.subTotal?.toFixed(2)}</span></div>
-                <div className="order-detail__row"><span>Shipping</span><span>{selectedOrder.shippingCost === 0 ? 'FREE' : `₹${selectedOrder.shippingCost?.toFixed(2)}`}</span></div>
-                {selectedOrder.tax > 0 && <div className="order-detail__row"><span>Tax</span><span>₹{selectedOrder.tax?.toFixed(2)}</span></div>}
-                {selectedOrder.discount > 0 && <div className="order-detail__row"><span>Discount</span><span>-₹{selectedOrder.discount?.toFixed(2)}</span></div>}
-                <div className="order-detail__row order-detail__row--total"><span>Total</span><span>₹{selectedOrder.totalAmount?.toFixed(2)}</span></div>
+                {/* Items grid */}
+                <div className="drawer-section">
+                  <h4>Items Summary</h4>
+                  <div className="drawer-items">
+                    {orderDetail.items.map((item, idx) => (
+                      <div className="drawer-item" key={item._id || idx}>
+                        <img src={item.image || 'placeholder.jpg'} alt={item.productName} />
+                        <div className="drawer-item__info">
+                          <h5>{item.productName}</h5>
+                          {item.skuCode && <span className="sku">SKU: {item.skuCode}</span>}
+                          <span className="qty">{item.quantity} × ₹{(item.price || 0).toFixed(2)}</span>
+                        </div>
+                        <span className="total">₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ship Address */}
+                <div className="drawer-section">
+                  <h4>Delivery Address</h4>
+                  <p className="address-block">
+                    <strong>{orderDetail.shippingAddress.fullName}</strong><br />
+                    {orderDetail.shippingAddress.houseNo && `${orderDetail.shippingAddress.houseNo}, `}
+                    {orderDetail.shippingAddress.street}<br />
+                    {orderDetail.shippingAddress.landmark && `Landmark: ${orderDetail.shippingAddress.landmark}`}<br />
+                    {orderDetail.shippingAddress.city}, {orderDetail.shippingAddress.state} - {orderDetail.shippingAddress.zipCode}<br />
+                    <strong>Tel:</strong> {orderDetail.shippingAddress.phone}
+                  </p>
+                </div>
+
+                {/* Bill Breakdown */}
+                <div className="drawer-section">
+                  <h4>Payment Breakdown</h4>
+                  <div className="breakdown-list">
+                    <div className="breakdown-row">
+                      <span>Subtotal</span>
+                      <span>₹{(orderDetail.totalItemsPrice || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="breakdown-row">
+                      <span>Shipping Fees</span>
+                      <span>₹{(orderDetail.shippingCharges || 0).toFixed(2)}</span>
+                    </div>
+                    {(orderDetail.couponDiscount || 0) > 0 && (
+                      <div className="breakdown-row breakdown-row--discount">
+                        <span>Discount ({orderDetail.couponCode})</span>
+                        <span>-₹{(orderDetail.couponDiscount || 0).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="breakdown-divider" />
+                    <div className="breakdown-row breakdown-row--total">
+                      <span>Net Total</span>
+                      <span>₹{(orderDetail.netAmount || 0).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shiprocket Tracker details */}
+                <div className="drawer-section">
+                  <h4>Fulfillment Tracking</h4>
+                  {orderDetail.shiprocketAwbNumber ? (
+                    <div className="tracking-summary">
+                      <div className="tracking-grid-meta">
+                        <div><strong>Courier:</strong> {orderDetail.shiprocketCourierCompany}</div>
+                        <div><strong>AWB Code:</strong> {orderDetail.shiprocketAwbNumber}</div>
+                        <div><strong>Shiprocket ID:</strong> {orderDetail.shiprocketOrderId}</div>
+                      </div>
+
+                      {trackingData?.history ? (
+                        <div className="tracking-steps-log">
+                          {trackingData.history.map((step, idx) => (
+                            <div key={idx} className={`log-step ${step.done ? 'log-step--done' : ''}`}>
+                              <span className="log-step__bullet"></span>
+                              <div className="log-step__info">
+                                <span className="log-step__title">{step.status}</span>
+                                {step.activity && <span className="log-step__desc">{step.activity}</span>}
+                                {step.date && <span className="log-step__time">{new Date(step.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="no-log">Courier tracking information is being calculated. Please check back shortly.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="no-log">Order is not confirmed yet. Click 'Confirm Order' to book with Shiprocket and generate tracking numbers.</p>
+                  )}
+                </div>
+
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
+
+      {/* Automated Stepper Progress Modal */}
+      {confirmingOrderId && (
+        <div className="stepper-modal-overlay">
+          <div className="stepper-modal">
+            <h3><FiLoader className="stepper-spinner" /> Shiprocket Fulfillment Pipeline</h3>
+            <p>Automating parcel booking and shipping generation. Please do not close this window.</p>
+            
+            <div className="steps-container">
+              <div className={`step-item ${currentStep >= 1 ? 'step-item--active' : ''} ${currentStep > 1 ? 'step-item--done' : ''}`}>
+                <div className="step-badge">{currentStep > 1 ? <FiCheck /> : '1'}</div>
+                <span>Syncing Order to Shiprocket</span>
+              </div>
+              
+              <div className={`step-item ${currentStep >= 2 ? 'step-item--active' : ''} ${currentStep > 2 ? 'step-item--done' : ''}`}>
+                <div className="step-badge">{currentStep > 2 ? <FiCheck /> : '2'}</div>
+                <span>Checking Courier rates & routes</span>
+              </div>
+
+              <div className={`step-item ${currentStep >= 3 ? 'step-item--active' : ''} ${currentStep > 3 ? 'step-item--done' : ''}`}>
+                <div className="step-badge">{currentStep > 3 ? <FiCheck /> : '3'}</div>
+                <span>Registering AWB Tracking Code</span>
+              </div>
+
+              <div className={`step-item ${currentStep >= 4 ? 'step-item--active' : ''} ${currentStep > 4 ? 'step-item--done' : ''}`}>
+                <div className="step-badge">{currentStep > 4 ? <FiCheck /> : '4'}</div>
+                <span>Compiling Labels, manifests & invoice PDFs</span>
+              </div>
+
+              <div className={`step-item ${currentStep >= 5 ? 'step-item--active' : ''} ${currentStep > 5 ? 'step-item--done' : ''}`}>
+                <div className="step-badge">{currentStep > 5 ? <FiCheck /> : '5'}</div>
+                <span>Scheduling Courier driver pickup</span>
+              </div>
+            </div>
+
+            {currentStep === 5 && (
+              <div className="stepper-success">
+                🎉 Step Completed Successfully!
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
