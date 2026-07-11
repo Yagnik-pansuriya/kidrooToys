@@ -13,10 +13,19 @@ export const customerAuthApi = baseApi.injectEndpoints({
       }),
     }),
 
-    // POST /api/customer/auth/send-otp
+    // POST /api/customer/auth/resend-otp
+    resendOTP: builder.mutation({
+      query: (body) => ({
+        url: 'customer/auth/resend-otp',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    // POST /api/customer/auth/resend-otp (alias for legacy sendOTP hook name)
     sendOTP: builder.mutation({
       query: (body) => ({
-        url: 'customer/auth/send-otp',
+        url: 'customer/auth/resend-otp',
         method: 'POST',
         body,
       }),
@@ -90,6 +99,7 @@ export const customerAuthApi = baseApi.injectEndpoints({
 
 export const {
   useCustomerSignupMutation,
+  useResendOTPMutation,
   useSendOTPMutation,
   useVerifyOTPMutation,
   useCustomerLoginMutation,
