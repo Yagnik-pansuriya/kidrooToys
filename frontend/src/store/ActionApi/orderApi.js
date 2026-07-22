@@ -84,6 +84,12 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ['Orders'],
     }),
 
+    // GET /api/orders/analytics?timeframe=weekly|monthly|yearly
+    getDashboardAnalytics: builder.query({
+      query: (timeframe = 'monthly') => `${API_ENDPOINTS.ORDERS}/analytics?timeframe=${timeframe}`,
+      providesTags: ['Orders'],
+    }),
+
     // GET /api/customer/orders/shipping-estimate
     getShippingEstimate: builder.query({
       query: ({ pincode, weight = 0.5, cod = false }) => 
@@ -106,5 +112,6 @@ export const {
   useGetAdminOrderByIdQuery,
   useUpdateOrderStatusMutation,
   useConfirmAdminOrderMutation,
+  useGetDashboardAnalyticsQuery,
 } = orderApi;
 
