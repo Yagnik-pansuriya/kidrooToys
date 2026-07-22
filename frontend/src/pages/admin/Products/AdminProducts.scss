@@ -531,6 +531,113 @@
   }
 }
 
+// ── Error field styling ──────────────────────────────────────────
+.admin-field--error {
+  label {
+    color: #ef4444 !important;
+  }
+}
+
+input.has-error,
+select.has-error,
+textarea.has-error {
+  border-color: #ef4444 !important;
+  background-color: #fff8f8 !important;
+
+  &:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+    outline: none !important;
+  }
+}
+
+.admin-field__group {
+  input.has-error {
+    border-color: #ef4444 !important;
+  }
+}
+
+.admin-quill-wrap.has-error {
+  .ql-toolbar {
+    border-color: #ef4444 !important;
+    background-color: #fffdfd;
+  }
+  .ql-container {
+    border-color: #ef4444 !important;
+    background-color: #fff8f8;
+  }
+}
+
+.admin-category-grid.has-error {
+  border: 2px dashed #ef4444 !important;
+  padding: 8px;
+  border-radius: 8px;
+  background-color: #fff8f8;
+}
+
+.admin-image-grid.has-error {
+  border: 2px dashed #ef4444 !important;
+  padding: 12px;
+  border-radius: 12px;
+  background-color: #fff8f8;
+}
+
+.admin-bullet-list.has-error {
+  .admin-bullet-row__input {
+    border-color: #ef4444 !important;
+    background-color: #fff8f8 !important;
+  }
+}
+
+.admin-field__error {
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  svg {
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+}
+
+.form-group--has-error {
+  border-color: rgba(239, 68, 68, 0.5) !important;
+
+  .form-group__header {
+    background: #fff5f5 !important;
+  }
+
+  .form-group__title {
+    color: #dc2626 !important;
+  }
+
+  .form-group__icon {
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+  }
+}
+
+.form-group__error-badge {
+  background: #ef4444;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: $radius-full;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+
+  svg {
+    font-size: 0.85rem;
+  }
+}
+
 // ─── Image grid ──────────────────────────────────────────────────────────────
 .admin-image-grid {
   display: flex;

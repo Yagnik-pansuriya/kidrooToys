@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useToast } from '../../../../context/ToastContext';
-import { emptyForm, generateProductCode, MAX_IMAGES } from '../constants/productConstants';
+import { emptyForm, generateProductCode, MAX_IMAGES, validateProductForm } from '../constants/productConstants';
 import { useAddProductMutation, useDeleteProductMutation, useUpdateProductMutation } from '../../../../store/ActionApi/productApi';
 
 /**
@@ -22,16 +22,27 @@ const useProductForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [editing,   setEditing]   = useState(null);   // null = add mode
   const [form,      setForm]      = useState(emptyForm);
+  const [errors,    setErrors]    = useState({});
   const [productToDelete, setProductToDelete] = useState(null);
   const [apiError,  setApiError]  = useState('');
 
   const { showSuccess, showError } = useToast();
   const fileInputRef = useRef(null);
 
+  const clearError = (key) => {
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const copy = { ...prev };
+      delete copy[key];
+      return copy;
+    });
+  };
+
   // ── Modal helpers ────────────────────────────────────────────
   const openAdd = () => {
     setEditing(null);
     setForm({ ...emptyForm, productCode: generateProductCode() });
+    setErrors({});
     setApiError('');
     setShowModal(true);
   };
@@ -119,6 +130,7 @@ const useProductForm = () => {
         ? product.specifications.map((s) => ({ key: s.key || '', value: s.value || '' }))
         : [],
     });
+    setErrors({});
     setApiError('');
     setShowModal(true);
   };
@@ -141,6 +153,7 @@ const useProductForm = () => {
         previewUrls: [...prev.previewUrls, ...newUrls],
       };
     });
+    clearError('images');
   };
 
   const handleRemoveImage = (index) => {
@@ -223,6 +236,24 @@ const useProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError('');
+
+    // Frontend validation check
+    const validationErrors = validateProductForm(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      const firstMsg = Object.values(validationErrors)[0];
+      setApiError(firstMsg || 'Please fix the highlighted errors before submitting.');
+      showError('Please fix the errors in the form before submitting.');
+
+      setTimeout(() => {
+        const errEl = document.querySelector('.admin-field--error, .has-error, .admin-field__error');
+        if (errEl) {
+          errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return;
+    }
+
     const fd = buildFormData();
 
     try {
@@ -264,6 +295,7 @@ const useProductForm = () => {
     showModal,
     editing,
     form,
+    errors,
     apiError,
     fileInputRef,
     categoryOptions,
@@ -274,6 +306,8 @@ const useProductForm = () => {
     isBusy: adding || updating,
     // handlers
     setForm,
+    setErrors,
+    clearError,
     openAdd,
     openEdit,
     closeModal,

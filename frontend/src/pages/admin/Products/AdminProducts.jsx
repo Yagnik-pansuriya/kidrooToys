@@ -95,10 +95,10 @@ const AdminProducts = () => {
 
   // ── Form / CRUD logic (custom hook) ──────────────────────────
   const {
-    showModal, editing, form, apiError,
+    showModal, editing, form, errors, apiError,
     isBusy, deleting,
     categoryOptions, fileInputRef,
-    setForm,
+    setForm, clearError,
     openAdd, openEdit, closeModal,
     handleAddImages, handleRemoveImage,
     handleSubmit, handleDelete,
@@ -247,12 +247,14 @@ const AdminProducts = () => {
         <ProductModal
           editing={editing}
           form={form}
+          errors={errors}
           apiError={apiError}
           isBusy={isBusy}
           categoryOptions={categoryOptions}
           skillOptions={skillOptions}
           fileInputRef={fileInputRef}
           setForm={setForm}
+          clearError={clearError}
           onSubmit={handleSubmit}
           onClose={closeModal}
           onAddImages={handleAddImages}
