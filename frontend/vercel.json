@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "https://kidroo-backend.vercel.app/api/sitemap.xml"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://kidroo-backend.vercel.app/api/:path*"
     },

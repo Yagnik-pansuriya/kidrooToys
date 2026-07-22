@@ -85,8 +85,4 @@ User-agent: Google-Extended
 Disallow: /
 
 # Sitemaps
-Sitemap: https://kidrootoys.com/sitemap.xml
-Sitemap: https://kidroo-backend.vercel.app/api/sitemap.xml
-
-# Host directive
-Host: https://kidrootoys.com
+Sitemap: https://kidroo.in/sitemap.xml
