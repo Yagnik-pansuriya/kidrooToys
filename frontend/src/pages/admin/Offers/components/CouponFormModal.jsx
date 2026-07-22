@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiSearch } from 'react-icons/fi';
+import { FiX, FiSearch, FiCheck, FiTag, FiFileText, FiGlobe, FiLock, FiPercent, FiDollarSign, FiCalendar, FiUser, FiPackage, FiArrowRight, FiArrowLeft } from 'react-icons/fi';
 import { initialCouponForm } from '../constants/offerConstants';
 import { useGetProductsQuery } from '../../../../store/ActionApi/productApi';
 
@@ -69,13 +69,13 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
       if (!form.description.trim()) errs.description = 'Description is required';
     }
     if (modalStep === 2) {
-      if (!form.discountValue || form.discountValue <= 0) errs.discountValue = 'Valid discount is required';
+      if (!form.discountValue || form.discountValue <= 0) errs.discountValue = 'Valid discount value is required';
       if (!form.validFrom) errs.validFrom = 'Start date is required';
       if (!form.validTo) errs.validTo = 'End date is required';
     }
     if (modalStep === 3) {
       if (form.isSpecificProduct && form.applicableProducts.length === 0) {
-        errs.applicableProducts = 'Select at least one product';
+        errs.applicableProducts = 'Please select at least one product';
       }
     }
     setErrors(errs);
@@ -95,206 +95,327 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
 
   return (
     <div className="offer-modal-overlay" onClick={onClose}>
-      <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="offer-modal premium-modal" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Header */}
         <div className="modal-header">
-          <h2>{editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}</h2>
+          <div className="modal-header-title">
+            <div className="modal-header-icon">🎟️</div>
+            <div>
+              <h2>{editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}</h2>
+              <p>Configure promo codes, discount values, and customer usage limits</p>
+            </div>
+          </div>
           <button className="modal-close" onClick={onClose}><FiX /></button>
         </div>
 
-        <div className="modal-body">
-          {/* Step indicator */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
-            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 1 ? 'var(--primary)' : '#EEE' }}></div>
-            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 2 ? 'var(--primary)' : '#EEE' }}></div>
-            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 3 ? 'var(--primary)' : '#EEE' }}></div>
+        {/* Stepper Navigation Bar */}
+        <div className="modal-stepper-bar">
+          <div className={`stepper-step ${modalStep >= 1 ? 'active' : ''} ${modalStep > 1 ? 'completed' : ''}`} onClick={() => modalStep > 1 && setModalStep(1)}>
+            <div className="step-circle">{modalStep > 1 ? <FiCheck /> : 1}</div>
+            <span className="step-text">Basic Details</span>
           </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-            Step {modalStep} of 3 — {modalStep === 1 ? 'Basic Details' : modalStep === 2 ? 'Rules & Limits' : 'Applicability & Review'}
+          <div className="stepper-line"></div>
+          <div className={`stepper-step ${modalStep >= 2 ? 'active' : ''} ${modalStep > 2 ? 'completed' : ''}`} onClick={() => modalStep > 2 && setModalStep(2)}>
+            <div className="step-circle">{modalStep > 2 ? <FiCheck /> : 2}</div>
+            <span className="step-text">Rules & Limits</span>
           </div>
+          <div className="stepper-line"></div>
+          <div className={`stepper-step ${modalStep === 3 ? 'active' : ''}`}>
+            <div className="step-circle">3</div>
+            <span className="step-text">Scope & Save</span>
+          </div>
+        </div>
 
+        <div className="modal-body">
           <form id="couponForm" onSubmit={handleSubmit}>
             
             {/* STEP 1: Basic Details */}
-            <div style={{ display: modalStep === 1 ? 'block' : 'none' }}>
-              <div className="section-divider">Coupon Identity</div>
-              <div className="form-group">
-                <label>Coupon Code *</label>
-                <input type="text" value={form.code} placeholder="e.g. SUMMER20"
-                  onChange={(e) => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
-                  style={{ textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '1px' }} />
-                {errors.code && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.code}</span>}
-              </div>
+            {modalStep === 1 && (
+              <div className="step-content">
+                <div className="section-title-badge">COUPON IDENTITY</div>
+                
+                <div className="form-group">
+                  <label className="form-label">
+                    <FiTag className="icon-inline" /> Coupon Code <span className="req">*</span>
+                  </label>
+                  <div className="input-with-icon">
+                    <input 
+                      type="text" 
+                      value={form.code} 
+                      placeholder="e.g. WELCOME20"
+                      onChange={(e) => setForm(p => ({ ...p, code: e.target.value.toUpperCase() }))}
+                      className="coupon-code-input"
+                    />
+                    <span className="code-badge-hint">AUTO-CAPS</span>
+                  </div>
+                  {errors.code && <span className="form-error-msg">{errors.code}</span>}
+                </div>
 
-              <div className="form-group">
-                <label>Description *</label>
-                <textarea value={form.description} rows={2} placeholder="e.g. Get 20% off on all summer toys!"
-                  onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} />
-                {errors.description && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.description}</span>}
-              </div>
+                <div className="form-group">
+                  <label className="form-label">
+                    <FiFileText className="icon-inline" /> Description <span className="req">*</span>
+                  </label>
+                  <textarea 
+                    value={form.description} 
+                    rows={3} 
+                    placeholder="e.g. Get 20% flat discount on all wooden educational toys during summer sale!"
+                    onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} 
+                  />
+                  {errors.description && <span className="form-error-msg">{errors.description}</span>}
+                </div>
 
-              <div className="section-divider">Visibility</div>
-              <div className="display-picker">
-                <div className={`display-opt ${form.visibility === 'public' ? 'selected' : ''}`}
-                  onClick={() => setForm(p => ({ ...p, visibility: 'public' }))}>
-                  <div className="d-icon">🌐</div>
-                  <div>
-                    <div className="d-label">Public</div>
-                    <div className="d-sub">Visible to everyone</div>
+                <div className="section-title-badge" style={{ marginTop: '24px' }}>VISIBILITY & PERMISSIONS</div>
+                
+                <div className="card-selector-grid">
+                  <div 
+                    className={`selector-card ${form.visibility === 'public' ? 'selected' : ''}`}
+                    onClick={() => setForm(p => ({ ...p, visibility: 'public' }))}
+                  >
+                    <div className="selector-card-icon blue-bg"><FiGlobe /></div>
+                    <div className="selector-card-info">
+                      <div className="selector-card-title">Public Coupon</div>
+                      <div className="selector-card-sub">Visible to all shoppers on cart & offers page</div>
+                    </div>
+                    {form.visibility === 'public' && <div className="card-check-badge"><FiCheck /></div>}
+                  </div>
+
+                  <div 
+                    className={`selector-card ${form.visibility === 'private' ? 'selected' : ''}`}
+                    onClick={() => setForm(p => ({ ...p, visibility: 'private' }))}
+                  >
+                    <div className="selector-card-icon amber-bg"><FiLock /></div>
+                    <div className="selector-card-info">
+                      <div className="selector-card-title">Private Code</div>
+                      <div className="selector-card-sub">Hidden from site. Requires manual code entry</div>
+                    </div>
+                    {form.visibility === 'private' && <div className="card-check-badge"><FiCheck /></div>}
                   </div>
                 </div>
-                <div className={`display-opt ${form.visibility === 'private' ? 'selected' : ''}`}
-                  onClick={() => setForm(p => ({ ...p, visibility: 'private' }))}>
-                  <div className="d-icon">🔒</div>
-                  <div>
-                    <div className="d-label">Private</div>
-                    <div className="d-sub">Hidden, requires code</div>
-                  </div>
-                </div>
               </div>
-            </div>
+            )}
 
             {/* STEP 2: Rules & Limits */}
-            <div style={{ display: modalStep === 2 ? 'block' : 'none' }}>
-              <div className="section-divider">Discount Value</div>
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Discount Type *</label>
-                  <select value={form.discountType} onChange={(e) => setForm(p => ({ ...p, discountType: e.target.value }))}>
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (₹)</option>
-                  </select>
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Discount Value *</label>
-                  <input type="number" min="0" value={form.discountValue}
-                    onChange={(e) => setForm(p => ({ ...p, discountValue: e.target.value }))}
-                    placeholder={form.discountType === 'percentage' ? 'e.g. 20' : 'e.g. 200'} />
-                  {errors.discountValue && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.discountValue}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Min Order Amount (₹)</label>
-                  <input type="number" min="0" value={form.minOrderAmount}
-                    onChange={(e) => setForm(p => ({ ...p, minOrderAmount: e.target.value }))} placeholder="0 = no min" />
-                </div>
-                {form.discountType === 'percentage' && (
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label>Max Discount (₹)</label>
-                    <input type="number" min="0" value={form.maxDiscount}
-                      onChange={(e) => setForm(p => ({ ...p, maxDiscount: e.target.value }))} placeholder="No cap" />
+            {modalStep === 2 && (
+              <div className="step-content">
+                <div className="section-title-badge">DISCOUNT CONFIGURATION</div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Discount Type <span className="req">*</span></label>
+                    <div className="custom-select-wrap">
+                      <select value={form.discountType} onChange={(e) => setForm(p => ({ ...p, discountType: e.target.value }))}>
+                        <option value="percentage">Percentage (%) Discount</option>
+                        <option value="fixed">Fixed Amount (₹) Off</option>
+                      </select>
+                    </div>
                   </div>
-                )}
-              </div>
 
-              <div className="section-divider">Validity & Limits</div>
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Valid From *</label>
-                  <input type="date" value={form.validFrom} min={todayStr()}
-                    onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} />
-                  {errors.validFrom && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.validFrom}</span>}
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Valid To *</label>
-                  <input type="date" value={form.validTo} min={form.validFrom || todayStr()}
-                    onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} />
-                  {errors.validTo && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.validTo}</span>}
-                </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Total Uses Limit</label>
-                  <input type="number" min="1" value={form.usageLimit}
-                    onChange={(e) => setForm(p => ({ ...p, usageLimit: parseInt(e.target.value) || 1 }))} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Per User Limit</label>
-                  <input type="number" min="1" value={form.perUserLimit}
-                    onChange={(e) => setForm(p => ({ ...p, perUserLimit: parseInt(e.target.value) || 1 }))} />
-                </div>
-              </div>
-            </div>
-
-            {/* STEP 3: Applicability */}
-            <div style={{ display: modalStep === 3 ? 'block' : 'none' }}>
-              <div className="section-divider">Coupon Scope</div>
-              <div className="display-picker">
-                <div className={`display-opt ${!form.isSpecificProduct ? 'selected' : ''}`}
-                  onClick={() => setForm(p => ({ ...p, isSpecificProduct: false, applicableProducts: [] }))}>
-                  <div className="d-icon">🛒</div>
-                  <div>
-                    <div className="d-label">Any Product</div>
-                    <div className="d-sub">Applies to all products in cart</div>
+                  <div className="form-group">
+                    <label className="form-label">
+                      Discount Value ({form.discountType === 'percentage' ? '%' : '₹'}) <span className="req">*</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={form.discountValue}
+                      onChange={(e) => setForm(p => ({ ...p, discountValue: e.target.value }))}
+                      placeholder={form.discountType === 'percentage' ? 'e.g. 20' : 'e.g. 250'} 
+                    />
+                    {errors.discountValue && <span className="form-error-msg">{errors.discountValue}</span>}
                   </div>
                 </div>
-                <div className={`display-opt ${form.isSpecificProduct ? 'selected' : ''}`}
-                  onClick={() => setForm(p => ({ ...p, isSpecificProduct: true }))}>
-                  <div className="d-icon">🎁</div>
-                  <div>
-                    <div className="d-label">Specific Products</div>
-                    <div className="d-sub">Only applies to chosen products</div>
-                  </div>
-                </div>
-              </div>
 
-              {form.isSpecificProduct && (
-                <div className="form-group">
-                  <label>Select Products</label>
-                  <div style={{ position: 'relative', marginBottom: '10px' }}>
-                    <FiSearch style={{ position: 'absolute', left: '10px', top: '12px', color: '#888' }} />
-                    <input type="text" placeholder="Search..." value={productSearch}
-                      onChange={(e) => setProductSearch(e.target.value)}
-                      style={{ paddingLeft: '32px' }} />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Min Order Amount (₹)</label>
+                    <input 
+                      type="number" 
+                      min="0" 
+                      value={form.minOrderAmount}
+                      onChange={(e) => setForm(p => ({ ...p, minOrderAmount: e.target.value }))} 
+                      placeholder="0 = No minimum required" 
+                    />
                   </div>
-                  {errors.applicableProducts && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.applicableProducts}</span>}
-                  
-                  <div style={{ maxHeight: '160px', overflowY: 'auto', border: '1px solid #EEE', borderRadius: '8px', padding: '8px' }}>
-                    {productList.map(product => {
-                      const pid = product._id || product.id;
-                      const isSelected = form.applicableProducts.includes(pid);
-                      return (
-                        <label key={pid} className="check-row" style={{ padding: '6px', borderRadius: '4px', background: isSelected ? '#FAFAFA' : 'transparent', marginBottom: 0 }}>
-                          <input type="checkbox" checked={isSelected} onChange={() => toggleProduct(pid)} />
-                          <span style={{ flex: 1 }}>{product.productName || product.name}</span>
-                          <span style={{ fontWeight: 700, fontSize: '12px' }}>₹{product.price}</span>
-                        </label>
-                      );
-                    })}
-                    {productList.length === 0 && <div style={{ fontSize: '12px', color: '#888', padding: '10px', textAlign: 'center' }}>No products found</div>}
-                  </div>
-                  {form.applicableProducts.length > 0 && (
-                    <div style={{ fontSize: '12px', color: 'var(--success)', marginTop: '6px' }}>{form.applicableProducts.length} product(s) selected</div>
+
+                  {form.discountType === 'percentage' && (
+                    <div className="form-group">
+                      <label className="form-label">Max Discount Cap (₹)</label>
+                      <input 
+                        type="number" 
+                        min="0" 
+                        value={form.maxDiscount}
+                        onChange={(e) => setForm(p => ({ ...p, maxDiscount: e.target.value }))} 
+                        placeholder="Leave blank for no cap" 
+                      />
+                    </div>
                   )}
                 </div>
-              )}
 
-              <div className="section-divider">Options</div>
-              <div className="check-row">
-                <input type="checkbox" id="chk_active_c" checked={form.isActive} onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} />
-                <label htmlFor="chk_active_c">Make coupon active immediately</label>
-              </div>
+                <div className="section-title-badge" style={{ marginTop: '24px' }}>VALIDITY DATES & USAGE LIMITS</div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label"><FiCalendar className="icon-inline" /> Valid From <span className="req">*</span></label>
+                    <input 
+                      type="date" 
+                      value={form.validFrom} 
+                      min={todayStr()}
+                      onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} 
+                    />
+                    {errors.validFrom && <span className="form-error-msg">{errors.validFrom}</span>}
+                  </div>
 
-              <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius)', padding: '14px', marginTop: '20px', fontSize: '13px', color: 'var(--primary)', fontWeight: 700 }}>
-                ✅ Review your coupon settings. 
-                <br/>Code: <strong>{form.code}</strong> - {form.discountType === 'percentage' ? `${form.discountValue}%` : `₹${form.discountValue}`} Off
+                  <div className="form-group">
+                    <label className="form-label"><FiCalendar className="icon-inline" /> Valid Until <span className="req">*</span></label>
+                    <input 
+                      type="date" 
+                      value={form.validTo} 
+                      min={form.validFrom || todayStr()}
+                      onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} 
+                    />
+                    {errors.validTo && <span className="form-error-msg">{errors.validTo}</span>}
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label"><FiUser className="icon-inline" /> Total Global Redemptions</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={form.usageLimit}
+                      onChange={(e) => setForm(p => ({ ...p, usageLimit: parseInt(e.target.value) || 1 }))} 
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label"><FiUser className="icon-inline" /> Redemptions Per Customer</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={form.perUserLimit}
+                      onChange={(e) => setForm(p => ({ ...p, perUserLimit: parseInt(e.target.value) || 1 }))} 
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* STEP 3: Applicability */}
+            {modalStep === 3 && (
+              <div className="step-content">
+                <div className="section-title-badge">PRODUCT APPLICABILITY SCOPE</div>
+                
+                <div className="card-selector-grid">
+                  <div 
+                    className={`selector-card ${!form.isSpecificProduct ? 'selected' : ''}`}
+                    onClick={() => setForm(p => ({ ...p, isSpecificProduct: false, applicableProducts: [] }))}
+                  >
+                    <div className="selector-card-icon green-bg"><FiPackage /></div>
+                    <div className="selector-card-info">
+                      <div className="selector-card-title">Entire Store</div>
+                      <div className="selector-card-sub">Applies to all active catalog products</div>
+                    </div>
+                    {!form.isSpecificProduct && <div className="card-check-badge"><FiCheck /></div>}
+                  </div>
+
+                  <div 
+                    className={`selector-card ${form.isSpecificProduct ? 'selected' : ''}`}
+                    onClick={() => setForm(p => ({ ...p, isSpecificProduct: true }))}
+                  >
+                    <div className="selector-card-icon purple-bg"><FiTag /></div>
+                    <div className="selector-card-info">
+                      <div className="selector-card-title">Specific Products</div>
+                      <div className="selector-card-sub">Restricted to chosen products only</div>
+                    </div>
+                    {form.isSpecificProduct && <div className="card-check-badge"><FiCheck /></div>}
+                  </div>
+                </div>
+
+                {form.isSpecificProduct && (
+                  <div className="form-group" style={{ marginTop: '16px' }}>
+                    <label className="form-label">Select Products</label>
+                    <div className="product-search-box">
+                      <FiSearch className="search-icon" />
+                      <input 
+                        type="text" 
+                        placeholder="Search products by name..." 
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                      />
+                    </div>
+                    {errors.applicableProducts && <span className="form-error-msg">{errors.applicableProducts}</span>}
+                    
+                    <div className="product-select-list">
+                      {productList.map(product => {
+                        const pid = product._id || product.id;
+                        const isSelected = form.applicableProducts.includes(pid);
+                        return (
+                          <div key={pid} className={`product-select-item ${isSelected ? 'selected' : ''}`} onClick={() => toggleProduct(pid)}>
+                            <input type="checkbox" checked={isSelected} readOnly />
+                            <span className="product-name">{product.productName || product.name}</span>
+                            <span className="product-price">₹{product.price}</span>
+                          </div>
+                        );
+                      })}
+                      {productList.length === 0 && (
+                        <div className="empty-products-notice">No matching products found</div>
+                      )}
+                    </div>
+                    {form.applicableProducts.length > 0 && (
+                      <div className="selected-count-pill">
+                        ✓ {form.applicableProducts.length} product(s) selected
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="section-title-badge" style={{ marginTop: '24px' }}>STATUS & CONFIRMATION</div>
+                
+                <label className="toggle-switch-row">
+                  <input 
+                    type="checkbox" 
+                    checked={form.isActive} 
+                    onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} 
+                  />
+                  <div className="toggle-slider"></div>
+                  <span className="toggle-label">Activate coupon immediately upon saving</span>
+                </label>
+
+                {/* Summary Ticket Card */}
+                <div className="summary-ticket-card">
+                  <div className="ticket-header">
+                    <span className="ticket-code-pill">{form.code || 'COUPONCODE'}</span>
+                    <span className="ticket-type-badge">
+                      {form.discountType === 'percentage' ? `${form.discountValue}% OFF` : `₹${form.discountValue} OFF`}
+                    </span>
+                  </div>
+                  <div className="ticket-body">
+                    <div>Valid: <strong>{form.validFrom}</strong> to <strong>{form.validTo}</strong></div>
+                    <div>Scope: <strong>{form.isSpecificProduct ? `${form.applicableProducts.length} Products` : 'All Products'}</strong></div>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </form>
         </div>
         
+        {/* Footer Bar */}
         <div className="modal-footer">
           {modalStep > 1 && (
-            <button className="btn btn-outline" type="button" onClick={prevStep}>← Back</button>
+            <button className="btn btn-outline" type="button" onClick={prevStep}>
+              <FiArrowLeft /> Back
+            </button>
           )}
           {modalStep < 3 ? (
-            <button className="btn btn-primary" type="button" onClick={nextStep}>Next →</button>
+            <button className="btn btn-primary btn-pills" type="button" onClick={nextStep}>
+              Next Step <FiArrowRight />
+            </button>
           ) : (
-            <button className="btn btn-primary" type="submit" form="couponForm" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : '✅ Save Coupon'}
+            <button className="btn btn-primary btn-pills" type="submit" form="couponForm" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving Coupon...' : '✓ Save & Launch Coupon'}
             </button>
           )}
         </div>

@@ -1,7 +1,13 @@
 import React, { useState, useMemo } from 'react';
-import { FiPlus, FiSearch, FiX, FiTag, FiPercent, FiDownload } from 'react-icons/fi';
+import { 
+  FiPlus, FiSearch, FiX, FiTag, FiPercent, FiDownload, 
+  FiTrendingUp, FiPieChart, FiBarChart2, FiCalendar, FiShoppingBag, FiAward, FiZap 
+} from 'react-icons/fi';
 import { useGetOffersQuery, useAddOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation } from '../../../store/ActionApi/offerApi';
-import { useGetCouponsQuery, useCreateCouponMutation, useUpdateCouponMutation, useDeleteCouponMutation } from '../../../store/ActionApi/couponApi';
+import { 
+  useGetCouponsQuery, useCreateCouponMutation, useUpdateCouponMutation, useDeleteCouponMutation, 
+  useGetCouponAnalyticsQuery 
+} from '../../../store/ActionApi/couponApi';
 import { useToast } from '../../../context/ToastContext';
 import Loader from '../../../components/Loader/Loader';
 import OfferTableRow from './components/OfferTableRow';
@@ -10,6 +16,9 @@ import OfferPreviewModal from './components/OfferPreviewModal';
 import CouponTableRow from './components/CouponTableRow';
 import CouponFormModal from './components/CouponFormModal';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
+import CouponTrendD3Chart from './components/CouponTrendD3Chart';
+import CouponProductD3Chart from './components/CouponProductD3Chart';
+import OfferUsageD3Chart from './components/OfferUsageD3Chart';
 import './AdminOffers.scss';
 
 function useDebounce(value, delay = 400) {
@@ -25,9 +34,28 @@ const AdminOffers = () => {
   const [activeTab, setActiveTab] = useState('offers');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchInput, setSearchInput] = useState('');
+  const [analyticsTimeframe, setAnalyticsTimeframe] = useState('monthly'); // weekly | monthly | yearly
   const debouncedSearch = useDebounce(searchInput, 400);
 
   const { showSuccess, showError } = useToast();
+
+  // ── Analytics API ───────────────────────────────────────────────
+  const { data: analyticsResponse, isLoading: isAnalyticsLoading } = useGetCouponAnalyticsQuery({
+    timeframe: analyticsTimeframe,
+  });
+  const analyticsData = analyticsResponse?.data || analyticsResponse || {};
+
+  const summaryData = analyticsData?.summary || {};
+  const highlightsData = analyticsData?.highlights || {};
+  const trendData = analyticsData?.trendData || [];
+  const productCouponBreakdown = analyticsData?.productCouponBreakdown || [];
+  const offerPerformanceList = analyticsData?.offerPerformanceList || [];
+  const couponPerformanceList = analyticsData?.couponPerformanceList || [];
+
+  // Highlights
+  const mostUsedCoupon = highlightsData?.mostUsedCoupon;
+  const topCouponProduct = highlightsData?.topCouponProduct;
+  const topOffer = highlightsData?.topOffer;
 
   // ── Offers ──────────────────────────────────────────────────────
   const { data: offersResponse, isLoading: isOffersLoading } = useGetOffersQuery(
@@ -252,37 +280,211 @@ const AdminOffers = () => {
         </button>
       </div>
 
-      {/* ── Stats Grid (MOCKED) ───────────────────────────────── */}
-      {/* Note: Revenue, Uses, and Avg Discount are static mocks as per HTML UI */}
-      <div className="stats-grid">
-        <div className="stat-card" style={{ '--accent-color': 'var(--primary)' }}>
-          <div className="stat-icon">🎟️</div>
-          <div className="stat-label">Total {activeTab === 'offers' ? 'Offers' : 'Coupons'}</div>
-          <div className="stat-value">{activeTab === 'offers' ? offerCount : couponCount}</div>
-          <div className="stat-sub"><span className="stat-up">{rawOfferList.filter(o => o.isActive).length} Active</span></div>
+      {/* ── Analytics Controls Header & Timeframe Selector ───────────── */}
+      <div className="analytics-header-card card">
+        <div className="analytics-title-area">
+          <div>
+            <h2><FiTrendingUp className="icon-pulse" /> Coupon & Offer Analysis System</h2>
+            <p>Track coupon usage performance, top product applications, and offer conversions with D3 visualizations</p>
+          </div>
+
+          <div className="timeframe-selector">
+            <span className="timeframe-label"><FiCalendar /> Timeframe:</span>
+            <div className="timeframe-buttons">
+              <button 
+                className={`timeframe-btn ${analyticsTimeframe === 'weekly' ? 'active' : ''}`}
+                onClick={() => setAnalyticsTimeframe('weekly')}
+              >
+                Weekly
+              </button>
+              <button 
+                className={`timeframe-btn ${analyticsTimeframe === 'monthly' ? 'active' : ''}`}
+                onClick={() => setAnalyticsTimeframe('monthly')}
+              >
+                Monthly
+              </button>
+              <button 
+                className={`timeframe-btn ${analyticsTimeframe === 'yearly' ? 'active' : ''}`}
+                onClick={() => setAnalyticsTimeframe('yearly')}
+              >
+                Yearly
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="stat-card" style={{ '--accent-color': 'var(--success)' }}>
-          <div className="stat-icon">💰</div>
-          <div className="stat-label">Revenue via {activeTab === 'offers' ? 'Offers' : 'Coupons'}</div>
-          <div className="stat-value">₹84,320</div>
-          <div className="stat-sub"><span className="stat-up">↑ 18%</span> vs last month</div>
+
+        {/* ── Highlight Metric Cards ─────────────────────────────── */}
+        <div className="analytics-highlight-grid">
+          {/* Card 1: Most Used Coupon */}
+          <div className="highlight-card primary-theme">
+            <div className="highlight-icon">🎟️</div>
+            <div className="highlight-info">
+              <span className="highlight-label">Most Used Coupon</span>
+              <div className="highlight-title">{mostUsedCoupon ? mostUsedCoupon.code : 'None Yet'}</div>
+              <div className="highlight-sub">
+                <strong>{mostUsedCoupon ? mostUsedCoupon.usesCount : 0}</strong> times used • 
+                Saved ₹{mostUsedCoupon ? mostUsedCoupon.totalDiscount : 0}
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Top Product with Coupon */}
+          <div className="highlight-card success-theme">
+            <div className="highlight-icon">🛍️</div>
+            <div className="highlight-info">
+              <span className="highlight-label">Top Coupon-Applied Product</span>
+              <div className="highlight-title" title={topCouponProduct ? topCouponProduct.productName : 'None'}>
+                {topCouponProduct ? (topCouponProduct.productName.length > 20 ? topCouponProduct.productName.substring(0, 18) + '…' : topCouponProduct.productName) : 'None'}
+              </div>
+              <div className="highlight-sub">
+                <strong>{topCouponProduct ? topCouponProduct.totalCouponOrders : 0}</strong> orders with coupon
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Top Offer */}
+          <div className="highlight-card warning-theme">
+            <div className="highlight-icon">🌟</div>
+            <div className="highlight-info">
+              <span className="highlight-label">Most Popular Offer</span>
+              <div className="highlight-title" title={topOffer ? topOffer.title : 'None'}>
+                {topOffer ? (topOffer.title.length > 20 ? topOffer.title.substring(0, 18) + '…' : topOffer.title) : 'None'}
+              </div>
+              <div className="highlight-sub">
+                <strong>{topOffer ? topOffer.estimatedUses : 0}</strong> estimated conversions
+              </div>
+            </div>
+          </div>
+
+          {/* Card 4: Total Coupon Revenue & Savings */}
+          <div className="highlight-card purple-theme">
+            <div className="highlight-icon">💰</div>
+            <div className="highlight-info">
+              <span className="highlight-label">Total Discounts & Revenue</span>
+              <div className="highlight-title">₹{summaryData.totalCouponRevenue !== undefined ? summaryData.totalCouponRevenue : 0}</div>
+              <div className="highlight-sub">
+                Saved ₹{summaryData.totalDiscountGiven !== undefined ? summaryData.totalDiscountGiven : 0} across {summaryData.totalCouponOrders || 0} orders
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="stat-card" style={{ '--accent-color': 'var(--purple)' }}>
-          <div className="stat-icon">👆</div>
-          <div className="stat-label">Total Uses</div>
-          <div className="stat-value">1,247</div>
-          <div className="stat-sub"><span className="stat-up">↑ 34%</span> this month</div>
+      </div>
+
+      {/* ── D3 Charts Grid ──────────────────────────────────────── */}
+      <div className="d3-charts-grid">
+        {/* D3 Chart 1: Usage Trend */}
+        <div className="card chart-card">
+          <div className="card-header">
+            <h3 className="card-title"><FiTrendingUp /> Coupon & Offer Usage Trend</h3>
+            <span className="timeframe-badge">{analyticsTimeframe.toUpperCase()} VIEW</span>
+          </div>
+          <div className="card-body">
+            {isAnalyticsLoading ? (
+              <Loader inline message="Rendering D3 Trend Chart…" />
+            ) : (
+              <CouponTrendD3Chart data={trendData} timeframe={analyticsTimeframe} />
+            )}
+          </div>
         </div>
-        <div className="stat-card" style={{ '--accent-color': 'var(--warning)' }}>
-          <div className="stat-icon">⚡</div>
-          <div className="stat-label">Avg. Discount Given</div>
-          <div className="stat-value">₹127</div>
-          <div className="stat-sub"><span className="stat-down">↑ ₹12</span> vs last month</div>
+
+        {/* D3 Chart 2: Product Breakdown */}
+        <div className="card chart-card">
+          <div className="card-header">
+            <h3 className="card-title"><FiShoppingBag /> Top Products with Coupon Applied</h3>
+            <span className="timeframe-badge">PRODUCT DISTRIBUTION</span>
+          </div>
+          <div className="card-body">
+            {isAnalyticsLoading ? (
+              <Loader inline message="Rendering D3 Product Chart…" />
+            ) : (
+              <CouponProductD3Chart data={productCouponBreakdown} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* D3 Chart 3: Offer Performance & Breakdown Table */}
+      <div className="d3-charts-grid" style={{ marginTop: '20px' }}>
+        <div className="card chart-card">
+          <div className="card-header">
+            <h3 className="card-title"><FiBarChart2 /> Offer Performance by Placement & Display</h3>
+            <span className="timeframe-badge">OFFER CONVERSIONS</span>
+          </div>
+          <div className="card-body">
+            {isAnalyticsLoading ? (
+              <Loader inline message="Rendering D3 Offer Chart…" />
+            ) : (
+              <OfferUsageD3Chart data={offerPerformanceList} />
+            )}
+          </div>
+        </div>
+
+        {/* Product-Level Coupon Usage Table */}
+        <div className="card" style={{ marginBottom: 0 }}>
+          <div className="card-header">
+            <h3 className="card-title">Coupon Application by Product</h3>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Which coupon applied to which product</span>
+          </div>
+          <div className="card-body" style={{ padding: 0 }}>
+            <div style={{ overflowX: 'auto', maxHeight: '300px' }}>
+              <table className="offers-table mini-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Coupons Applied</th>
+                    <th>Orders</th>
+                    <th>Total Discount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productCouponBreakdown.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="admin-empty-state" style={{ padding: '24px 0' }}>
+                        No product coupon usage recorded for this timeframe.
+                      </td>
+                    </tr>
+                  ) : (
+                    productCouponBreakdown.map((item, idx) => (
+                      <tr key={item.productId || idx}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {item.image ? (
+                              <img src={item.image} alt="" style={{ width: '32px', height: '32px', borderRadius: '6px', objectFit: 'cover' }} />
+                            ) : (
+                              <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>📦</div>
+                            )}
+                            <span style={{ fontWeight: 600, fontSize: '13px' }}>
+                              {(item.productName || 'Product').length > 22 ? (item.productName || 'Product').substring(0, 20) + '…' : (item.productName || 'Product')}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                            {(item.couponsUsedMap || []).map((c, i) => (
+                              <span key={i} className="badge badge-purple" style={{ fontSize: '10px' }}>
+                                {c.code} ({c.count})
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge badge-primary">{item.totalCouponOrders}</span>
+                        </td>
+                        <td style={{ fontWeight: 700, color: 'var(--success)' }}>
+                          ₹{item.totalDiscount}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ── Offers / Coupons Table ────────────────────────────── */}
-      <div className="card">
+      <div className="card" style={{ marginTop: '24px' }}>
         <div className="card-header">
           <h2 className="card-title">All {activeTab === 'offers' ? 'Offers' : 'Coupons'}</h2>
           <div className="search-box">
@@ -352,70 +554,6 @@ const AdminOffers = () => {
         </div>
       </div>
 
-      {/* ── Analytics (MOCKED) ────────────────────────────────── */}
-      <div className="analytics-grid">
-        {/* Performance */}
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header">
-            <h2 className="card-title">Offer Performance</h2>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Last 30 days</span>
-          </div>
-          <div className="card-body">
-            {[
-              { name: 'Free Shipping Bar', uses: 521, rev: '₹28,450', pct: 90 },
-              { name: 'Summer Flash Sale', uses: 342, rev: '₹31,200', pct: 68 },
-              { name: 'Bundle & Save', uses: 189, rev: '₹18,900', pct: 48 },
-              { name: 'First Order Welcome', uses: 98, rev: '₹5,770', pct: 30 },
-            ].map((p, i) => (
-              <div key={i} style={{ marginBottom: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700 }}>{p.name}</span>
-                  <span style={{ fontSize: '12px', color: 'var(--success)', fontWeight: 700 }}>{p.rev}</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div className="mini-progress" style={{ flex: 1 }}>
-                    <div className="mini-progress-fill" style={{ width: `${p.pct}%`, background: 'var(--purple)' }}></div>
-                  </div>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '50px' }}>{p.uses} uses</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chart */}
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header">
-            <h2 className="card-title">Daily Offer Usage</h2>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>This week</span>
-          </div>
-          <div className="card-body">
-            <div className="mini-chart">
-              {[38, 52, 45, 71, 89, 134, 118].map((v, i, arr) => (
-                <div key={i} className="bar" style={{ height: `${Math.round((v/Math.max(...arr))*56)+4}px` }} title={`${v} uses`}></div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-              {['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => (
-                <span key={d} style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{d}</span>
-              ))}
-            </div>
-            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #F0F0F0' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div style={{ background: 'var(--primary-light)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontFamily: '"Fredoka One", cursive', color: 'var(--primary)' }}>247</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>This Week</div>
-                </div>
-                <div style={{ background: 'var(--success-light)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '22px', fontFamily: '"Fredoka One", cursive', color: 'var(--success)' }}>₹31,490</div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700 }}>Revenue</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* ── Modals ──────────────────────────────────────────────── */}
       <OfferPreviewModal preview={preview} onClose={() => setPreview(null)} />
 
@@ -455,3 +593,4 @@ const AdminOffers = () => {
 };
 
 export default AdminOffers;
+

@@ -63,6 +63,12 @@ export const couponApi = baseApi.injectEndpoints({
         body: { code, cartItems },
       }),
     }),
+
+    // Admin: Get Coupon & Offer Analytics
+    getCouponAnalytics: builder.query({
+      query: ({ timeframe = 'monthly' } = {}) => `${API_ENDPOINTS.COUPONS}/analytics?timeframe=${timeframe}`,
+      providesTags: ['Coupons', 'Offers'],
+    }),
   }),
 });
 
@@ -74,4 +80,5 @@ export const {
   useUpdateCouponMutation,
   useDeleteCouponMutation,
   useValidateCouponMutation,
+  useGetCouponAnalyticsQuery,
 } = couponApi;

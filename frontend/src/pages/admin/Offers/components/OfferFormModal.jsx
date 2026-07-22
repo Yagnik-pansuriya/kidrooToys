@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FiX, FiUpload, FiEye, FiImage, FiLayers, FiAlertTriangle } from 'react-icons/fi';
+import { FiX, FiUpload, FiCheck, FiLayers, FiCalendar, FiImage, FiGrid, FiLink, FiArrowRight, FiArrowLeft } from 'react-icons/fi';
 import { displayTypes, pageTargets, sectionPresets, positionOptions, initialOfferForm } from '../constants/offerConstants';
 
 const todayStr = () => new Date().toISOString().split('T')[0];
@@ -75,28 +75,16 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
     }
   };
 
-  const removeImage = (index) => {
-    setForm(p => ({
-      ...p,
-      images: p.images.filter((_, i) => i !== index),
-      imageAltTexts: p.imageAltTexts.filter((_, i) => i !== index),
-      imageLinks: p.imageLinks.filter((_, i) => i !== index),
-    }));
-  };
-
   const validateStep = () => {
     const errs = {};
     if (modalStep === 1) {
-      if (!form.title.trim()) errs.title = 'Title is required';
+      if (!form.title.trim()) errs.title = 'Offer Title is required';
     }
     if (modalStep === 2) {
       if (!form.validFrom) errs.validFrom = 'Start date is required';
       if (!form.validTo) errs.validTo = 'End date is required';
       if (form.validFrom && form.validTo && form.validTo < form.validFrom) {
         errs.validTo = 'End date must be after start date';
-      }
-      if (form.validTo && form.validTo < todayStr()) {
-        errs.validTo = 'End date cannot be in the past';
       }
     }
     setErrors(errs);
@@ -124,166 +112,243 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
 
   return (
     <div className="offer-modal-overlay" onClick={onClose}>
-      <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="offer-modal premium-modal" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Header */}
         <div className="modal-header">
-          <h2>{editingOffer ? 'Edit Offer' : 'Create New Offer'}</h2>
+          <div className="modal-header-title">
+            <div className="modal-header-icon">🌟</div>
+            <div>
+              <h2>{editingOffer ? 'Edit Offer Banner' : 'Create New Offer'}</h2>
+              <p>Design promotional banners, placement target pages, and schedule validity</p>
+            </div>
+          </div>
           <button className="modal-close" onClick={onClose}><FiX /></button>
         </div>
-        
-        <div className="modal-body">
-          {/* Step indicator */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
-            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 1 ? 'var(--primary)' : '#EEE' }}></div>
-            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 2 ? 'var(--primary)' : '#EEE' }}></div>
-            <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: modalStep >= 3 ? 'var(--primary)' : '#EEE' }}></div>
-          </div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-            Step {modalStep} of 3 — {modalStep === 1 ? 'Choose offer type & content' : modalStep === 2 ? 'Set display & validity' : 'Styling & Review'}
-          </div>
 
+        {/* Stepper Navigation Bar */}
+        <div className="modal-stepper-bar">
+          <div className={`stepper-step ${modalStep >= 1 ? 'active' : ''} ${modalStep > 1 ? 'completed' : ''}`} onClick={() => modalStep > 1 && setModalStep(1)}>
+            <div className="step-circle">{modalStep > 1 ? <FiCheck /> : 1}</div>
+            <span className="step-text">Content & Format</span>
+          </div>
+          <div className="stepper-line"></div>
+          <div className={`stepper-step ${modalStep >= 2 ? 'active' : ''} ${modalStep > 2 ? 'completed' : ''}`} onClick={() => modalStep > 2 && setModalStep(2)}>
+            <div className="step-circle">{modalStep > 2 ? <FiCheck /> : 2}</div>
+            <span className="step-text">Placement & Dates</span>
+          </div>
+          <div className="stepper-line"></div>
+          <div className={`stepper-step ${modalStep === 3 ? 'active' : ''}`}>
+            <div className="step-circle">3</div>
+            <span className="step-text">Styling & Upload</span>
+          </div>
+        </div>
+
+        <div className="modal-body">
           <form id="offerForm" onSubmit={handleSubmit}>
             
             {/* STEP 1: Content */}
-            <div style={{ display: modalStep === 1 ? 'block' : 'none' }}>
-              <div className="section-divider">Select Display Type</div>
-              <div className="offer-type-picker">
-                {displayTypes.map(t => (
-                  <div key={t.value}
-                    className={`type-opt ${form.displayType === t.value ? 'selected' : ''}`}
-                    onClick={() => setForm(p => ({ ...p, displayType: t.value, images: [] }))}
-                  >
-                    <div className="type-icon">{t.value === 'single-banner' ? '🖼️' : '📦'}</div>
-                    <div className="type-name">{t.label}</div>
-                  </div>
-                ))}
-              </div>
+            {modalStep === 1 && (
+              <div className="step-content">
+                <div className="section-title-badge">DISPLAY TYPE FORMAT</div>
+                <div className="display-type-grid">
+                  {displayTypes.map(t => (
+                    <div 
+                      key={t.value}
+                      className={`type-card ${form.displayType === t.value ? 'selected' : ''}`}
+                      onClick={() => setForm(p => ({ ...p, displayType: t.value, images: [] }))}
+                    >
+                      <div className="type-card-icon">{t.value === 'single-banner' ? '🖼️' : t.value === 'slider' ? '🎠' : t.value === 'top-banner' ? '📢' : '🎁'}</div>
+                      <div className="type-card-label">{t.label}</div>
+                      {form.displayType === t.value && <div className="card-check-badge"><FiCheck /></div>}
+                    </div>
+                  ))}
+                </div>
 
-              <div className="section-divider">Basic Details</div>
-              <div className="form-group">
-                <label>Offer Title *</label>
-                <input type="text" value={form.title} placeholder="e.g. Summer Flash Sale"
-                  onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} />
-                {errors.title && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.title}</span>}
+                <div className="section-title-badge" style={{ marginTop: '24px' }}>OFFER CONTENT & LINKS</div>
+                
+                <div className="form-group">
+                  <label className="form-label">Offer Title <span className="req">*</span></label>
+                  <input 
+                    type="text" 
+                    value={form.title} 
+                    placeholder="e.g. Summer Flash Sale — Up to 40% Off"
+                    onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} 
+                  />
+                  {errors.title && <span className="form-error-msg">{errors.title}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Subtitle / Sub-heading</label>
+                  <input 
+                    type="text" 
+                    value={form.subtitle} 
+                    placeholder="e.g. Premium Toy Collections at Unbeatable Prices"
+                    onChange={(e) => setForm(p => ({ ...p, subtitle: e.target.value }))} 
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Description / Announcement text</label>
+                  <textarea 
+                    value={form.description} 
+                    placeholder="Detailed terms, highlight points, or promo offer description..." 
+                    rows={3}
+                    onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} 
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label"><FiLink className="icon-inline" /> Target Destination URL</label>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. /shop?category=educational or https://..." 
+                    value={form.targetUrl}
+                    onChange={(e) => setForm(p => ({ ...p, targetUrl: e.target.value }))} 
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label>Subtitle</label>
-                <input type="text" value={form.subtitle} placeholder="e.g. Limited time offer"
-                  onChange={(e) => setForm(p => ({ ...p, subtitle: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea value={form.description} placeholder="Optional detailed description..." rows={2}
-                  onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label>Click-through URL</label>
-                <input type="text" placeholder="/shop or https://..." value={form.targetUrl}
-                  onChange={(e) => setForm(p => ({ ...p, targetUrl: e.target.value }))} />
-              </div>
-            </div>
+            )}
 
             {/* STEP 2: Placement & Validity */}
-            <div style={{ display: modalStep === 2 ? 'block' : 'none' }}>
-              <div className="section-divider">Where to Display this Offer?</div>
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Target Page *</label>
-                  <select value={form.page} onChange={(e) => handlePageChange(e.target.value)}>
-                    {pageTargets.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            {modalStep === 2 && (
+              <div className="step-content">
+                <div className="section-title-badge"><FiGrid className="icon-inline" /> PAGE PLACEMENT & POSITION</div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Target Page <span className="req">*</span></label>
+                    <select value={form.page} onChange={(e) => handlePageChange(e.target.value)}>
+                      {pageTargets.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Section Placement <span className="req">*</span></label>
+                    <select value={form.section} onChange={(e) => setForm(p => ({ ...p, section: e.target.value }))}>
+                      {currentSections.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Display Order Position</label>
+                  <select value={form.position} onChange={(e) => setForm(p => ({ ...p, position: parseInt(e.target.value) }))}>
+                    {positionOptions.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                   </select>
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Section / Placement *</label>
-                  <select value={form.section} onChange={(e) => setForm(p => ({ ...p, section: e.target.value }))}>
-                    {currentSections.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Display Order / Priority</label>
-                <select value={form.position} onChange={(e) => setForm(p => ({ ...p, position: parseInt(e.target.value) }))}>
-                  {positionOptions.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-                </select>
-              </div>
 
-              <div className="section-divider">Validity</div>
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Valid From *</label>
-                  <input type="date" value={form.validFrom} min={todayStr()}
-                    onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} />
-                  {errors.validFrom && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.validFrom}</span>}
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Valid To *</label>
-                  <input type="date" value={form.validTo} min={form.validFrom || todayStr()}
-                    onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} />
-                  {errors.validTo && <span style={{ color: 'var(--danger)', fontSize: '11px' }}>{errors.validTo}</span>}
-                </div>
-              </div>
+                <div className="section-title-badge" style={{ marginTop: '24px' }}><FiCalendar className="icon-inline" /> VALIDITY DATES</div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Valid From <span className="req">*</span></label>
+                    <input 
+                      type="date" 
+                      value={form.validFrom} 
+                      min={todayStr()}
+                      onChange={(e) => setForm(p => ({ ...p, validFrom: e.target.value }))} 
+                    />
+                    {errors.validFrom && <span className="form-error-msg">{errors.validFrom}</span>}
+                  </div>
 
-              <div className="section-divider">Options</div>
-              <div className="check-row">
-                <input type="checkbox" id="chk_active" checked={form.isActive} onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} />
-                <label htmlFor="chk_active">Make offer active immediately</label>
+                  <div className="form-group">
+                    <label className="form-label">Valid Until <span className="req">*</span></label>
+                    <input 
+                      type="date" 
+                      value={form.validTo} 
+                      min={form.validFrom || todayStr()}
+                      onChange={(e) => setForm(p => ({ ...p, validTo: e.target.value }))} 
+                    />
+                    {errors.validTo && <span className="form-error-msg">{errors.validTo}</span>}
+                  </div>
+                </div>
+
+                <label className="toggle-switch-row" style={{ marginTop: '16px' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={form.isActive} 
+                    onChange={(e) => setForm(p => ({ ...p, isActive: e.target.checked }))} 
+                  />
+                  <div className="toggle-slider"></div>
+                  <span className="toggle-label">Make offer active immediately</span>
+                </label>
               </div>
-            </div>
+            )}
 
             {/* STEP 3: Styling & Review */}
-            <div style={{ display: modalStep === 3 ? 'block' : 'none' }}>
-              <div className="section-divider">Styling</div>
-              <div className="form-row">
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Background Color</label>
-                  <div className="color-picker-wrap">
-                    <input type="color" value={bgColor} onChange={(e) => setForm(p => ({ ...p, bgColor: e.target.value }))} />
-                    <span className="color-picker-hex">{bgColor}</span>
+            {modalStep === 3 && (
+              <div className="step-content">
+                <div className="section-title-badge">THEME & COLORS</div>
+                
+                <div className="form-row">
+                  <div className="form-group">
+                    <label className="form-label">Background Color</label>
+                    <div className="color-picker-wrap">
+                      <input type="color" value={bgColor} onChange={(e) => setForm(p => ({ ...p, bgColor: e.target.value }))} />
+                      <span className="color-picker-hex">{bgColor}</span>
+                    </div>
                   </div>
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label>Text Color</label>
-                  <div className="color-picker-wrap">
-                    <input type="color" value={textColor} onChange={(e) => setForm(p => ({ ...p, textColor: e.target.value }))} />
-                    <span className="color-picker-hex">{textColor}</span>
-                  </div>
-                </div>
-              </div>
 
-              <div className="section-divider">Upload Images</div>
-              {form.existingImages && form.existingImages.length > 0 && form.images.length === 0 && (
-                <div className="offer-existing-images">
-                  <div className="offer-existing-images__label">Current image(s):</div>
-                  <div className="offer-existing-images__grid">
-                    {form.existingImages.map((img, i) => <img key={i} src={img.url || img} alt="Current" className="offer-existing-images__thumb" />)}
+                  <div className="form-group">
+                    <label className="form-label">Text Color</label>
+                    <div className="color-picker-wrap">
+                      <input type="color" value={textColor} onChange={(e) => setForm(p => ({ ...p, textColor: e.target.value }))} />
+                      <span className="color-picker-hex">{textColor}</span>
+                    </div>
                   </div>
                 </div>
-              )}
-              <div className="offer-upload-area">
-                <FiUpload size={24} />
-                <span style={{ marginTop: '4px' }}>Click or drag to upload {form.displayType === 'single-banner' ? 'an image' : 'multiple images'}</span>
-                <input type="file" multiple={form.displayType === 'slider'} accept="image/*" onChange={handleImageChange} />
-              </div>
-              {form.images.length > 0 && (
-                <div style={{ fontSize: '13px', color: 'var(--success)' }}>✅ {form.images.length} image(s) selected</div>
-              )}
 
-              <div style={{ background: 'var(--primary-light)', borderRadius: 'var(--radius)', padding: '14px', marginTop: '20px', fontSize: '13px', color: 'var(--primary)', fontWeight: 700 }}>
-                ✅ Review your offer settings. Once saved, this offer will appear on the selected pages based on your validity dates.
+                <div className="section-title-badge" style={{ marginTop: '24px' }}><FiImage className="icon-inline" /> BANNER IMAGES</div>
+                
+                {form.existingImages && form.existingImages.length > 0 && form.images.length === 0 && (
+                  <div className="offer-existing-images">
+                    <div className="offer-existing-images__label">Current active image:</div>
+                    <div className="offer-existing-images__grid">
+                      {form.existingImages.map((img, i) => <img key={i} src={img.url || img} alt="Current" className="offer-existing-images__thumb" />)}
+                    </div>
+                  </div>
+                )}
+
+                <div className="offer-upload-area">
+                  <FiUpload size={28} className="upload-icon-pulse" />
+                  <div className="upload-title">Click or drag banner images here</div>
+                  <div className="upload-sub">Supports PNG, JPG, WEBP (Max 5MB)</div>
+                  <input type="file" multiple={form.displayType === 'slider'} accept="image/*" onChange={handleImageChange} />
+                </div>
+
+                {form.images.length > 0 && (
+                  <div className="selected-count-pill" style={{ marginTop: '10px' }}>
+                    ✓ {form.images.length} image(s) ready to upload
+                  </div>
+                )}
+
+                {/* Banner Live Preview Box */}
+                <div className="banner-preview-box" style={{ background: bgColor, color: textColor, marginTop: '20px' }}>
+                  <div className="preview-label">BANNER LIVE PREVIEW</div>
+                  <div className="preview-title">{form.title || 'Offer Banner Title'}</div>
+                  <div className="preview-subtitle">{form.subtitle || 'Offer subtitle text goes here'}</div>
+                </div>
               </div>
-            </div>
+            )}
 
           </form>
         </div>
         
+        {/* Footer Bar */}
         <div className="modal-footer">
           {modalStep > 1 && (
-            <button className="btn btn-outline" type="button" onClick={prevStep}>← Back</button>
+            <button className="btn btn-outline" type="button" onClick={prevStep}>
+              <FiArrowLeft /> Back
+            </button>
           )}
           {modalStep < 3 ? (
-            <button className="btn btn-primary" type="button" onClick={nextStep}>Next →</button>
+            <button className="btn btn-primary btn-pills" type="button" onClick={nextStep}>
+              Next Step <FiArrowRight />
+            </button>
           ) : (
-            <button className="btn btn-primary" type="submit" form="offerForm" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : '✅ Save Offer'}
+            <button className="btn btn-primary btn-pills" type="submit" form="offerForm" disabled={isSubmitting}>
+              {isSubmitting ? 'Saving Offer...' : '✓ Save & Publish Offer'}
             </button>
           )}
         </div>

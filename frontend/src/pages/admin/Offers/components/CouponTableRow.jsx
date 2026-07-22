@@ -40,11 +40,11 @@ const CouponTableRow = ({ coupon, onEdit, onDelete, onToggleStatus }) => {
       </td>
       <td>
         <div style={{ fontSize: '13px', fontWeight: 700 }}>
-          {coupon.usageCount || 0} / {coupon.usageLimit || '∞'}
+          {(coupon.usedCount ?? coupon.usageCount ?? 0)} / {coupon.usageLimit || '∞'}
         </div>
         {coupon.usageLimit > 0 && (
           <div className="mini-progress">
-            <div className="mini-progress-fill" style={{ width: `${Math.min(((coupon.usageCount || 0) / coupon.usageLimit) * 100, 100)}%` }}></div>
+            <div className="mini-progress-fill" style={{ width: `${Math.min((((coupon.usedCount ?? coupon.usageCount ?? 0)) / coupon.usageLimit) * 100, 100)}%` }}></div>
           </div>
         )}
       </td>
