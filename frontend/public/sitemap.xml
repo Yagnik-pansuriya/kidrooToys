@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>http://localhost:5173/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5173/shop</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5173/offers</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5173/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <!-- Category: Puzzles &amp; Brain Games -->
+  <url>
+    <loc>http://localhost:5173/category/puzzles-brain-games</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Category: art-craft-kits -->
+  <url>
+    <loc>http://localhost:5173/category/art-craft-kits</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Category: Toy Vehicles -->
+  <url>
+    <loc>http://localhost:5173/category/toy-vehicles</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Category: Placeat dolore enim -->
+  <url>
+    <loc>http://localhost:5173/category/magna-maiores-et-ut</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Category: Et numquam delectus -->
+  <url>
+    <loc>http://localhost:5173/category/quisquam-dolor-in-es</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Category: Sint consequuntur in -->
+  <url>
+    <loc>http://localhost:5173/category/hic-qui-cumque-unde</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Category: Quasi quia voluptate -->
+  <url>
+    <loc>http://localhost:5173/category/voluptas-velit-sunt</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- Product: Reprehenderit expedi -->
+  <url>
+    <loc>http://localhost:5173/product/in-nesciunt-eu-labo</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513733/kidroo/products/srhqcclo0xbdsblt8pv7.png</image:loc>
+      <image:title>Reprehenderit expedi</image:title>
+      <image:caption>Reprehenderit expedi</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513734/kidroo/products/qcy5etpcii0rcicms9jx.png</image:loc>
+      <image:title>Reprehenderit expedi</image:title>
+      <image:caption>Reprehenderit expedi</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513735/kidroo/products/lkxpbrmegc2nwhzvjbcs.png</image:loc>
+      <image:title>Reprehenderit expedi</image:title>
+      <image:caption>Reprehenderit expedi</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513737/kidroo/products/jd2kz7mmpwlljkp9a72k.png</image:loc>
+      <image:title>Reprehenderit expedi</image:title>
+      <image:caption>Reprehenderit expedi</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513738/kidroo/products/qkgu4hytiannrfnsevas.png</image:loc>
+      <image:title>Reprehenderit expedi</image:title>
+      <image:caption>Reprehenderit expedi</image:caption>
+    </image:image>
+  </url>
+  <!-- Product: Magna unde quod sint -->
+  <url>
+    <loc>http://localhost:5173/product/eaque-libero-elit-u</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513778/kidroo/products/gjwbzkamfe2zdi1oywrx.png</image:loc>
+      <image:title>Magna unde quod sint</image:title>
+      <image:caption>Magna unde quod sint</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513781/kidroo/products/pmpam18rnv23ylfmwb1u.png</image:loc>
+      <image:title>Magna unde quod sint</image:title>
+      <image:caption>Magna unde quod sint</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513783/kidroo/products/pmbvuac7fwfxpbb3xsnu.png</image:loc>
+      <image:title>Magna unde quod sint</image:title>
+      <image:caption>Magna unde quod sint</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513785/kidroo/products/ytomksr7dxchhdvjvigx.png</image:loc>
+      <image:title>Magna unde quod sint</image:title>
+      <image:caption>Magna unde quod sint</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778513793/kidroo/products/oev3ybjyvoaj8y6bkpgo.png</image:loc>
+      <image:title>Magna unde quod sint</image:title>
+      <image:caption>Magna unde quod sint</image:caption>
+    </image:image>
+  </url>
+  <!-- Product: Occaecat officia sit -->
+  <url>
+    <loc>http://localhost:5173/product/nihil-exercitationem</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778560683/kidroo/products/anvzzr5cpoda7l2logqp.png</image:loc>
+      <image:title>Occaecat officia sit</image:title>
+      <image:caption>Occaecat officia sit</image:caption>
+    </image:image>
+  </url>
+  <!-- Product: Non consectetur rep -->
+  <url>
+    <loc>http://localhost:5173/product/cupiditate-necessita</loc>
+    <lastmod>2026-07-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://res.cloudinary.com/di9sje4s9/image/upload/v1778560710/kidroo/products/k58ksxw8qdf4beoevcav.png</image:loc>
+      <image:title>Non consectetur rep</image:title>
+      <image:caption>Non consectetur rep</image:caption>
+    </image:image>
+  </url>
+</urlset>
