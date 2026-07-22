@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { customerLogout } from '../store/ReducerApi/customerAuthSlice';
 import AuthModal from '../components/AuthModal/AuthModal';
@@ -21,6 +21,27 @@ export const CustomerAuthProvider = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
   const [pendingAction, setPendingAction] = useState(null);
+
+  // Helper to check if a JWT token has expired
+  const isTokenExpired = useCallback((token) => {
+    if (!token) return true;
+    try {
+      const base64Url = token.split('.')[1];
+      if (!base64Url) return true;
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        window.atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+      const decoded = JSON.parse(jsonPayload);
+      if (!decoded.exp) return false;
+      return Date.now() / 1000 >= decoded.exp;
+    } catch {
+      return true;
+    }
+  }, []);
 
   /**
    * Check if user is authenticated. If not, show auth modal.
@@ -66,6 +87,15 @@ export const CustomerAuthProvider = ({ children }) => {
   const handleLogout = useCallback(() => {
     dispatch(customerLogout());
   }, [dispatch]);
+
+  // Check token expiry on mount (when user first comes on web)
+  useEffect(() => {
+    const token = localStorage.getItem('customerToken');
+    if (token && isTokenExpired(token)) {
+      dispatch(customerLogout());
+      openAuthModal('Your session has expired. Please login again.');
+    }
+  }, [dispatch, isTokenExpired, openAuthModal]);
 
   /**
    * Check if a product is in the wishlist
