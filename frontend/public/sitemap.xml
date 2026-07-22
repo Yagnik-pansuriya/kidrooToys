@@ -2,77 +2,77 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>http://localhost:5173/</loc>
+    <loc>https://kidroo.in/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:5173/shop</loc>
+    <loc>https://kidroo.in/shop</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>http://localhost:5173/offers</loc>
+    <loc>https://kidroo.in/offers</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:5173/about</loc>
+    <loc>https://kidroo.in/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <!-- Category: Puzzles &amp; Brain Games -->
   <url>
-    <loc>http://localhost:5173/category/puzzles-brain-games</loc>
+    <loc>https://kidroo.in/category/puzzles-brain-games</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Category: art-craft-kits -->
   <url>
-    <loc>http://localhost:5173/category/art-craft-kits</loc>
+    <loc>https://kidroo.in/category/art-craft-kits</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Category: Toy Vehicles -->
   <url>
-    <loc>http://localhost:5173/category/toy-vehicles</loc>
+    <loc>https://kidroo.in/category/toy-vehicles</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Category: Placeat dolore enim -->
   <url>
-    <loc>http://localhost:5173/category/magna-maiores-et-ut</loc>
+    <loc>https://kidroo.in/category/magna-maiores-et-ut</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Category: Et numquam delectus -->
   <url>
-    <loc>http://localhost:5173/category/quisquam-dolor-in-es</loc>
+    <loc>https://kidroo.in/category/quisquam-dolor-in-es</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Category: Sint consequuntur in -->
   <url>
-    <loc>http://localhost:5173/category/hic-qui-cumque-unde</loc>
+    <loc>https://kidroo.in/category/hic-qui-cumque-unde</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Category: Quasi quia voluptate -->
   <url>
-    <loc>http://localhost:5173/category/voluptas-velit-sunt</loc>
+    <loc>https://kidroo.in/category/voluptas-velit-sunt</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- Product: Reprehenderit expedi -->
   <url>
-    <loc>http://localhost:5173/product/in-nesciunt-eu-labo</loc>
+    <loc>https://kidroo.in/product/in-nesciunt-eu-labo</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -104,7 +104,7 @@
   </url>
   <!-- Product: Magna unde quod sint -->
   <url>
-    <loc>http://localhost:5173/product/eaque-libero-elit-u</loc>
+    <loc>https://kidroo.in/product/eaque-libero-elit-u</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -136,7 +136,7 @@
   </url>
   <!-- Product: Occaecat officia sit -->
   <url>
-    <loc>http://localhost:5173/product/nihil-exercitationem</loc>
+    <loc>https://kidroo.in/product/nihil-exercitationem</loc>
     <lastmod>2026-07-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -148,7 +148,7 @@
   </url>
   <!-- Product: Non consectetur rep -->
   <url>
-    <loc>http://localhost:5173/product/cupiditate-necessita</loc>
+    <loc>https://kidroo.in/product/cupiditate-necessita</loc>
     <lastmod>2026-07-03</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
