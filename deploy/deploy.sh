@@ -72,11 +72,27 @@ echo "   ✅ All config files present"
 # ── Pull Latest Code ───────────────────────────────────────────────────────
 echo ""
 echo "📥 Pulling latest code..."
+
+# Fix Git Dubious Ownership Warning
+git config --global --add safe.directory "$PROJECT_DIR" 2>/dev/null || true
+git config --global --add safe.directory "$BACKEND_DIR" 2>/dev/null || true
+
+# 1. Pull main project (Frontend/Deploy)
+cd "$PROJECT_DIR"
 if git rev-parse --is-inside-work-tree &> /dev/null; then
     git pull --ff-only
-    echo "   ✅ Code updated"
+    echo "   ✅ Main project code updated"
 else
-    echo "   ⏩ Not a git repo — skipping pull"
+    echo "   ⏩ Not a git repo (main project) — skipping pull"
+fi
+
+# 2. Pull backend project (kidrooBackend)
+cd "$BACKEND_DIR"
+if git rev-parse --is-inside-work-tree &> /dev/null; then
+    git pull --ff-only
+    echo "   ✅ Backend code updated"
+else
+    echo "   ⏩ Not a git repo (backend project) — skipping pull"
 fi
 
 # ── Build Frontend ─────────────────────────────────────────────────────────
