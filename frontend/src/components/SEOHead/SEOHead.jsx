@@ -21,7 +21,23 @@ import { useEffect } from 'react';
  *  noIndex         {boolean} If true, adds noindex,nofollow
  */
 const SITE_NAME = 'Kidroo Toys';
+const PRODUCTION_DOMAIN = 'https://kidroo.in';
 const DEFAULT_DESCRIPTION = 'Kidroo Toys - Where Imagination Comes to Play! Shop premium toys, educational kits, and more for kids of all ages.';
+
+const normalizeCanonical = (url) => {
+  if (!url) return `${PRODUCTION_DOMAIN}/`;
+  try {
+    // Handle relative paths e.g. "/product/toy-slug"
+    if (url.startsWith('/')) {
+      return `${PRODUCTION_DOMAIN}${url}`;
+    }
+    const parsed = new URL(url);
+    // Force https://kidroo.in production domain for all canonical tags
+    return `${PRODUCTION_DOMAIN}${parsed.pathname}${parsed.search}`;
+  } catch {
+    return `${PRODUCTION_DOMAIN}/`;
+  }
+};
 
 const SEOHead = ({
   title,
@@ -66,17 +82,14 @@ const SEOHead = ({
     setMeta('name', 'robots', noIndex ? 'noindex,nofollow' : 'index,follow');
 
     // ── Canonical URL ──
+    const cleanCanonical = normalizeCanonical(canonicalUrl);
     let canonicalEl = document.querySelector('link[rel="canonical"]');
-    if (canonicalUrl) {
-      if (!canonicalEl) {
-        canonicalEl = document.createElement('link');
-        canonicalEl.setAttribute('rel', 'canonical');
-        document.head.appendChild(canonicalEl);
-      }
-      canonicalEl.setAttribute('href', canonicalUrl);
-    } else if (canonicalEl) {
-      canonicalEl.remove();
+    if (!canonicalEl) {
+      canonicalEl = document.createElement('link');
+      canonicalEl.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalEl);
     }
+    canonicalEl.setAttribute('href', cleanCanonical);
 
     // ── Open Graph ──
     setMeta('property', 'og:type', ogType);
@@ -84,9 +97,7 @@ const SEOHead = ({
     setMeta('property', 'og:description', ogDescription || description || DEFAULT_DESCRIPTION);
     setMeta('property', 'og:site_name', SITE_NAME);
     setMeta('property', 'og:image', ogImage || '');
-    if (canonicalUrl) {
-      setMeta('property', 'og:url', canonicalUrl);
-    }
+    setMeta('property', 'og:url', cleanCanonical);
 
     // ── Twitter Cards ──
     setMeta('name', 'twitter:card', twitterCard);
