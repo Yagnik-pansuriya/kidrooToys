@@ -38,3 +38,8 @@ Thumbs.db
 # Sub-repositories
 kidrooBackend/
 backend/
+
+# Database backups (Do not commit live database dumps to GitHub)
+backups/
+backups
+
