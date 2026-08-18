@@ -13,7 +13,7 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Pagination from '../../../components/Pagination/Pagination';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import './Shop.scss';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -277,11 +277,11 @@ const Shop = () => {
   return (
     <div className="shop-page">
       {/* ── SEO Head ── */}
-      <SEOHead
+      <SEO
         title={shopSeoTitle}
         description={shopSeoDescription}
         keywords={`shop toys, buy toys online, ${activeCategoryName ? activeCategoryName.toLowerCase() + ' toys, ' : ''}kids toys, children toys, educational toys India`}
-        canonicalUrl={shopCanonicalUrl}
+        canonical={shopCanonicalUrl}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'CollectionPage',

@@ -7,7 +7,7 @@ import { useGetPublicCouponsQuery } from '../../../store/ActionApi/couponApi';
 import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import './Offers.scss';
 
 const safeColor = (c, fb) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fb;
@@ -100,11 +100,11 @@ const Offers = () => {
 
   return (
     <div className="offpg">
-      <SEOHead
+      <SEO
         title="Offers & Deals - Kidroo Toys"
         description="Discover amazing deals on kids toys at Kidroo."
         keywords="toy deals, kids toy offers, discount toys"
-        canonicalUrl={`${window.location.origin}/offers`}
+        canonical={`${window.location.origin}/offers`}
       />
 
       {/* ════════ PAGE HEADER ════════ */}

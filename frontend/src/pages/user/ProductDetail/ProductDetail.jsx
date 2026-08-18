@@ -11,7 +11,7 @@ import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import './ProductDetail.scss';
 
 const ProductDetail = () => {
@@ -265,11 +265,11 @@ const ProductDetail = () => {
   return (
     <div className="pdp">
       {/* ── SEO Head ── */}
-      <SEOHead
+      <SEO
         title={seoTitle}
         description={seoDescription}
         keywords={seoKeywords}
-        canonicalUrl={productUrl}
+        canonical={productUrl}
         ogType="product"
         ogImage={productImage}
         ogTitle={seoTitle}

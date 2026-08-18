@@ -11,7 +11,7 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useToast } from '../../../context/ToastContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Pagination from '../../../components/Pagination/Pagination';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import '../Shop/Shop.scss';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -142,11 +142,11 @@ const CategoryPage = () => {
   return (
     <div className="shop-page">
       {/* ── SEO Head ── */}
-      <SEOHead
+      <SEO
         title={seoTitle}
         description={seoDescription}
         keywords={seoKeywords}
-        canonicalUrl={canonicalUrl}
+        canonical={canonicalUrl}
         ogType="website"
         ogImage={categoryImage}
         jsonLd={jsonLd}
