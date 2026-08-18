@@ -10,7 +10,7 @@ import { useToast } from '../../../context/ToastContext';
 import { updateCustomerProfile, toggleWishlistId, setWishlistIds } from '../../../store/ReducerApi/customerAuthSlice';
 import { useCart } from '../../../context/CartContext';
 import Loader from '../../../components/Loader/Loader';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import UserConfirmModal from '../../../components/ConfirmModal/UserConfirmModal';
 import './UserProfile.scss';
 
@@ -241,7 +241,7 @@ const UserProfile = () => {
 
   return (
     <div className="profile-page">
-      <SEOHead title="My Profile" description="Manage your Kidroo Toys account profile, addresses, and settings." noIndex={true} />
+      <SEO title="My Profile" description="Manage your Kidroo Toys account profile, addresses, and settings." noIndex={true} />
       <div className="profile-page__hero">
         <div className="container">
           <h1>My Profile</h1>

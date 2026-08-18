@@ -7,7 +7,7 @@ import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { toggleWishlistId, setWishlistIds } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import './Wishlist.scss';
 
 const Wishlist = () => {
@@ -74,7 +74,7 @@ const Wishlist = () => {
 
   return (
     <div className="wishlist-page">
-      <SEOHead
+      <SEO
         title="My Wishlist"
         description="Your saved toys and favorite items at Kidroo Toys."
         noIndex={true}

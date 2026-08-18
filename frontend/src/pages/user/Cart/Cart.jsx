@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../../context/CartContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { useGetSettingsQuery } from '../../../store/ActionApi/settingsApi';
-import SEOHead from '../../../components/SEOHead/SEOHead';
+import SEO from '../../../components/SEO/SEO';
 import './Cart.scss';
 
 const Cart = () => {
@@ -45,7 +45,7 @@ const Cart = () => {
 
   return (
     <div className="cart-page">
-      <SEOHead
+      <SEO
         title="Shopping Cart"
         description="Review your shopping cart at Kidroo Toys. Manage items, update quantities, and proceed to checkout."
         noIndex={true}
