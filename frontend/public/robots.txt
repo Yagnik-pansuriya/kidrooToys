@@ -27,11 +27,6 @@ Disallow: /*?sort=
 Disallow: /*?page=
 Disallow: /*?limit=
 
-# Block internal assets from indexing
-Disallow: /assets/
-Disallow: /*.js$
-Disallow: /*.css$
-
 # Crawl-delay for polite crawling
 Crawl-delay: 1
 
