@@ -32,6 +32,7 @@ const applyCssVars = (s) => {
   root.style.setProperty('--color-header',  s.headerColor);
   root.style.setProperty('--color-footer',  s.footerColor);
 
+
   // Browser tab title
   if (s.siteName) {
     document.title = s.tagline
@@ -39,23 +40,10 @@ const applyCssVars = (s) => {
       : s.siteName;
   }
 
-  // Favicon — logo image or fallback 🧸 emoji SVG
-  const faviconEl = document.querySelector('link[rel="icon"]')
-    || (() => {
-      const el = document.createElement('link');
-      el.rel = 'icon';
-      document.head.appendChild(el);
-      return el;
-    })();
-
-  if (s.logo) {
-    faviconEl.href = s.logo;
-    faviconEl.type = 'image/png';
-  } else {
-    faviconEl.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>\uD83E\uDDF8</text></svg>";
-    faviconEl.type = 'image/svg+xml';
-  }
+  // NOTE: Favicon is set statically in index.html (/favicon.png)
+  // and is NOT overridden dynamically — do not add favicon logic here.
 };
+
 
 // ─── Read cached settings from localStorage (for splash fallback) ─────────────
 const loadFromCache = () => {
