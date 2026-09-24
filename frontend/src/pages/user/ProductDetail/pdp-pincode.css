@@ -1,0 +1,100 @@
+/* ── PDP Pincode / Delivery Checker ── */
+
+.pdp__pincode-checker {
+  padding: 1rem;
+  background: #faf8f5;
+  border-radius: 1rem;
+  border: 1px solid #eae5db;
+}
+
+.pdp__pincode-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-header, #1a1d2e);
+  margin: 0 0 0.65rem 0;
+}
+
+.pdp__pincode-title svg { color: var(--color-primary, #8b7355); }
+
+.pdp__pincode-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0.6rem;
+}
+
+.pdp__pincode-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #d1c7bd;
+  border-radius: 0.65rem;
+  font-size: 0.9rem;
+  color: var(--color-header, #1a1d2e);
+  background: white;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.pdp__pincode-input:focus {
+  border-color: var(--color-primary, #8b7355);
+  box-shadow: 0 0 0 3px rgba(139,115,85,0.13);
+}
+
+.pdp__pincode-btn {
+  padding: 10px 20px;
+  background: var(--color-primary, #8b7355);
+  color: white;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 0.65rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.pdp__pincode-btn:hover:not(:disabled) {
+  background: darkgoldenrod;
+}
+
+.pdp__pincode-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pdp__pincode-results {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2dacf;
+  animation: pdpFadeInUp 0.3s ease;
+}
+
+.pdp__pincode-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.pdp__pincode-label {
+  color: #6b6e7e;
+  font-weight: 500;
+}
+
+.pdp__pincode-val {
+  color: var(--color-header, #1a1d2e);
+  font-weight: 700;
+}
+
+.pdp__pincode-val--success { color: #15803d; }
+
+.pdp__pincode-error {
+  font-size: 0.8rem;
+  color: #b91c1c;
+  font-weight: 600;
+  margin-top: 0.4rem;
+  animation: pdpFadeInUp 0.3s ease;
+}

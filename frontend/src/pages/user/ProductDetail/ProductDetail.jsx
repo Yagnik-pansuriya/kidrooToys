@@ -12,7 +12,12 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
 import SEO from '../../../components/SEO/SEO';
-import './ProductDetail.scss';
+import './pdp-layout.css';
+import './pdp-gallery.css';
+import './pdp-info.css';
+import './pdp-pincode.css';
+import './pdp-tabs.css';
+import './pdp-related.css';
 
 const ProductDetail = () => {
   const { slug } = useParams();
