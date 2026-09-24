@@ -335,7 +335,7 @@ const Home = () => {
 
 
 
-      <section className="newsletter-section">
+      {/* <section className="newsletter-section">
         <div className="newsletter-section__container">
           <div className="newsletter-section__content">
             <h2 className="newsletter-section__title">Join the Kidroo Family</h2>
@@ -367,7 +367,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
     </div>
   );
