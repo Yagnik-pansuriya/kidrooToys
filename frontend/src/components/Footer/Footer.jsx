@@ -66,7 +66,7 @@ const Footer = () => {
               <ul className="footer__contact">
                 <li><FiMail /> <span>{settings.contactEmail}</span></li>
                 <li><FiPhone /> <span>{settings.contactPhone}</span></li>
-                <li><FiMapPin /> <span>Mumbai, India</span></li>
+                <li><FiMapPin /> <span>Morbi , Guajarat</span></li>
               </ul>
             </div>
           </div>
