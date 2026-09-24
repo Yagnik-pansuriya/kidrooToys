@@ -32,15 +32,12 @@
   }
 
   &__logo-img {
-    height: 40px;
+    height: 56px;
     width: auto;
+    max-width: 180px;
     object-fit: contain;
     filter: brightness(1.1);
-
-    img {
-      min-width: 200px;
-      min-height: 100px;
-    }
+    display: block;
   }
 
   &__logo-text {
@@ -139,13 +136,8 @@
     }
   }
 
-  &__cart-btn {
-    position: relative;
-  }
-
-  &__wishlist-btn {
-    position: relative;
-  }
+  &__cart-btn    { position: relative; }
+  &__wishlist-btn{ position: relative; }
 
   &__cart-count {
     position: absolute;
@@ -255,13 +247,9 @@
     backdrop-filter: blur(3px);
     animation: fadeIn 0.25s ease;
 
-    &--visible {
-      display: block;
-    }
+    &--visible { display: block; }
 
-    @include lg {
-      display: none !important;
-    }
+    @include lg { display: none !important; }
   }
 
   /* ── Mobile Drawer ───────────────────────── */
@@ -307,7 +295,8 @@
     margin-bottom: 0.25rem;
 
     .header__logo-img {
-      height: 32px;
+      height: 44px;
+      max-width: 140px;
     }
   }
 
@@ -358,19 +347,13 @@
     &:hover {
       color: var(--color-primary);
       background: rgba(255, 107, 53, 0.07);
-
-      svg {
-        color: var(--color-primary);
-      }
+      svg { color: var(--color-primary); }
     }
 
     &--active {
       color: var(--color-primary);
       background: rgba(255, 107, 53, 0.09);
-
-      svg {
-        color: var(--color-primary);
-      }
+      svg { color: var(--color-primary); }
     }
   }
 
