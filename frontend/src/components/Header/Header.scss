@@ -7,7 +7,7 @@
   left: 0;
   right: 0;
   z-index: $z-sticky;
-  padding: $space-sm 0;
+  padding: 0.5rem 0;
   transition: all $transition-base;
   background: var(--color-header, #1a1d2e);
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
@@ -15,7 +15,7 @@
   &--scrolled {
     background: var(--color-header, #1a1d2e);
     box-shadow: 0 4px 28px rgba(0, 0, 0, 0.28);
-    padding: $space-xs 0;
+    padding: 0.35rem 0;
   }
 
   &__container {
@@ -29,15 +29,18 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    text-decoration: none;
   }
 
   &__logo-img {
-    height: 56px;
+    height: 64px;
     width: auto;
-    max-width: 180px;
+    max-width: 220px;
+    min-width: 80px;
     object-fit: contain;
-    filter: brightness(1.1);
+    object-position: left center;
     display: block;
+    filter: brightness(1.1) drop-shadow(0 1px 4px rgba(0,0,0,0.25));
   }
 
   &__logo-text {
@@ -295,8 +298,9 @@
     margin-bottom: 0.25rem;
 
     .header__logo-img {
-      height: 44px;
-      max-width: 140px;
+      height: 48px;
+      max-width: 160px;
+      min-width: 60px;
     }
   }
 
