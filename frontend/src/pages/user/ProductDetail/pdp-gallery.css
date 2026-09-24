@@ -2,10 +2,15 @@
 
 .pdp__gallery {
   position: relative;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
 }
 
 .pdp__slider {
   position: relative;
+  min-width: 0;
+  width: 100%;
 }
 
 /* Main image area */

@@ -5,6 +5,8 @@
   margin: 0 auto;
   padding: 100px 1.5rem 4rem;
   font-family: 'Nunito', 'Inter', sans-serif;
+  /* Prevent page-level horizontal overflow */
+  overflow-x: hidden;
 }
 
 .pdp-empty {
@@ -48,13 +50,28 @@
 .pdp__main {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 2.5rem;
+  gap: 2rem;
   margin-bottom: 3.5rem;
+  /* Critical: prevent grid children from overflowing */
+  width: 100%;
+}
+
+/* Each direct grid child must not overflow its column */
+.pdp__main > * {
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .pdp__main {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
 @media (min-width: 1024px) {
   .pdp__main {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 3rem;
     align-items: start;
   }

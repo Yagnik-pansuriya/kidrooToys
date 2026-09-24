@@ -33,8 +33,8 @@ export const siteSettings = {
   hoverColor: '#E55A25',
   headerColor: '#1A1D2E',
   footerColor: '#1A1D2E',
-  contactEmail: 'hello@kidrootoys.com',
-  contactPhone: '+91 1800 123 4567',
+  contactEmail: 'info@kidroo.in',
+  contactPhone: '+91 82829 39385',
   socialLinks: {
     facebook: 'https://facebook.com/kidrootoys',
     instagram: 'https://instagram.com/kidrootoys',
