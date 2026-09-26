@@ -40,6 +40,7 @@ const getItemProps = (item) => ({
     ? Object.values(item.selectedVariant.attributes || {}).join(' / ') || item.selectedVariant.sku || ''
     : (item.variantName || ''),
   quantity: item.quantity || 1,
+  weight: item.weight || 0.5,
 });
 
 // Empty address template
@@ -95,7 +96,7 @@ const Checkout = () => {
 
   // Dynamic Shipping Estimate
   const { data: shippingEst, isFetching: isFetchingShipping } = useGetShippingEstimateQuery(
-    { pincode: zipCode, weight: 0.5 * normalizedItems.length, cod: paymentMethod === 'cod' },
+    { pincode: zipCode, weight: normalizedItems.reduce((sum, item) => sum + ((item.weight || 0.5) * (item.quantity || 1)), 0), cod: paymentMethod === 'cod' },
     { skip: !zipCode || !/^\d{6}$/.test(zipCode) }
   );
 

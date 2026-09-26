@@ -106,6 +106,11 @@ const useProductForm = () => {
       youtubeUrl:         product.youtubeUrl || '',
       youtubeUrl2:        product.youtubeUrl2 || '',
       skuCode:            product.skuCode || '',
+      weight:             product.weight ?? '',
+      length:             product.length ?? '',
+      breadth:            product.breadth ?? '',
+      width:              product.width ?? '',
+      height:             product.height ?? '',
       images:             [],
       previewUrls:        product.images || [],
       // ── Warranty / Guarantee ──
@@ -195,7 +200,8 @@ const useProductForm = () => {
     // never receives a blank that might silently become NaN or get
     // dropped.  The value '0' is a valid intentional value.
     const numericFields = [
-      'price', 'originalPrice', 'discountPercentage', 'stock',
+      'price', 'originalPrice', 'discountPercentage', 'stock', 'weight',
+      'length', 'breadth', 'width', 'height',
       'ratings', 'numReviews', 'warrantyPeriod', 'guaranteePeriod',
     ];
     numericFields.forEach((key) => {

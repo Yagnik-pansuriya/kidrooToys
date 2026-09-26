@@ -563,7 +563,7 @@ const ProductModal = ({
             icon={<FiDollarSign />}
             title="Pricing & Inventory"
             defaultOpen={true}
-            errorKeys={['price', 'originalPrice', 'discountPercentage', 'stock', 'ratings', 'numReviews']}
+            errorKeys={['price', 'originalPrice', 'discountPercentage', 'stock', 'weight', 'length', 'breadth', 'width', 'height', 'ratings', 'numReviews']}
             errors={errors}
           >
 
@@ -640,6 +640,106 @@ const ProductModal = ({
               {errors.stock && (
                 <p className="admin-field__error">
                   <FiAlertCircle /> {errors.stock}
+                </p>
+              )}
+            </div>
+
+            {/* Weight (kg) — required for Shiprocket */}
+            <div className={`admin-field ${errors.weight ? 'admin-field--error' : ''}`}>
+              <label>Weight (kg) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0.01"
+                className={errors.weight ? 'has-error' : ''}
+                placeholder="0.5"
+                required
+                {...field('weight')}
+              />
+              <p className="admin-field__hint">Shipping weight in kilograms. Required by Shiprocket for delivery estimates.</p>
+              {errors.weight && (
+                <p className="admin-field__error">
+                  <FiAlertCircle /> {errors.weight}
+                </p>
+              )}
+            </div>
+
+            {/* ── Shipping Dimensions (cm) ── */}
+            <div className="admin-field admin-field--full" style={{ marginBottom: '0.25rem' }}>
+              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--admin-text-secondary, #64748b)' }}>
+                📦 Shipping Dimensions (cm)
+              </label>
+              <p className="admin-field__hint">Package dimensions in centimeters. Used by Shiprocket for shipping cost calculation.</p>
+            </div>
+
+            {/* Length */}
+            <div className={`admin-field ${errors.length ? 'admin-field--error' : ''}`}>
+              <label>Length (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0.1"
+                className={errors.length ? 'has-error' : ''}
+                placeholder="15"
+                {...field('length')}
+              />
+              {errors.length && (
+                <p className="admin-field__error">
+                  <FiAlertCircle /> {errors.length}
+                </p>
+              )}
+            </div>
+
+            {/* Breadth */}
+            <div className={`admin-field ${errors.breadth ? 'admin-field--error' : ''}`}>
+              <label>Breadth (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0.1"
+                className={errors.breadth ? 'has-error' : ''}
+                placeholder="10"
+                {...field('breadth')}
+              />
+              {errors.breadth && (
+                <p className="admin-field__error">
+                  <FiAlertCircle /> {errors.breadth}
+                </p>
+              )}
+            </div>
+
+            {/* Width */}
+            <div className={`admin-field ${errors.width ? 'admin-field--error' : ''}`}>
+              <label>Width (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0.1"
+                className={errors.width ? 'has-error' : ''}
+                placeholder="10"
+                {...field('width')}
+              />
+              {errors.width && (
+                <p className="admin-field__error">
+                  <FiAlertCircle /> {errors.width}
+                </p>
+              )}
+            </div>
+
+            {/* Height */}
+            <div className={`admin-field ${errors.height ? 'admin-field--error' : ''}`}>
+              <label>Height (cm)</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0.1"
+                className={errors.height ? 'has-error' : ''}
+                placeholder="10"
+                {...field('height')}
+              />
+              {errors.height && (
+                <p className="admin-field__error">
+                  <FiAlertCircle /> {errors.height}
                 </p>
               )}
             </div>

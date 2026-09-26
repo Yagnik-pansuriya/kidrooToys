@@ -42,6 +42,11 @@ export const emptyForm = {
   youtubeUrl:         '',
   youtubeUrl2:        '',
   skuCode:            '',
+  weight:             '',   // Weight in kg (required for Shiprocket shipping)
+  length:             '',   // Length in cm (for Shiprocket)
+  breadth:            '',   // Breadth in cm (for Shiprocket)
+  width:              '',   // Width in cm (for Shiprocket)
+  height:             '',   // Height in cm (for Shiprocket)
   images:             [],   // File objects for new uploads
   previewUrls:        [],   // Blob / remote URLs for preview
   // ── Warranty / Guarantee fields ──
@@ -127,6 +132,24 @@ export const validateProductForm = (form) => {
   } else if (!Number.isInteger(stockNum)) {
     errors.stock = 'Stock must be a whole number';
   }
+
+  // 8b. Weight (required for Shiprocket)
+  const weightNum = Number(form.weight);
+  if (form.weight === '' || form.weight === null || form.weight === undefined || isNaN(weightNum)) {
+    errors.weight = 'Weight is required for shipping calculation';
+  } else if (weightNum <= 0) {
+    errors.weight = 'Weight must be greater than 0 kg';
+  }
+
+  // 8c. Shipping Dimensions (length, breadth, width, height)
+  ['length', 'breadth', 'width', 'height'].forEach((dim) => {
+    const val = Number(form[dim]);
+    if (form[dim] !== '' && form[dim] !== null && form[dim] !== undefined) {
+      if (isNaN(val) || val <= 0) {
+        errors[dim] = `${dim.charAt(0).toUpperCase() + dim.slice(1)} must be greater than 0 cm`;
+      }
+    }
+  });
 
   // 9. Ratings
   if (form.ratings !== '' && form.ratings !== null && form.ratings !== undefined) {

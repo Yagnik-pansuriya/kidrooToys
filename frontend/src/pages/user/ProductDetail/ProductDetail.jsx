@@ -97,7 +97,7 @@ const ProductDetail = () => {
       return;
     }
     try {
-      await shippingEstimateTrigger({ pincode }).unwrap();
+      await shippingEstimateTrigger({ pincode, weight: product?.weight || 0.5 }).unwrap();
       showSuccess('Shipping details loaded!');
     } catch (err) {
       showError(err?.data?.message || 'Failed to fetch shipping details for this PIN code');
