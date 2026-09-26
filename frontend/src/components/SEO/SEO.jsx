@@ -1,20 +1,32 @@
 import { Helmet } from 'react-helmet-async';
 
-const SITE_URL = 'https://kidroo.in';
 const SITE_NAME = 'Kidroo Toys';
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE = 'https://kidroo.in/og-image.jpg';
 const DEFAULT_DESCRIPTION = 'Shop premium kids toys online at Kidroo Toys. Discover educational toys, wooden toys, Montessori toys, building blocks, baby toys and more across India.';
 
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined' && window.location.origin) {
+    return window.location.origin;
+  }
+  return 'https://kidroo.in';
+};
+
 const normalizeCanonical = (url) => {
-  if (!url) return `${SITE_URL}/`;
+  const baseUrl = getBaseUrl();
+  if (!url) {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+    }
+    return `${baseUrl}/`;
+  }
   try {
     if (url.startsWith('/')) {
-      return `${SITE_URL}${url}`;
+      return `${baseUrl}${url}`;
     }
     const parsed = new URL(url);
-    return `${SITE_URL}${parsed.pathname}${parsed.search}`;
+    return parsed.href;
   } catch {
-    return `${SITE_URL}/`;
+    return `${baseUrl}/`;
   }
 };
 
@@ -35,7 +47,9 @@ const SEO = ({
   jsonLd,
   children,
 }) => {
-  const finalTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Where Imagination Comes to Play 🧸`;
+  const finalTitle = title
+    ? (title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`)
+    : `${SITE_NAME} - Where Imagination Comes to Play 🧸`;
   const finalDescription = description || DEFAULT_DESCRIPTION;
   const finalCanonical = normalizeCanonical(canonical || canonicalUrl);
   const finalImage = image || ogImage || DEFAULT_IMAGE;

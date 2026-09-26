@@ -30,7 +30,12 @@ const ProductDetail = () => {
 
   // ── API data ──────────────────────────────────────────────────
   const { data: productResp, isLoading } = useGetProductByIdQuery(slug);
-  const product = productResp?.data || productResp;
+  const rawProduct = productResp?.data || productResp;
+  const product = Array.isArray(rawProduct?.data)
+    ? rawProduct.data[0]
+    : Array.isArray(rawProduct)
+      ? rawProduct[0]
+      : rawProduct;
   const productId = product?._id || product?.id;
 
   const { data: reviewsResp } = useGetProductReviewsQuery(productId, { skip: !productId });
@@ -199,14 +204,37 @@ const ProductDetail = () => {
   };
 
   // ── SEO: Build JSON-LD Product structured data ────────────────
-  const seoTitle = product.seoTitle || `Buy ${name} Online`;
-  const seoDescription = product.seoDescription
-    || `${product.description?.substring(0, 150)}${product.description?.length > 150 ? '…' : ''}`;
-  const seoKeywords = Array.isArray(product.seoKeywords)
-    ? product.seoKeywords.join(', ')
-    : (product.tags?.join(', ') || '');
-  const productUrl = `${window.location.origin}/product/${slug}`;
-  const productImage = productImages[0] || '';
+  const cleanHtmlDescription = (html) => {
+    if (!html) return '';
+    return html
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const seoTitle = product?.seoTitle?.trim() || (name ? `Buy ${name} Online` : 'Product Detail');
+  const rawDesc = product?.seoDescription?.trim()
+    || cleanHtmlDescription(product?.description)
+    || (name ? `Buy ${name} online at Kidroo Toys.` : 'Shop kids toys at Kidroo Toys.');
+  const seoDescription = rawDesc.length > 160 ? `${rawDesc.substring(0, 157)}...` : rawDesc;
+
+  const seoKeywords = (() => {
+    if (Array.isArray(product?.seoKeywords) && product.seoKeywords.length > 0) {
+      return product.seoKeywords.filter(Boolean).join(', ');
+    }
+    if (typeof product?.seoKeywords === 'string' && product.seoKeywords.trim()) {
+      return product.seoKeywords.trim();
+    }
+    if (Array.isArray(product?.tags) && product.tags.length > 0) {
+      return product.tags.filter(Boolean).join(', ');
+    }
+    return name ? `${name.toLowerCase()}, buy ${name.toLowerCase()} online, kidroo toys` : '';
+  })();
+
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://kidroo.in';
+  const productUrl = `${currentOrigin}/product/${slug || product?.slug || productId || ''}`;
+  const productImage = productImages[0] || product?.image || '';
 
   const jsonLd = {
     '@context': 'https://schema.org',
