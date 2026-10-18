@@ -1,0 +1,797 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KIDROO ANIMAL SAFARI — Interactive Animated Animal Kingdom with Sound
+// ═══════════════════════════════════════════════════════════════════════════════
+
+.animal-safari {
+  position: relative;
+  padding: 5rem 0;
+  background: linear-gradient(180deg, #FAF6F0 0%, #FFFDF9 50%, #F5EFEB 100%);
+  overflow: hidden;
+
+  // Whimsical background floating elements
+  &__decor {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    font-size: 2.2rem;
+    opacity: 0.7;
+
+    &--cloud1 {
+      top: 5%;
+      left: 3%;
+      animation: floatCloud 24s ease-in-out infinite alternate;
+      font-size: 3.5rem;
+      opacity: 0.55;
+    }
+
+    &--cloud2 {
+      top: 25%;
+      right: 4%;
+      animation: floatCloud 28s ease-in-out infinite alternate-reverse;
+      font-size: 4rem;
+      opacity: 0.5;
+    }
+
+    &--star1 {
+      top: 15%;
+      left: 18%;
+      animation: starTwinkle 3s ease-in-out infinite;
+      font-size: 1.8rem;
+    }
+
+    &--star2 {
+      top: 10%;
+      right: 22%;
+      animation: starTwinkle 3.8s ease-in-out infinite 1s;
+      font-size: 2rem;
+    }
+  }
+
+  &__container {
+    max-width: $container-max;
+    margin: 0 auto;
+    padding: 0 $container-padding;
+    position: relative;
+    z-index: 2;
+  }
+
+  // ─── Header ───
+  &__header {
+    text-align: center;
+    max-width: 780px;
+    margin: 0 auto 3.5rem;
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 6px 18px;
+    background: rgba(255, 107, 53, 0.12);
+    color: var(--color-primary);
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-radius: $radius-full;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 10px rgba(255, 107, 53, 0.1);
+
+    .chip-icon {
+      font-size: 0.95rem;
+      animation: spinSlow 8s linear infinite;
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    color: var(--color-header);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+
+    &--accent {
+      color: var(--color-primary);
+      position: relative;
+      display: inline-block;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: rgba(255, 107, 53, 0.25);
+        border-radius: 4px;
+        z-index: -1;
+      }
+    }
+  }
+
+  &__desc {
+    font-size: 1.1rem;
+    color: #6B6E7E;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+
+    strong {
+      color: var(--color-primary);
+      font-weight: 800;
+    }
+  }
+
+  // ─── Toolbar ───
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+
+  // ─── Filter Tabs ───
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+
+  // ─── Grid ───
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.8rem;
+
+    @media (min-width: 520px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 900px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (min-width: 1200px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  &__footer-tip {
+    text-align: center;
+    margin-top: 3.5rem;
+    font-size: 0.9rem;
+    color: #8A8D9E;
+
+    span {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      padding: 8px 24px;
+      border-radius: $radius-full;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
+// ─── Toolbar Buttons ────────────────────────────────────────────────────────
+.safari-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 20px;
+  border-radius: $radius-full;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: white;
+  color: var(--color-header);
+  border: 1.5px solid #E2E4EC;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  svg {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-primary);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &--active {
+    border-color: var(--color-primary);
+    background: #FFF7ED;
+    color: #C2410C;
+  }
+
+  &--muted {
+    border-color: #EF4444;
+    background: #FEF2F2;
+    color: #DC2626;
+
+    svg {
+      color: #DC2626;
+    }
+  }
+
+  &--party {
+    background: linear-gradient(135deg, #7B2FF7 0%, #FF6B35 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 6px 20px rgba(123, 47, 247, 0.35);
+
+    svg {
+      color: white;
+    }
+
+    &:hover {
+      box-shadow: 0 10px 28px rgba(123, 47, 247, 0.5);
+      transform: translateY(-3px) scale(1.03);
+    }
+
+    &.is-dancing {
+      animation: partyShake 0.4s ease-in-out infinite;
+    }
+  }
+
+  &--game {
+    background: #F0FDF4;
+    border-color: #86EFAC;
+    color: #15803D;
+
+    svg {
+      color: #16A34A;
+    }
+
+    &.is-playing {
+      background: #16A34A;
+      color: white;
+      border-color: #16A34A;
+
+      svg {
+        color: white;
+      }
+    }
+  }
+}
+
+// ─── Habitat Filter Tabs ────────────────────────────────────────────────────
+.safari-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 8px 18px;
+  background: white;
+  color: #6B6E7E;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border-radius: $radius-full;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  &__icon {
+    font-size: 1.05rem;
+  }
+
+  &:hover {
+    color: var(--color-header);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  &--active {
+    background: var(--color-header);
+    color: white;
+    box-shadow: 0 6px 20px rgba(26, 29, 46, 0.25);
+
+    &:hover {
+      color: white;
+      background: var(--color-header);
+    }
+  }
+}
+
+// ─── Mystery Game Banner ────────────────────────────────────────────────────
+.safari-game-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 2rem;
+  background: linear-gradient(135deg, #16A34A 0%, #059669 100%);
+  color: white;
+  border-radius: $radius-2xl;
+  margin-top: 1.5rem;
+  box-shadow: 0 10px 30px rgba(22, 163, 74, 0.28);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__score {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 16px;
+    border-radius: $radius-full;
+    font-size: 0.95rem;
+
+    strong {
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #FDE047;
+    }
+  }
+
+  &__msg {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  &__replay-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 8px 18px;
+    background: white;
+    color: #15803D;
+    font-weight: 800;
+    font-size: 0.88rem;
+    border-radius: $radius-full;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+      background: #F0FDF4;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANIMAL CARD DESIGN
+// ═══════════════════════════════════════════════════════════════════════════════
+.animal-card {
+  position: relative;
+  background: white;
+  border-radius: $radius-2xl;
+  padding: 1.8rem 1.4rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 2px solid transparent;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  overflow: visible;
+
+  // Background glow accent
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--card-bg);
+    opacity: 0.5;
+    transition: opacity 0.35s ease;
+    z-index: 0;
+  }
+
+  & > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  // Hover state
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--card-border);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+
+    &::before {
+      opacity: 0.85;
+    }
+
+    .animal-card__btn {
+      background: var(--card-theme);
+      color: white;
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    }
+
+    .animal-svg {
+      transform: scale(1.08) translateY(-4px);
+    }
+  }
+
+  // Active / clicked state
+  &--active {
+    animation: cardSquish 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-color: var(--card-theme);
+    box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.25), 0 20px 40px rgba(0, 0, 0, 0.15);
+
+    .animal-card__btn {
+      background: var(--card-theme);
+      color: white;
+    }
+  }
+
+  // ─── Habitat Badge ───
+  &__badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    background: white;
+    padding: 4px 10px;
+    border-radius: $radius-full;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    color: #4A4D5E;
+    z-index: 2;
+  }
+
+  // ─── Speech Bubble on Click ───
+  &__bubble {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-header);
+    color: white;
+    padding: 8px 18px;
+    border-radius: $radius-full;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+    animation: bubbleBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 7px solid transparent;
+      border-top-color: var(--color-header);
+    }
+  }
+
+  &__bubble-sound {
+    font-family: $font-heading;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #FDE047;
+    letter-spacing: 1px;
+  }
+
+  // Sound Wave Bars inside bubble
+  &__sound-wave {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 14px;
+
+    span {
+      display: inline-block;
+      width: 3px;
+      height: 100%;
+      background: #38BDF8;
+      border-radius: 2px;
+      animation: soundWaveBar 0.5s ease-in-out infinite alternate;
+
+      &:nth-child(1) { animation-delay: 0.0s; height: 40%; }
+      &:nth-child(2) { animation-delay: 0.15s; height: 100%; }
+      &:nth-child(3) { animation-delay: 0.3s; height: 70%; }
+      &:nth-child(4) { animation-delay: 0.45s; height: 50%; }
+    }
+  }
+
+  // ─── Avatar Wrap ───
+  &__avatar-wrap {
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 1rem;
+  }
+
+  &__avatar-glow {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    background: radial-gradient(circle, var(--card-theme) 0%, transparent 70%);
+    opacity: 0.25;
+    border-radius: 50%;
+    filter: blur(8px);
+    transition: opacity 0.3s ease;
+  }
+
+  // Pulsing rings
+  &__rings {
+    position: absolute;
+    inset: -10px;
+    pointer-events: none;
+
+    .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid var(--card-theme);
+      opacity: 0;
+      animation: ringPulse 1.2s ease-out infinite;
+
+      &--2 {
+        animation-delay: 0.4s;
+      }
+    }
+  }
+
+  // ─── Content ───
+  &__content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__name {
+    font-family: $font-heading;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--color-header);
+    margin-bottom: 2px;
+  }
+
+  &__title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--card-theme);
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__fact {
+    font-size: 0.85rem;
+    color: #6B6E7E;
+    line-height: 1.45;
+    margin-bottom: 1.2rem;
+    min-height: 38px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__action {
+    width: 100%;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px 16px;
+    background: white;
+    color: var(--color-header);
+    font-size: 0.86rem;
+    font-weight: 800;
+    border-radius: $radius-full;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1.5px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    .btn-icon {
+      font-size: 1.05rem;
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SVG ANIMATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+.animal-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.08));
+
+  // Idle floating animation
+  animation: animalBreathe 3.5s ease-in-out infinite;
+
+  // Individual animal specifics
+  &--lion {
+    .lion-mane {
+      transform-origin: 80px 80px;
+      animation: maneWiggle 4s ease-in-out infinite;
+    }
+  }
+
+  &--elephant {
+    .elephant-ear--l {
+      transform-origin: 48px 76px;
+      animation: earFlapLeft 3s ease-in-out infinite;
+    }
+    .elephant-ear--r {
+      transform-origin: 112px 76px;
+      animation: earFlapRight 3s ease-in-out infinite;
+    }
+    .elephant-trunk--trumpet {
+      transform-origin: 74px 86px;
+      animation: trunkTrumpet 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+
+  &--dog {
+    .dog-ear--l {
+      transform-origin: 48px 52px;
+      animation: earFlapLeft 2.5s ease-in-out infinite;
+    }
+    .dog-ear--r {
+      transform-origin: 112px 52px;
+      animation: earFlapRight 2.5s ease-in-out infinite 0.2s;
+    }
+  }
+
+  &--active {
+    animation: animalJumpAction 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// KEYFRAME ANIMATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+@keyframes animalBreathe {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+  }
+}
+
+@keyframes animalJumpAction {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(0.85, 1.15) translateY(-14px);
+  }
+  50% {
+    transform: scale(1.12, 0.9) translateY(4px);
+  }
+  75% {
+    transform: scale(0.96, 1.04) translateY(-3px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes cardSquish {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.95, 1.04); }
+  60% { transform: scale(1.03, 0.97); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bubbleBounce {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.7);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes soundWaveBar {
+  0% { height: 25%; }
+  100% { height: 100%; }
+}
+
+@keyframes ringPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes floatCloud {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(50px); }
+}
+
+@keyframes starTwinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+  50% { transform: scale(1.3) rotate(20deg); opacity: 1; }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes partyShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg) scale(1.05); }
+  75% { transform: rotate(4deg) scale(1.05); }
+}
+
+@keyframes earFlapLeft {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-8deg); }
+}
+
+@keyframes earFlapRight {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+}
+
+@keyframes maneWiggle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes trunkTrumpet {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(-25deg) translateY(-8px); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

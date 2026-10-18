@@ -1,0 +1,204 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+// ─── Top Scroll Progress Bar with Moving Toy Cart ────────────────────────────
+.kidroo-scroll-track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.04);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.kidroo-scroll-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #FF6B35 0%, #F59E0B 50%, #7B2FF7 100%);
+  position: relative;
+  transition: width 0.1s cubic-bezier(0.1, 0.9, 0.2, 1);
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+}
+
+.kidroo-scroll-toy {
+  position: absolute;
+  right: -14px;
+  top: -12px;
+  font-size: 1.25rem;
+  transform: rotate(0deg);
+  animation: chugTrain 1.2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+// ─── Floating Mascot Buddy ───────────────────────────────────────────────────
+.floating-buddy {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 850;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  user-select: none;
+
+  &__bubble {
+    position: relative;
+    background: white;
+    padding: 12px 18px;
+    border-radius: $radius-xl;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+    border: 2px solid #E2E4EC;
+    max-width: 240px;
+    margin-bottom: 12px;
+    animation: popBubble 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      right: 24px;
+      border: 8px solid transparent;
+      border-top-color: white;
+    }
+  }
+
+  &__close {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    font-size: 1.1rem;
+    color: #9CA3AF;
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      color: #1F2937;
+    }
+  }
+
+  &__text {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-header);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  &__action {
+    display: inline-block;
+    padding: 4px 12px;
+    background: #FFF7ED;
+    color: #EA580C;
+    border: 1px solid #FED7AA;
+    border-radius: $radius-full;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #EA580C;
+      color: white;
+      border-color: #EA580C;
+    }
+  }
+
+  &__btn {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7B2FF7 0%, #FF6B35 100%);
+    box-shadow: 0 8px 24px rgba(123, 47, 247, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    border: 3px solid white;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: buddyFloat 4s ease-in-out infinite;
+
+    &:hover {
+      transform: scale(1.1) translateY(-4px);
+      box-shadow: 0 14px 32px rgba(123, 47, 247, 0.55);
+    }
+
+    &.is-jumping {
+      animation: buddyJump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    }
+  }
+
+  &__icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+
+  &__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #EF4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: $radius-full;
+    border: 2px solid white;
+    letter-spacing: 0.5px;
+    animation: badgePulse 2s infinite;
+  }
+
+  &__rings {
+    position: absolute;
+    inset: -6px;
+    pointer-events: none;
+
+    span {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid #7B2FF7;
+      opacity: 0;
+      animation: buddyRing 2.4s ease-out infinite;
+
+      &:nth-child(2) {
+        animation-delay: 1.2s;
+      }
+    }
+  }
+}
+
+// ─── Keyframe Animations ────────────────────────────────────────────────────
+@keyframes chugTrain {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(-2deg); }
+}
+
+@keyframes buddyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes buddyJump {
+  0% { transform: scale(1); }
+  30% { transform: scale(0.85, 1.25) translateY(-18px); }
+  60% { transform: scale(1.15, 0.9) translateY(4px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes buddyRing {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes popBubble {
+  from { opacity: 0; transform: translateY(8px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}

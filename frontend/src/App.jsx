@@ -9,6 +9,7 @@ import { CustomerAuthProvider } from './context/CustomerAuthContext';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import CartDrawer from './components/CartDrawer/CartDrawer';
+import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
 // User Pages
 import Home from './pages/user/Home/Home';
@@ -90,6 +91,7 @@ function App() {
           <CartProvider>
             <CustomerAuthProvider>
               <Router>
+                <ScrollToTop />
                 <Routes>
                   {/* User Routes */}
                 <Route path="/" element={<UserLayout><Home /></UserLayout>} />

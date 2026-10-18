@@ -1,6 +1,18 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiArrowRight, FiTruck, FiShield, FiStar, FiCheck, FiShoppingCart } from 'react-icons/fi';
+import {
+  FiArrowRight,
+  FiTruck,
+  FiShield,
+  FiStar,
+  FiCheck,
+  FiShoppingCart,
+  FiSmile,
+  FiHeart,
+  FiAward,
+  FiCompass,
+  FiPackage
+} from 'react-icons/fi';
 import { useSelector } from 'react-redux';
 
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
@@ -12,6 +24,9 @@ import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import SEO from '../../../components/SEO/SEO';
+import AnimalSafari from '../../../components/AnimalSafari/AnimalSafari';
+import FloatingBuddy from '../../../components/FloatingBuddy/FloatingBuddy';
+import { playPopSound, playAnimalSound } from '../../../utils/animalSounds';
 import './Home.scss';
 
 const Home = () => {
@@ -44,11 +59,37 @@ const Home = () => {
   // Safe color helper
   const safeColor = (c, fallback) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fallback;
 
-  // ── Ref for smooth scroll ─────────────────────────────────────
+  // ── Refs for smooth scroll ─────────────────────────────────────
   const themeSectionRef = useRef(null);
+  const animalSectionRef = useRef(null);
+
   const scrollToThemes = () => {
     themeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  const scrollToAnimals = () => {
+    const el = document.getElementById('animal-safari') || animalSectionRef.current;
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // ── Scroll Reveal Intersection Observer ────────────────────────
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-revealed');
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+
+    const revealElements = document.querySelectorAll('.scroll-reveal');
+    revealElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [categoryList.length, newArrivalList.length, allHomeOffers.length]);
 
   // ── Newsletter ────────────────────────────────────────────────
   const [email, setEmail] = useState('');
@@ -65,25 +106,49 @@ const Home = () => {
       await subscribe(email.trim()).unwrap();
       showSuccess('🎉 Welcome to the Kidroo family!');
       setEmail('');
+      playPopSound();
     } catch (err) {
       showError(err?.data?.message || 'Subscription failed');
     }
   };
 
-  // ── Trust badges ──────────────────────────────────────────────
-  const trustBadges = [
-    { icon: <FiTruck />, text: 'Free Shipping on ₹500+' },
-    { icon: <FiShield />, text: 'Safe & Non-Toxic Materials' },
-    { icon: <FiStar />, text: '10,000+ Happy Families' },
+  // ── Handle Add to Cart with cheerful audio feedback ───────────
+  const handleAddToCart = (product) => {
+    playPopSound();
+    addToCart(product);
+  };
+
+  // ── Trust & Milestone badges ──────────────────────────────────
+  const trustFeatures = [
+    {
+      icon: '🌿',
+      title: '100% Eco-Safe & Non-Toxic',
+      desc: 'Crafted from sustainable beechwood & water-based non-toxic food-grade dyes.',
+    },
+    {
+      icon: '🧠',
+      title: 'STEM & Montessori Approved',
+      desc: 'Tested by educators to boost motor skills, logic, balance, and spatial IQ.',
+    },
+    {
+      icon: '🚀',
+      title: 'Free Shipping on ₹1000+',
+      desc: 'Superfast safe dispatch with eco-packaging straight to your doorstep.',
+    },
+    {
+      icon: '💖',
+      title: '10,000+ Happy Families',
+      desc: 'Cherished by little dreamers and parents across India with 4.9★ love.',
+    },
   ];
 
   return (
     <div className="home-v2">
       {/* ── SEO Head ── */}
       <SEO
-        title="Premium Kids Toys - Educational & Fun"
-        description="Kidroo Toys - Where Imagination Comes to Play! Shop premium quality toys, educational kits, action figures, building blocks, and more for kids of all ages. Free shipping on orders over ₹500."
-        keywords="kidroo toys, kids toys online, educational toys, wooden toys, baby toys, toys for children, buy toys online India, montessori toys, building blocks, action figures"
+        title="Premium Kids Toys - Educational, Fun & Animated Play | Kidroo Toys"
+        description="Kidroo Toys - Where Imagination Comes to Play! Explore interactive toys, educational kits, building blocks, and our animated Animal Kingdom with realistic sounds. Free shipping across India on ₹500+."
+        keywords="kidroo toys, kids toys online, educational toys, wooden toys, baby toys, animal sounds toys, buy toys online India, montessori toys, building blocks"
         canonical={window.location.origin}
         ogImage={heroBanner?.image || ''}
         jsonLd={[
@@ -93,7 +158,7 @@ const Home = () => {
             name: 'Kidroo Toys',
             url: window.location.origin,
             logo: `${window.location.origin}/favicon.svg`,
-            description: 'Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!',
+            description: 'Premium quality toys for kids - educational, safe, and fun with animated animal experiences.',
             contactPoint: {
               '@type': 'ContactPoint',
               contactType: 'customer service',
@@ -101,40 +166,42 @@ const Home = () => {
             },
             sameAs: [],
           },
-          ...(categoryList.length > 0
-            ? [
-                {
-                  '@context': 'https://schema.org',
-                  '@type': 'ItemList',
-                  name: 'Toy Categories',
-                  description: 'Browse our toy categories',
-                  numberOfItems: categoryList.length,
-                  itemListElement: categoryList.map((cat, index) => {
-                    const name = cat.catagoryName || cat.name;
-                    const catUrl = cat.slug
-                      ? `${window.location.origin}/category/${cat.slug}`
-                      : `${window.location.origin}/shop?category=${cat._id || cat.id}`;
-                    return {
-                      '@type': 'ListItem',
-                      position: index + 1,
-                      name: name,
-                      url: catUrl,
-                      ...(cat.image && { image: cat.image }),
-                    };
-                  }),
-                },
-              ]
-            : []),
         ]}
       />
 
+      {/* ── Floating Buddy Mascot & Top Scroll Progress Indicator ── */}
+      <FloatingBuddy onScrollToAnimals={scrollToAnimals} />
+
       {/* ═══════════════════ HERO ═══════════════════ */}
       <section className="hero-v2">
+        {/* Whimsical Floating Background Elements */}
+        <div className="hero-v2__floating-prop hero-v2__floating-prop--cloud-left" aria-hidden="true">☁️</div>
+        <div className="hero-v2__floating-prop hero-v2__floating-prop--cloud-right" aria-hidden="true">☁️</div>
+        <div className="hero-v2__floating-prop hero-v2__floating-prop--star" aria-hidden="true">⭐</div>
+        <div className="hero-v2__floating-prop hero-v2__floating-prop--balloon" aria-hidden="true">🎈</div>
+        <div className="hero-v2__floating-prop hero-v2__floating-prop--block" aria-hidden="true">🧱</div>
+
         <div className="hero-v2__container">
+          {/* Left Hero Content */}
           <div className="hero-v2__content">
-            <span className="hero-v2__tag">
-              {heroBanner?.tag || 'KIDS NEED TOYS'}
-            </span>
+            <div className="hero-v2__tags-row">
+              <span className="hero-v2__tag">
+                {heroBanner?.tag || 'KIDS NEED TOYS'}
+              </span>
+              <button
+                type="button"
+                className="hero-v2__animal-pill"
+                onClick={() => {
+                  playAnimalSound('lion');
+                  scrollToAnimals();
+                }}
+                title="Explore Animal Sounds"
+              >
+                <span>🦁 Tap for Animal Sounds</span>
+                <span className="pill-pulse" />
+              </button>
+            </div>
+
             <h1 className="hero-v2__title">
               {heroBanner?.title || 'Toys That'}{' '}
               <span className="hero-v2__accent">
@@ -146,17 +213,27 @@ const Home = () => {
               </span>{' '}
               {heroBanner?.afterText || '& Imagination'}
             </h1>
+
             <p className="hero-v2__desc">
               {heroBanner?.description ||
-                'We provide the best quality toys designed to nurture creativity, inspire learning, and create smiles for kids.'}
+                'We provide the best quality toys designed to nurture creativity, inspire learning, and create smiles for kids of all ages.'}
             </p>
+
             <div className="hero-v2__actions">
               <Link
                 to={heroBanner?.buttonUrl || '/shop'}
                 className="hero-v2__btn hero-v2__btn--primary"
+                onClick={() => playPopSound()}
               >
                 {heroBanner?.buttonText || 'Shop Now'} <FiArrowRight />
               </Link>
+              <button
+                type="button"
+                className="hero-v2__btn hero-v2__btn--animals"
+                onClick={scrollToAnimals}
+              >
+                🐾 Animal Zoo Sounds
+              </button>
               <button
                 type="button"
                 className="hero-v2__btn hero-v2__btn--outline"
@@ -165,7 +242,25 @@ const Home = () => {
                 Explore Categories
               </button>
             </div>
+
+            {/* Mini Trust Highlights under Hero */}
+            <div className="hero-v2__highlights">
+              <div className="hero-v2__highlight-item">
+                <span className="highlight-icon">🚚</span>
+                <span>Free Delivery ₹1000+</span>
+              </div>
+              <div className="hero-v2__highlight-item">
+                <span className="highlight-icon">🛡️</span>
+                <span>Safe & Certified Non-Toxic</span>
+              </div>
+              <div className="hero-v2__highlight-item">
+                <span className="highlight-icon">⭐</span>
+                <span>10,000+ Happy Families</span>
+              </div>
+            </div>
           </div>
+
+          {/* Right Hero Visual with interactive 3D perspective */}
           <div className="hero-v2__visual">
             <div className="hero-v2__img-wrap">
               <img
@@ -176,69 +271,71 @@ const Home = () => {
                 alt={heroBanner?.title || 'Hero banner'}
                 className="hero-v2__img"
               />
+
+              {/* Floating Animal Mascot Badge */}
+              <div
+                className="hero-v2__mascot-badge"
+                onClick={() => {
+                  playAnimalSound('elephant');
+                  scrollToAnimals();
+                }}
+                role="button"
+                tabIndex={0}
+                title="Click me to hear Elephant sound!"
+              >
+                <span className="mascot-badge__emoji">🐘</span>
+                <div className="mascot-badge__text">
+                  <strong>Tap Me!</strong>
+                  <span>Hear animal sounds!</span>
+                </div>
+              </div>
+
+              {/* Floating Toy Badge */}
+              <div className="hero-v2__toy-badge">
+                <span className="toy-badge__icon">✨</span>
+                <span>Montessori Approved</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Trust badges */}
-        <div className="hero-v2__trust">
-          {trustBadges.map((badge, i) => (
-            <div className="hero-v2__trust-item" key={i}>
-              {badge.icon}
-              <span>{badge.text}</span>
-            </div>
-          ))}
+        {/* Curved Organic Wave Divider */}
+        <div className="hero-v2__wave" aria-hidden="true">
+          <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <path
+              d="M0,32 C240,96 480,16 720,64 C960,112 1200,48 1440,80 L1440,120 L0,120 Z"
+              fill="#FAF6F0"
+            />
+          </svg>
         </div>
       </section>
-
-      {/* ═══════════ HOME OFFERS (sorted by position) ═══════════ */}
-      {allHomeOffers.length > 0 && (
-        <section className="home-offers-section">
-          <div className="home-offers-section__container">
-            <div className="home-offers-section__grid">
-              {allHomeOffers.map(offer => {
-                const bg = safeColor(offer.styling?.bgColor, '#FF6B35');
-                const txt = safeColor(offer.styling?.textColor, '#FFFFFF');
-                return (
-                  <Link key={offer._id || offer.id} to={offer.targetUrl || '/offers'}
-                    className="home-offer-banner"
-                    style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, color: txt }}>
-                    {offer.images?.[0] && (
-                      <img src={offer.images[0].url || offer.images[0]} alt={offer.title} className="home-offer-banner__img" />
-                    )}
-                    <div className="home-offer-banner__content">
-                      <h3>{offer.title}</h3>
-                      {offer.subtitle && <p>{offer.subtitle}</p>}
-                      <span className="home-offer-banner__cta">Shop Now <FiArrowRight /></span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ═══════════════════ DISCOVERY BY THEME ═══════════════════ */}
-      <section className="theme-section" ref={themeSectionRef}>
+      <section className="theme-section scroll-reveal" ref={themeSectionRef}>
         <div className="theme-section__container">
           <div className="theme-section__header">
-            <h2>Discovery by <span className="theme-section__accent">Theme</span></h2>
-            <p>Browse our collections based on your child's interests and passions</p>
+            <span className="theme-section__chip">🎯 Curated Collections</span>
+            <h2>
+              Discovery by <span className="theme-section__accent">Theme</span>
+            </h2>
+            <p>Browse our collections based on your child's age, curiosity, and passions</p>
           </div>
+
           <div className="theme-section__grid">
-            {categoryList.map((cat) => {
+            {categoryList.map((cat, idx) => {
               const name = cat.catagoryName || cat.name;
               const description = cat.description || '';
               const imgSrc = cat.image || cat.catagoryImage;
               const categoryUrl = cat.slug
                 ? `/category/${cat.slug}`
                 : `/shop?category=${cat._id || cat.id}`;
+
               return (
                 <Link
                   to={categoryUrl}
-                  className="theme-card"
+                  className="theme-card scroll-reveal"
+                  style={{ animationDelay: `${idx * 0.08}s` }}
                   key={cat._id || cat.id}
+                  onClick={() => playPopSound()}
                 >
                   <div className="theme-card__img-wrap">
                     {imgSrc ? (
@@ -250,9 +347,7 @@ const Home = () => {
                   <div className="theme-card__overlay">
                     <div className="theme-card__text">
                       <span className="theme-card__name">{name}</span>
-                      {description && (
-                        <p className="theme-card__desc">{description}</p>
-                      )}
+                      {description && <p className="theme-card__desc">{description}</p>}
                     </div>
                     <FiArrowRight className="theme-card__arrow" />
                   </div>
@@ -262,33 +357,96 @@ const Home = () => {
           </div>
         </div>
       </section>
+      {/* ═══════════════════ INTERACTIVE ANIMAL SAFARI ═══════════════════ */}
+      <div ref={animalSectionRef} className="scroll-reveal">
+        <AnimalSafari />
+      </div>
+
+      {/* Curved Wave Divider into Offers / Categories */}
+      <div className="section-wave-divider" aria-hidden="true">
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
+          <path
+            d="M0,0 C360,60 1080,20 1440,70 L1440,80 L0,80 Z"
+            fill="#FFFFFF"
+          />
+        </svg>
+      </div>
+
+      {/* ═══════════ HOME OFFERS (sorted by position) ═══════════ */}
+      {allHomeOffers.length > 0 && (
+        <section className="home-offers-section scroll-reveal">
+          <div className="home-offers-section__container">
+            <div className="home-offers-section__grid">
+              {allHomeOffers.map((offer) => {
+                const bg = safeColor(offer.styling?.bgColor, '#FF6B35');
+                const txt = safeColor(offer.styling?.textColor, '#FFFFFF');
+                return (
+                  <Link
+                    key={offer._id || offer.id}
+                    to={offer.targetUrl || '/offers'}
+                    className="home-offer-banner"
+                    style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, color: txt }}
+                    onClick={() => playPopSound()}
+                  >
+                    {offer.images?.[0] && (
+                      <img
+                        src={offer.images[0].url || offer.images[0]}
+                        alt={offer.title}
+                        className="home-offer-banner__img"
+                      />
+                    )}
+                    <div className="home-offer-banner__content">
+                      <h3>{offer.title}</h3>
+                      {offer.subtitle && <p>{offer.subtitle}</p>}
+                      <span className="home-offer-banner__cta">
+                        Shop Now <FiArrowRight />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
 
 
 
       {/* ═══════════════════ NEW ARRIVALS ═══════════════════ */}
-      <section className="featured-section">
+      <section className="featured-section scroll-reveal">
         <div className="featured-section__container">
           <div className="featured-section__header">
-            <h2>New <span className="featured-section__accent">Arrivals</span></h2>
-            <p>Check out our latest additions to the toy collection</p>
+            <span className="featured-section__chip">🚀 Fresh Off The Workshop</span>
+            <h2>
+              New <span className="featured-section__accent">Arrivals</span>
+            </h2>
+            <p>Check out our latest toys designed to spark wonder and play</p>
           </div>
+
           <div className="featured-section__grid">
-            {newArrivalList.slice(0, 8).map((product) => {
+            {newArrivalList.slice(0, 8).map((product, idx) => {
               const name = product.productName || product.name;
               const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
               const price = Number(product.price || 0);
               const originalPrice = Number(product.originalPrice || 0);
-              const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
+              const discount =
+                product.discountPercentage ||
+                (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
               const category = (() => {
                 if (Array.isArray(product.categories) && product.categories.length > 0) {
                   const first = product.categories[0];
-                  return typeof first === 'object' ? (first.catagoryName || first.name || '') : '';
+                  return typeof first === 'object' ? first.catagoryName || first.name || '' : '';
                 }
                 return product.category?.catagoryName || product.category?.name || '';
               })();
 
               return (
-                <div className="product-card-v2" key={product._id || product.id}>
+                <div
+                  className="product-card-v2 scroll-reveal"
+                  style={{ animationDelay: `${idx * 0.08}s` }}
+                  key={product._id || product.id}
+                >
                   {discount > 0 && (
                     <span className="product-card-v2__badge">-{discount}%</span>
                   )}
@@ -302,20 +460,25 @@ const Home = () => {
                     <div className="product-card-v2__overlay">
                       <button
                         className="product-card-v2__cart-btn"
-                        onClick={() => addToCart(product)}
+                        onClick={() => handleAddToCart(product)}
                         title="Add to cart"
                       >
                         <FiShoppingCart /> Add to Cart
                       </button>
                     </div>
                   </div>
-                  <Link to={`/product/${product.slug || product._id || product.id}`} className="product-card-v2__info">
+                  <Link
+                    to={`/product/${product.slug || product._id || product.id}`}
+                    className="product-card-v2__info"
+                  >
                     {category && <span className="product-card-v2__category">{category}</span>}
                     <h3 className="product-card-v2__name">{name}</h3>
                     <div className="product-card-v2__pricing">
                       <span className="product-card-v2__price">₹{price.toFixed(0)}</span>
                       {originalPrice > price && (
-                        <span className="product-card-v2__original">₹{originalPrice.toFixed(0)}</span>
+                        <span className="product-card-v2__original">
+                          ₹{originalPrice.toFixed(0)}
+                        </span>
                       )}
                     </div>
                   </Link>
@@ -323,52 +486,45 @@ const Home = () => {
               );
             })}
           </div>
+
           {newArrivalList.length > 0 && (
             <div className="featured-section__more">
-              <Link to="/shop" className="featured-section__more-btn">
-                View All <FiArrowRight />
+              <Link to="/shop" className="featured-section__more-btn" onClick={() => playPopSound()}>
+                View All Collections <FiArrowRight />
               </Link>
             </div>
           )}
         </div>
       </section>
 
+      
+      {/* ═══════════════════ WHY KIDS & PARENTS LOVE KIDROO ═══════════════════ */}
+      <section className="why-kidroo-section scroll-reveal">
+        <div className="why-kidroo-section__container">
+          <div className="why-kidroo-section__header">
+            <span className="why-kidroo-section__chip">💖 The Kidroo Promise</span>
+            <h2>Why Kids & Parents Adore Kidroo</h2>
+            <p>Every toy is designed with love, built for safety, and crafted to spark joy</p>
+          </div>
 
-
-      {/* <section className="newsletter-section">
-        <div className="newsletter-section__container">
-          <div className="newsletter-section__content">
-            <h2 className="newsletter-section__title">Join the Kidroo Family</h2>
-            <p className="newsletter-section__desc">
-              Be the first to know about new arrivals, exciting deals, and kiddo-approved picks. Get 10% off your
-              first order!
-            </p>
-            <form className="newsletter-section__form" onSubmit={handleSubscribe}>
-              <input
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="newsletter-section__input"
-              />
-              <button
-                type="submit"
-                className="newsletter-section__btn"
-                disabled={subscribing}
+          <div className="why-kidroo-section__grid">
+            {trustFeatures.map((feat, idx) => (
+              <div
+                className="why-card scroll-reveal"
+                style={{ animationDelay: `${idx * 0.1}s` }}
+                key={feat.title}
+                onClick={() => playPopSound()}
               >
-                {subscribing ? 'Subscribing…' : 'Subscribe'}
-              </button>
-            </form>
-            <div className="newsletter-section__perks">
-              <span><FiCheck /> Free shipping on first order</span>
-              <span><FiCheck /> Exclusive member deals</span>
-              <span><FiCheck /> Early access to new toys</span>
-            </div>
+                <div className="why-card__icon-wrap">
+                  <span className="why-card__emoji">{feat.icon}</span>
+                </div>
+                <h3 className="why-card__title">{feat.title}</h3>
+                <p className="why-card__desc">{feat.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </section> */}
-
+      </section>
     </div>
   );
 };

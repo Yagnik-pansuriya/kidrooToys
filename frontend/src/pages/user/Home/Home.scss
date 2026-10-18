@@ -1,10 +1,27 @@
 @import '../../../styles/variables';
 @import '../../../styles/mixins';
 
-// ─── Kidroo Home V2 — Figma-inspired warm, premium design ───────────────────
+// ─── Kidroo Home V2 — Figma-inspired warm, premium, animated design ─────────
 
 .home-v2 {
   overflow-x: hidden;
+  position: relative;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SCROLL REVEAL STYLES
+// ═══════════════════════════════════════════════════════════════════════════════
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+
+  &.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -12,8 +29,53 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 .hero-v2 {
   background: #FAF6F0;
-  padding: calc(#{$space-3xl} + 60px) 0 0;
+  padding: calc(#{$space-3xl} + 40px) 0 4rem;
   position: relative;
+  overflow: hidden;
+
+  // Floating Background Props
+  &__floating-prop {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    opacity: 0.65;
+
+    &--cloud-left {
+      top: 8%;
+      left: 2%;
+      font-size: 3.5rem;
+      animation: floatCloudLeft 18s ease-in-out infinite alternate;
+    }
+
+    &--cloud-right {
+      top: 18%;
+      right: 3%;
+      font-size: 4rem;
+      animation: floatCloudRight 22s ease-in-out infinite alternate;
+    }
+
+    &--star {
+      top: 14%;
+      left: 45%;
+      font-size: 2rem;
+      animation: floatStar 4s ease-in-out infinite;
+    }
+
+    &--balloon {
+      bottom: 18%;
+      left: 6%;
+      font-size: 2.5rem;
+      animation: floatBalloon 7s ease-in-out infinite alternate;
+    }
+
+    &--block {
+      top: 60%;
+      right: 5%;
+      font-size: 2.2rem;
+      animation: floatBlock 5s ease-in-out infinite alternate;
+    }
+  }
 
   &__container {
     max-width: $container-max;
@@ -23,10 +85,22 @@
     grid-template-columns: 1fr;
     gap: $space-2xl;
     align-items: center;
+    position: relative;
+    z-index: 2;
 
     @media (min-width: $bp-lg) {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 3.5rem;
     }
+  }
+
+  // Tags row (Category Tag + Animated Animal Zoo Pill)
+  &__tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: $space-lg;
   }
 
   &__tag {
@@ -36,23 +110,57 @@
     letter-spacing: 2px;
     text-transform: uppercase;
     color: var(--color-primary);
-    background: rgba(139, 115, 85, 0.1);
+    background: rgba(255, 107, 53, 0.12);
     padding: 6px 16px;
     border-radius: $radius-full;
-    margin-bottom: $space-lg;
+  }
+
+  &__animal-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #7B2FF7;
+    background: #F3E8FF;
+    border: 1.5px solid #DDD6FE;
+    padding: 5px 14px;
+    border-radius: $radius-full;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+
+    &:hover {
+      background: #7B2FF7;
+      color: white;
+      border-color: #7B2FF7;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(123, 47, 247, 0.3);
+    }
+
+    .pill-pulse {
+      width: 7px;
+      height: 7px;
+      background: #10B981;
+      border-radius: 50%;
+      animation: pillBlink 1.5s infinite;
+    }
   }
 
   &__title {
     font-family: $font-heading;
-    font-size: clamp(2.2rem, 5vw, 3.8rem);
-    line-height: 1.1;
+    font-size: clamp(2.4rem, 5.2vw, 4rem);
+    line-height: 1.12;
     color: var(--color-header);
     margin-bottom: $space-lg;
+    letter-spacing: -0.5px;
   }
 
   &__accent {
     color: var(--color-primary);
     font-style: normal;
+    position: relative;
+    display: inline-block;
   }
 
   &__italic {
@@ -61,26 +169,27 @@
   }
 
   &__desc {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     color: #6B6E7E;
     line-height: 1.7;
-    max-width: 480px;
+    max-width: 520px;
     margin-bottom: $space-xl;
   }
 
   &__actions {
     display: flex;
-    gap: $space-md;
+    gap: 0.9rem;
     flex-wrap: wrap;
+    margin-bottom: 2.2rem;
   }
 
   &__btn {
     display: inline-flex;
     align-items: center;
     gap: $space-xs;
-    padding: 14px 32px;
+    padding: 14px 28px;
     font-size: 0.92rem;
-    font-weight: 700;
+    font-weight: 800;
     border-radius: $radius-full;
     transition: all $transition-base;
     text-decoration: none;
@@ -89,16 +198,29 @@
     &--primary {
       background: var(--color-header);
       color: white;
+      box-shadow: 0 6px 20px rgba(26, 29, 46, 0.2);
 
       &:hover {
         background: var(--color-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(26, 29, 46, 0.25);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(26, 29, 46, 0.3);
+      }
+    }
+
+    &--animals {
+      background: linear-gradient(135deg, #FF6B35 0%, #F59E0B 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+
+      &:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 10px 28px rgba(255, 107, 53, 0.5);
       }
     }
 
     &--outline {
-      background: transparent;
+      background: white;
       color: var(--color-header);
       border: 2px solid #D4C9B8;
 
@@ -110,57 +232,158 @@
     }
   }
 
+  // Mini Trust Highlights under Hero
+  &__highlights {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.4rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid rgba(139, 115, 85, 0.15);
+  }
+
+  &__highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #4A4D5E;
+
+    .highlight-icon {
+      font-size: 1.15rem;
+    }
+  }
+
+  // Visual on the right
   &__visual {
     display: flex;
     justify-content: center;
+    position: relative;
   }
 
   &__img-wrap {
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
     aspect-ratio: 1;
     border-radius: $radius-2xl;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(139, 115, 85, 0.15);
+    overflow: visible;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(139, 115, 85, 0.2);
   }
 
   &__img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: $radius-2xl;
     display: block;
-    transition: transform 0.6s ease;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 
     &:hover {
-      transform: scale(1.05);
+      transform: scale(1.04);
     }
   }
 
-  // Trust badges
-  &__trust {
-    max-width: $container-max;
-    margin: 0 auto;
-    padding: $space-2xl $container-padding;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: $space-xl;
-    border-top: 1px solid rgba(139, 115, 85, 0.1);
-    margin-top: $space-2xl;
-  }
-
-  &__trust-item {
+  // Floating mascot badge
+  &__mascot-badge {
+    position: absolute;
+    bottom: -18px;
+    left: -18px;
+    background: white;
+    padding: 10px 16px;
+    border-radius: $radius-xl;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
     display: flex;
     align-items: center;
-    gap: $space-xs;
-    font-size: 0.88rem;
-    font-weight: 600;
-    color: #6B6E7E;
+    gap: 0.7rem;
+    cursor: pointer;
+    border: 2px solid #FED7AA;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: badgeFloat 3.5s ease-in-out infinite;
+
+    &:hover {
+      transform: scale(1.08) translateY(-4px);
+      box-shadow: 0 16px 40px rgba(255, 107, 53, 0.3);
+      border-color: #FF6B35;
+    }
+
+    .mascot-badge__emoji {
+      font-size: 2rem;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    }
+
+    .mascot-badge__text {
+      display: flex;
+      flex-direction: column;
+
+      strong {
+        font-size: 0.88rem;
+        color: var(--color-header);
+      }
+
+      span {
+        font-size: 0.72rem;
+        color: var(--color-primary);
+        font-weight: 700;
+      }
+    }
+  }
+
+  // Floating Toy Badge
+  &__toy-badge {
+    position: absolute;
+    top: 20px;
+    right: -14px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: $radius-full;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--color-header);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    animation: badgeFloatReverse 4s ease-in-out infinite;
+
+    .toy-badge__icon {
+      color: #F59E0B;
+      font-size: 0.95rem;
+    }
+  }
+
+  // Wave divider
+  &__wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 48px;
+    line-height: 0;
+    pointer-events: none;
 
     svg {
-      font-size: 1.1rem;
-      color: var(--color-primary);
+      width: 100%;
+      height: 100%;
+      display: block;
     }
+  }
+}
+
+// ─── Section Wave Dividers ──────────────────────────────────────────────────
+.section-wave-divider {
+  width: 100%;
+  height: 40px;
+  line-height: 0;
+  overflow: hidden;
+  background: transparent;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
   }
 }
 
@@ -168,13 +391,27 @@
 // DISCOVERY BY THEME
 // ═══════════════════════════════════════════════════════════════════════════════
 .theme-section {
-  padding: $space-3xl 0;
+  padding: 5rem 0;
   background: #FFFFFF;
+  position: relative;
 
   &__container {
     max-width: $container-max;
     margin: 0 auto;
     padding: 0 $container-padding;
+  }
+
+  &__chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-primary);
+    background: rgba(255, 107, 53, 0.1);
+    padding: 4px 14px;
+    border-radius: $radius-full;
+    margin-bottom: 0.8rem;
   }
 
   &__header {
@@ -183,14 +420,14 @@
 
     h2 {
       font-family: $font-heading;
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
       color: var(--color-header);
       margin-bottom: $space-xs;
     }
 
     p {
       color: #8A8D9E;
-      font-size: 1rem;
+      font-size: 1.05rem;
     }
   }
 
@@ -215,23 +452,26 @@
 
 .theme-card {
   position: relative;
-  border-radius: $radius-xl;
+  border-radius: $radius-2xl;
   overflow: hidden;
   aspect-ratio: 3 / 4;
   cursor: pointer;
   text-decoration: none;
   display: block;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
   &__img-wrap {
     width: 100%;
     height: 100%;
+    overflow: hidden;
   }
 
   &__img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &__placeholder {
@@ -250,11 +490,12 @@
     left: 0;
     right: 0;
     padding: $space-lg;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
     gap: $space-sm;
+    transition: all 0.3s ease;
   }
 
   &__text {
@@ -264,15 +505,15 @@
 
   &__name {
     font-family: $font-heading;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: white;
     display: block;
   }
 
   &__desc {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
     line-height: 1.4;
     margin-top: 4px;
     display: -webkit-box;
@@ -280,32 +521,140 @@
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
   }
 
   &__arrow {
     color: white;
-    font-size: 1.2rem;
-    opacity: 0;
-    transform: translateX(-8px);
-    transition: all $transition-base;
+    font-size: 1.3rem;
+    transform: translateX(-4px);
+    transition: all 0.3s ease;
     flex-shrink: 0;
   }
 
   &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
+
     .theme-card__img {
-      transform: scale(1.08);
+      transform: scale(1.1);
     }
     .theme-card__arrow {
-      opacity: 1;
-      transform: translateX(0);
+      transform: translateX(4px);
+      color: #FBBF24;
     }
-    .theme-card__desc {
-      opacity: 1;
-      transform: translateY(0);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHY KIDS & PARENTS LOVE KIDROO
+// ═══════════════════════════════════════════════════════════════════════════════
+.why-kidroo-section {
+  padding: 5rem 0;
+  background: #FFFDF9;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+
+  &__container {
+    max-width: $container-max;
+    margin: 0 auto;
+    padding: 0 $container-padding;
+  }
+
+  &__chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #7B2FF7;
+    background: rgba(123, 47, 247, 0.1);
+    padding: 4px 14px;
+    border-radius: $radius-full;
+    margin-bottom: 0.8rem;
+  }
+
+  &__header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 3.5rem;
+
+    h2 {
+      font-family: $font-heading;
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+      color: var(--color-header);
+      margin-bottom: 0.5rem;
     }
+
+    p {
+      color: #8A8D9E;
+      font-size: 1.05rem;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.8rem;
+
+    @media (min-width: 600px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
+.why-card {
+  background: white;
+  border-radius: $radius-2xl;
+  padding: 2rem 1.6rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1.5px solid #F3F4F6;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
+    border-color: #FED7AA;
+
+    .why-card__icon-wrap {
+      transform: scale(1.15) rotate(6deg);
+      background: #FFF7ED;
+    }
+  }
+
+  &__icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #FAF5FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.4rem;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  &__emoji {
+    font-size: 2.2rem;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.12rem;
+    font-weight: 800;
+    color: var(--color-header);
+    margin-bottom: 0.6rem;
+  }
+
+  &__desc {
+    font-size: 0.88rem;
+    color: #6B6E7E;
+    line-height: 1.6;
   }
 }
 
@@ -313,7 +662,7 @@
 // NEW ARRIVALS
 // ═══════════════════════════════════════════════════════════════════════════════
 .featured-section {
-  padding: $space-3xl 0;
+  padding: 5rem 0;
   background: #FAF6F0;
 
   &__container {
@@ -322,20 +671,33 @@
     padding: 0 $container-padding;
   }
 
+  &__chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-primary);
+    background: rgba(255, 107, 53, 0.1);
+    padding: 4px 14px;
+    border-radius: $radius-full;
+    margin-bottom: 0.8rem;
+  }
+
   &__header {
     text-align: center;
     margin-bottom: $space-2xl;
 
     h2 {
       font-family: $font-heading;
-      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-size: clamp(1.8rem, 3.5vw, 2.5rem);
       color: var(--color-header);
       margin-bottom: $space-xs;
     }
 
     p {
       color: #8A8D9E;
-      font-size: 1rem;
+      font-size: 1.05rem;
     }
   }
 
@@ -363,7 +725,7 @@
 
   &__more {
     text-align: center;
-    margin-top: $space-2xl;
+    margin-top: 3.5rem;
   }
 
   &__more-btn {
@@ -371,19 +733,22 @@
     align-items: center;
     gap: $space-xs;
     padding: 14px 36px;
-    font-size: 0.92rem;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 800;
     color: var(--color-header);
     border: 2px solid #D4C9B8;
+    background: white;
     border-radius: $radius-full;
     text-decoration: none;
     transition: all $transition-base;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
     &:hover {
       background: var(--color-header);
       color: white;
       border-color: var(--color-header);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(26, 29, 46, 0.25);
     }
   }
 }
@@ -392,14 +757,14 @@
 .product-card-v2 {
   position: relative;
   background: white;
-  border-radius: $radius-xl;
+  border-radius: $radius-2xl;
   overflow: hidden;
-  transition: all $transition-base;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 
   &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.12);
   }
 
   &__badge {
@@ -433,7 +798,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   &__img-placeholder {
@@ -472,15 +837,17 @@
     padding: 12px 24px;
     background: white;
     color: var(--color-header);
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 800;
+    font-size: 0.88rem;
     border-radius: $radius-full;
     transition: all $transition-base;
     cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 
     &:hover {
       background: var(--color-header);
       color: white;
+      transform: scale(1.05);
     }
   }
 
@@ -492,7 +859,7 @@
 
   &__category {
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--color-primary);
@@ -502,8 +869,8 @@
 
   &__name {
     font-family: $font-heading;
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 700;
     color: var(--color-header);
     margin-bottom: $space-xs;
     display: -webkit-box;
@@ -520,7 +887,7 @@
   }
 
   &__price {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: var(--color-header);
   }
@@ -536,8 +903,10 @@
 // NEWSLETTER SECTION
 // ═══════════════════════════════════════════════════════════════════════════════
 .newsletter-section {
-  padding: $space-3xl 0;
+  padding: 5rem 0;
   background: var(--color-header);
+  position: relative;
+  overflow: hidden;
 
   &__container {
     max-width: $container-max;
@@ -551,16 +920,29 @@
     text-align: center;
   }
 
+  &__chip {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #FBBF24;
+    background: rgba(251, 191, 36, 0.15);
+    padding: 4px 14px;
+    border-radius: $radius-full;
+    margin-bottom: 1rem;
+  }
+
   &__title {
     font-family: $font-heading;
-    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
     color: white;
     margin-bottom: $space-md;
   }
 
   &__desc {
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 1.05rem;
     line-height: 1.7;
     margin-bottom: $space-xl;
   }
@@ -568,8 +950,8 @@
   &__form {
     display: flex;
     gap: $space-sm;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
     border-radius: $radius-full;
     padding: 6px;
     margin-bottom: $space-lg;
@@ -586,30 +968,32 @@
     background: transparent;
     border: none;
     padding: 12px 20px;
-    font-size: 0.92rem;
+    font-size: 0.95rem;
     color: white;
     outline: none;
     min-width: 0;
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(255, 255, 255, 0.5);
     }
   }
 
   &__btn {
-    padding: 12px 32px;
+    padding: 14px 32px;
     background: var(--color-primary);
     color: white;
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: 800;
+    font-size: 0.92rem;
     border-radius: $radius-full;
     transition: all $transition-base;
     white-space: nowrap;
     cursor: pointer;
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.4);
 
     &:hover:not(:disabled) {
       background: var(--color-hover);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 107, 53, 0.6);
     }
 
     &:disabled {
@@ -628,50 +1012,21 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 0.82rem;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.7);
 
       svg {
-        color: var(--color-primary);
-        font-size: 0.9rem;
+        color: #10B981;
+        font-size: 1rem;
       }
     }
   }
 }
 
-// ─── Top Strip Offers ────────────────────────────────────────────
-.home-offers-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-
-  &__item {
-    flex: 1;
-    min-width: 250px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $space-sm;
-    padding: $space-md $space-lg;
-    text-decoration: none;
-    color: inherit;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-
-    strong { font-weight: 700; }
-    span { opacity: 0.85; font-size: 0.82rem; }
-    svg { font-size: 0.85rem; opacity: 0.7; transition: transform 0.2s; }
-
-    &:hover {
-      filter: brightness(1.1);
-      svg { transform: translateX(3px); }
-    }
-  }
-}
-
-// ─── Section-based Offer Grids ───────────────────────────────────
+// ─── Home Offers Section & Banner Cards ──────────────────────────────────────
 .home-offers-section {
-  padding: $space-xl 0;
+  padding: 3rem 0;
+  background: white;
 
   &__container {
     max-width: $container-max;
@@ -686,69 +1041,90 @@
   }
 }
 
-// ─── Individual Offer Banner Card ────────────────────────────────
 .home-offer-banner {
   display: flex;
   align-items: center;
   gap: $space-lg;
   padding: $space-xl;
-  border-radius: $radius-xl;
+  border-radius: $radius-2xl;
   text-decoration: none;
   color: inherit;
   overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   min-height: 140px;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+    transform: translateY(-6px);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
   }
 
   &__img {
     width: 110px;
     height: 110px;
     object-fit: cover;
-    border-radius: $radius-lg;
+    border-radius: $radius-xl;
     flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   &__content {
     flex: 1;
-    h3 { font-family: $font-heading; font-size: 1.15rem; margin-bottom: 4px; }
-    p { font-size: 0.85rem; opacity: 0.85; margin-bottom: $space-sm; }
+    h3 { font-family: $font-heading; font-size: 1.25rem; margin-bottom: 4px; }
+    p { font-size: 0.88rem; opacity: 0.9; margin-bottom: $space-sm; }
   }
 
   &__cta {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    opacity: 0.9;
+    font-size: 0.85rem;
+    font-weight: 800;
+    opacity: 0.95;
     transition: gap 0.2s;
 
     &:hover { gap: 8px; }
   }
 }
 
-// ─── Animations ───────────────────────────────────────────────────────────────
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+// ═══════════════════════════════════════════════════════════════════════════════
+// HERO KEYFRAME ANIMATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+@keyframes floatCloudLeft {
+  0% { transform: translateX(0) translateY(0); }
+  100% { transform: translateX(35px) translateY(-10px); }
 }
 
-.hero-v2__content,
-.hero-v2__visual {
-  animation: fadeInUp 0.8s ease both;
+@keyframes floatCloudRight {
+  0% { transform: translateX(0) translateY(0); }
+  100% { transform: translateX(-40px) translateY(12px); }
 }
 
-.hero-v2__visual {
-  animation-delay: 0.2s;
+@keyframes floatStar {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.65; }
+  50% { transform: scale(1.3) rotate(15deg); opacity: 1; }
+}
+
+@keyframes floatBalloon {
+  0% { transform: translateY(0) rotate(-3deg); }
+  100% { transform: translateY(-20px) rotate(4deg); }
+}
+
+@keyframes floatBlock {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-15px) rotate(12deg); }
+}
+
+@keyframes pillBlink {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.4; }
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes badgeFloatReverse {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
 }
