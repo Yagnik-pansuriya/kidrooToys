@@ -143,27 +143,11 @@ const Home = () => {
     <div className="home-v2">
       {/* ── SEO Head ── */}
       <SEO
-        title="Premium Kids Toys - Educational, Fun & Animated Play | Kidroo Toys"
-        description="Kidroo Toys - Where Imagination Comes to Play! Explore interactive toys, educational kits, building blocks, and our animated Animal Kingdom with realistic sounds. Free shipping across India on ₹500+."
-        keywords="kidroo toys, kids toys online, educational toys, wooden toys, baby toys, animal sounds toys, buy toys online India, montessori toys, building blocks"
-        canonical={window.location.origin}
+        title="Kidroo Toys - Buy Baby Rattles, Puzzles & Board Games Online in India"
+        description="Shop safe, BIS approved kids toys at Kidroo: BPA-free baby rattle sets, STEM puzzles, family board games & birthday gifts for boys and girls. Delivery across India."
+        keywords="kidroo toys, kidroo, baby rattle set, rattles for newborn baby, puzzle toys for kids, board games for kids, kids toys online india, return gifts for kids"
+        canonical="/"
         ogImage={heroBanner?.image || ''}
-        jsonLd={[
-          {
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: 'Kidroo Toys',
-            url: window.location.origin,
-            logo: `${window.location.origin}/favicon.svg`,
-            description: 'Premium quality toys for kids - educational, safe, and fun with animated animal experiences.',
-            contactPoint: {
-              '@type': 'ContactPoint',
-              contactType: 'customer service',
-              availableLanguage: ['English', 'Hindi'],
-            },
-            sameAs: [],
-          },
-        ]}
       />
 
       {/* ── Floating Buddy Mascot & Top Scroll Progress Indicator ── */}

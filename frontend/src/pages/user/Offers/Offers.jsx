@@ -101,9 +101,9 @@ const Offers = () => {
   return (
     <div className="offpg">
       <SEO
-        title="Offers & Deals - Kidroo Toys"
-        description="Discover amazing deals on kids toys at Kidroo."
-        keywords="toy deals, kids toy offers, discount toys"
+        title="Toy Offers & Deals - Discounts on Kids Toys | Kidroo Toys"
+        description="Today's best deals on kids toys at Kidroo - discounts on baby rattle sets, puzzles, board games and gifts. Limited-time toy offers in India."
+        keywords="toy offers, kids toys sale, toy deals india, discount toys online, kidroo offers"
         canonical={`${window.location.origin}/offers`}
       />
 

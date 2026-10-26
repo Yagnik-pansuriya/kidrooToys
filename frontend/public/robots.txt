@@ -1,9 +1,12 @@
 User-agent: *
 Allow: /
-Allow: /shop
-Allow: /offers
-Allow: /about
-Allow: /product/
-Allow: /category/
-Allow: /*
+Disallow: /admin
+Disallow: /cart
+Disallow: /checkout
+Disallow: /wishlist
+Disallow: /profile
+Disallow: /order-confirmation/
+Disallow: /api/
+Disallow: /docs
+
 Sitemap: https://kidroo.in/sitemap.xml

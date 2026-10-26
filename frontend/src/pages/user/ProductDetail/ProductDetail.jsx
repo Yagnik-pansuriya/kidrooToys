@@ -18,6 +18,7 @@ import './pdp-info.css';
 import './pdp-pincode.css';
 import './pdp-tabs.css';
 import './pdp-related.css';
+import { shortProductTitle } from '../../../utils/seoTitle';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -51,6 +52,7 @@ const ProductDetail = () => {
       return product.categories.map((c) => ({
         id: typeof c === 'object' ? (c._id || c.id) : c,
         name: typeof c === 'object' ? (c.catagoryName || c.name || '') : '',
+        slug: typeof c === 'object' ? (c.slug || '') : '',
       }));
     }
     // Legacy fallback
@@ -213,7 +215,7 @@ const ProductDetail = () => {
       .trim();
   };
 
-  const seoTitle = product?.seoTitle?.trim() || (name ? `Buy ${name} Online` : 'Product Detail');
+  const seoTitle = product?.seoTitle?.trim() || (name ? shortProductTitle(name) : 'Product Detail');
   const rawDesc = product?.seoDescription?.trim()
     || cleanHtmlDescription(product?.description)
     || (name ? `Buy ${name} online at Kidroo Toys.` : 'Shop kids toys at Kidroo Toys.');
@@ -232,7 +234,7 @@ const ProductDetail = () => {
     return name ? `${name.toLowerCase()}, buy ${name.toLowerCase()} online, kidroo toys` : '';
   })();
 
-  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://kidroo.in';
+  const currentOrigin = 'https://kidroo.in';
   const productUrl = `${currentOrigin}/product/${slug || product?.slug || productId || ''}`;
   const productImage = productImages[0] || product?.image || '';
 
@@ -286,10 +288,10 @@ const ProductDetail = () => {
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: window.location.origin },
-          { '@type': 'ListItem', position: 2, name: 'Shop', item: `${window.location.origin}/shop` },
-          ...(categoryName ? [{ '@type': 'ListItem', position: 3, name: categoryName, item: `${window.location.origin}/shop?category=${product.categories?.[0]?._id || ''}` }] : []),
-          { '@type': 'ListItem', position: categoryName ? 4 : 3, name: name, item: productUrl },
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kidroo.in/' },
+          { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://kidroo.in/shop' },
+          ...(productCategories[0]?.slug ? [{ '@type': 'ListItem', position: 3, name: productCategories[0].name, item: `https://kidroo.in/category/${productCategories[0].slug}` }] : []),
+          { '@type': 'ListItem', position: productCategories[0]?.slug ? 4 : 3, name: name, item: productUrl },
         ],
       },
     ],
@@ -316,7 +318,7 @@ const ProductDetail = () => {
         <FiChevronRight />
         {productCategories.length > 0 && (
           <>
-            <Link to={`/?category=${productCategories[0].id}`}>
+            <Link to={productCategories[0].slug ? `/category/${productCategories[0].slug}` : `/shop?category=${productCategories[0].id}`}>
               {productCategories[0].name || 'Shop'}
             </Link>
             <FiChevronRight />

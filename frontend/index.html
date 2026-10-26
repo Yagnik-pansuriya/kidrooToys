@@ -49,7 +49,7 @@
     <!-- ═══════════════════ GOOGLE FONTS ═══════════════════ -->
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
-    <!-- ═══════════════════ JSON-LD: WEBSITE (Sitelinks Search Box) ═══════════════════ -->
+    <!-- ═══════════════════ JSON-LD: WEBSITE ═══════════════════ -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -58,18 +58,10 @@
       "name": "Kidroo Toys",
       "alternateName": ["Kidroo", "Kidroo Toys India", "KidrooToys"],
       "url": "https://kidroo.in",
-      "description": "India's trusted online toy store. Shop premium quality educational toys, wooden toys, Montessori kits, action figures, building blocks & more for kids of all ages.",
+      "description": "Kidroo Toys - safe, BIS approved kids toys online in India: baby rattle sets, puzzles, board games and activity toys.",
       "inLanguage": "en-IN",
       "publisher": {
         "@id": "https://kidroo.in/#organization"
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://kidroo.in/shop?search={search_term_string}"
-        },
-        "query-input": "required name=search_term_string"
       }
     }
     </script>
@@ -92,7 +84,7 @@
         "width": 512,
         "height": 512
       },
-      "image": "https://kidroo.in/og-image.jpg",
+      "image": "https://kidroo.in/logo.png",
       "description": "Premium quality toys for kids - educational, safe, and fun. Where imagination comes to play!",
       "foundingDate": "2024",
       "areaServed": {
@@ -117,226 +109,13 @@
     }
     </script>
 
-    <!-- ═══════════════════ JSON-LD: ONLINE STORE ═══════════════════ -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Store",
-      "@id": "https://kidroo.in/#store",
-      "name": "Kidroo Toys",
-      "url": "https://kidroo.in",
-      "description": "Buy premium kids toys online in India. Educational toys, wooden toys, Montessori kits, building blocks, action figures and more.",
-      "image": "https://kidroo.in/og-image.jpg",
-      "priceRange": "₹₹",
-      "currenciesAccepted": "INR",
-      "paymentAccepted": "Cash, UPI, Credit Card, Debit Card, Net Banking",
-      "areaServed": {
-        "@type": "Country",
-        "name": "India"
-      },
-      "brand": {
-        "@type": "Brand",
-        "name": "Kidroo Toys"
-      },
-      "offers": {
-        "@type": "AggregateOffer",
-        "priceCurrency": "INR",
-        "availability": "https://schema.org/InStock",
-        "offerCount": "1000+",
-        "lowPrice": "99",
-        "highPrice": "9999"
-      },
-      "potentialAction": {
-        "@type": "BuyAction",
-        "target": "https://kidroo.in/shop"
-      },
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Kidroo Toys Collection",
-        "itemListElement": [
-          {
-            "@type": "OfferCatalog",
-            "name": "Educational Toys",
-            "url": "https://kidroo.in/shop?category=educational"
-          },
-          {
-            "@type": "OfferCatalog",
-            "name": "Wooden Toys",
-            "url": "https://kidroo.in/shop?category=wooden"
-          },
-          {
-            "@type": "OfferCatalog",
-            "name": "Building Blocks",
-            "url": "https://kidroo.in/shop?category=building-blocks"
-          }
-        ]
-      }
-    }
-    </script>
-
-    <!-- ═══════════════════ JSON-LD: BREADCRUMB (Homepage) ═══════════════════ -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Home",
-          "item": "https://kidroo.in/"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Shop All Toys",
-          "item": "https://kidroo.in/shop"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Offers & Deals",
-          "item": "https://kidroo.in/offers"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "About Us",
-          "item": "https://kidroo.in/about"
-        }
-      ]
-    }
-    </script>
-
-    <!-- ═══════════════════ JSON-LD: FAQ (Boosts SERP rich snippets) ═══════════════════ -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "What age groups do Kidroo Toys cater to?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Kidroo Toys offers toys for all age groups — from 0-2 years (baby toys), 2-4 years (toddler toys), 4-6 years (preschool toys), 6-8 years (educational kits), to 8+ years (STEM & building sets)."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Are Kidroo Toys safe for kids?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes! All Kidroo Toys are made from non-toxic, BIS certified materials. We ensure every toy passes strict safety standards before being listed on our store."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Does Kidroo offer free shipping?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, Kidroo Toys offers free shipping across India on all orders above ₹500. Orders are typically delivered within 3-7 business days."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What payment methods does Kidroo Toys accept?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "We accept UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards (Visa, MasterCard, RuPay), Net Banking, Cash on Delivery (COD), and popular wallets."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "Can I return or exchange toys on Kidroo?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, Kidroo Toys offers a hassle-free return and exchange policy. If a product is damaged or not as described, you can request a return within 7 days of delivery."
-          }
-        }
-      ]
-    }
-    </script>
-
-    <!-- ═══════════════════ JSON-LD: ITEM LIST (Top Categories for SERP) ═══════════════════ -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": "Popular Toy Categories at Kidroo",
-      "description": "Browse our most popular toy categories for kids of all ages",
-      "numberOfItems": 6,
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Educational Toys",
-          "url": "https://kidroo.in/shop?category=educational"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Wooden Toys",
-          "url": "https://kidroo.in/shop?category=wooden"
-        },
-        {
-          "@type": "ListItem",
-          "position": 3,
-          "name": "Building Blocks",
-          "url": "https://kidroo.in/shop?category=building-blocks"
-        },
-        {
-          "@type": "ListItem",
-          "position": 4,
-          "name": "Puzzles & Brain Games",
-          "url": "https://kidroo.in/shop?category=puzzles"
-        },
-        {
-          "@type": "ListItem",
-          "position": 5,
-          "name": "Action Figures",
-          "url": "https://kidroo.in/shop?category=action-figures"
-        },
-        {
-          "@type": "ListItem",
-          "position": 6,
-          "name": "Baby Toys",
-          "url": "https://kidroo.in/shop?category=baby-toys"
-        }
-      ]
-    }
-    </script>
-
-    <!-- ═══════════════════ JSON-LD: LOCAL BUSINESS (Google Maps) ═══════════════════ -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "OnlineBusiness",
-      "@id": "https://kidroo.in/#business",
-      "name": "Kidroo Toys",
-      "url": "https://kidroo.in",
-      "logo": "https://kidroo.in/logo.png",
-      "image": "https://kidroo.in/og-image.jpg",
-      "description": "India's trusted online toy store for premium kids toys",
-      "priceRange": "₹99 - ₹9999",
-      "currenciesAccepted": "INR",
-      "paymentAccepted": "UPI, Credit Card, Debit Card, Net Banking, COD",
-      "areaServed": "IN",
-      "serviceType": "Online Retail",
-      "sameAs": [
-        "https://www.facebook.com/kidrootoys/",
-        "https://www.instagram.com/kidrootoys/",
-        "https://twitter.com/KidrooToys"
-      ]
-    }
-    </script>
   </head>
   <body>
     <!-- Noscript fallback for accessibility and SEO crawlers -->
     <noscript>
       <div style="padding:2rem;text-align:center;font-family:sans-serif;">
-        <h1>Kidroo Toys - Premium Kids Toys Online India</h1>
-        <p>Welcome to Kidroo Toys, India's trusted online toy store! Browse our collection of educational toys, wooden toys, Montessori kits, building blocks, action figures, and more for kids of all ages.</p>
+        <p><strong>Kidroo Toys - Kids Toys Online India</strong></p>
+        <p>Welcome to Kidroo Toys, India's trusted online toy store! Browse baby rattle sets, puzzles, board games and activity toys for kids of all ages.</p>
         <p>Please enable JavaScript to experience the full Kidroo Toys shopping experience.</p>
         <nav>
           <a href="/">Home</a> |
@@ -344,15 +123,6 @@
           <a href="/offers">Offers & Deals</a> |
           <a href="/about">About Us</a>
         </nav>
-        <h2>Popular Categories</h2>
-        <ul>
-          <li><a href="/shop?category=educational">Educational Toys</a></li>
-          <li><a href="/shop?category=wooden">Wooden Toys</a></li>
-          <li><a href="/shop?category=building-blocks">Building Blocks</a></li>
-          <li><a href="/shop?category=puzzles">Puzzles & Brain Games</a></li>
-          <li><a href="/shop?category=action-figures">Action Figures</a></li>
-          <li><a href="/shop?category=baby-toys">Baby & Toddler Toys</a></li>
-        </ul>
       </div>
     </noscript>
     <div id="root"></div>

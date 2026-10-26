@@ -12,6 +12,7 @@ import { useToast } from '../../../context/ToastContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Pagination from '../../../components/Pagination/Pagination';
 import SEO from '../../../components/SEO/SEO';
+import { titleCase } from '../../../utils/seoTitle';
 import '../Shop/Shop.scss';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -75,8 +76,9 @@ const CategoryPage = () => {
   }, [categoryError, navigate]);
 
   // ── SEO ───────────────────────────────────────────────────────
+  // Keep in sync with buildCategory() in kidrooBackend/src/routes/seoRenderRoutes.ts
   const seoTitle = categoryName
-    ? `${categoryName} Toys - Buy Online | Kidroo`
+    ? `${titleCase(categoryName)} for Kids - Buy Online in India | Kidroo Toys`
     : 'Category - Kidroo Toys';
   const seoDescription = categoryDescription
     ? categoryDescription

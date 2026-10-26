@@ -264,10 +264,10 @@ const Shop = () => {
 
   const shopSeoTitle = activeCategoryName
     ? `${activeCategoryName} Toys - Shop Online`
-    : 'Shop All Toys Online';
+    : 'Shop All Kids Toys Online - Rattles, Puzzles, Board Games | Kidroo Toys';
   const shopSeoDescription = activeCategoryName
     ? `Browse our curated collection of ${activeCategoryName.toLowerCase()} toys for kids. Safe, educational, and fun! Free shipping on orders over ₹500.`
-    : 'Explore our full collection of premium kids toys. Filter by category, age, price, and skills. Free shipping on orders over ₹500.';
+    : 'Browse all Kidroo toys: baby rattle sets, ramp racer car tracks, STEM puzzle mazes, hover balls and family board games. Safe, BIS approved toys delivered across India.';
 
   // If the selected category has a slug, canonical should point to the clean category URL
   const shopCanonicalUrl = activeCategorySlug

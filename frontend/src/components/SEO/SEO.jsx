@@ -1,32 +1,25 @@
 import { Helmet } from 'react-helmet-async';
 
 const SITE_NAME = 'Kidroo Toys';
-const DEFAULT_IMAGE = 'https://kidroo.in/og-image.jpg';
+const DEFAULT_IMAGE = 'https://kidroo.in/logo.png';
 const DEFAULT_DESCRIPTION = 'Shop premium kids toys online at Kidroo Toys. Discover educational toys, wooden toys, Montessori toys, building blocks, baby toys and more across India.';
 
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined' && window.location.origin) {
-    return window.location.origin;
-  }
-  return 'https://kidroo.in';
-};
+// Canonicals always point at the primary host, even when the page is opened
+// on www.kidroo.in or a preview domain — otherwise each host self-canonicalises.
+const SITE_URL = 'https://kidroo.in';
 
 const normalizeCanonical = (url) => {
-  const baseUrl = getBaseUrl();
   if (!url) {
     if (typeof window !== 'undefined') {
-      return `${window.location.origin}${window.location.pathname}${window.location.search}`;
+      return `${SITE_URL}${window.location.pathname}`;
     }
-    return `${baseUrl}/`;
+    return `${SITE_URL}/`;
   }
   try {
-    if (url.startsWith('/')) {
-      return `${baseUrl}${url}`;
-    }
-    const parsed = new URL(url);
-    return parsed.href;
+    const parsed = new URL(url, SITE_URL);
+    return `${SITE_URL}${parsed.pathname}${parsed.search}`;
   } catch {
-    return `${baseUrl}/`;
+    return `${SITE_URL}/`;
   }
 };
 
@@ -48,7 +41,7 @@ const SEO = ({
   children,
 }) => {
   const finalTitle = title
-    ? (title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`)
+    ? (title.toLowerCase().includes('kidroo') ? title : `${title} | ${SITE_NAME}`)
     : `${SITE_NAME} - Where Imagination Comes to Play 🧸`;
   const finalDescription = description || DEFAULT_DESCRIPTION;
   const finalCanonical = normalizeCanonical(canonical || canonicalUrl);
