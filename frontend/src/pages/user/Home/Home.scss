@@ -1128,3 +1128,11 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(8px); }
 }
+
+// On phones the hero stacks, so the hero animal sits under the photo instead of on it
+@media (max-width: #{$bp-md - 1px}) {
+  .hero-v2 > .animal-spot {
+    top: auto !important;
+    bottom: 6px;
+  }
+}

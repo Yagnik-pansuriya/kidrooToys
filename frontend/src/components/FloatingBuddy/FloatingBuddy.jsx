@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { playAnimalSound, playPopSound } from '../../utils/animalSounds';
+import { playPopSound } from '../../utils/animalSounds';
 import './FloatingBuddy.scss';
 
 const QUOTES = [
-  'Tap me for magical sounds! ✨',
+  'Animals are hiding on this page — can you find them? 🐾',
+  'Tap any animal to hear its real voice! 🐮',
   'Welcome to Kidroo Toys! 🎈',
-  'Ready to explore the Animal Safari? 🦁',
+  'Psst… a dog, a frog and a horse live here! 🐸',
   'Discover the best toys for brain power! 🧠',
   'Yay! Let’s build something fun today! 🚀',
   'Every toy tells a magical story! 🌟',
@@ -33,7 +34,7 @@ const FloatingBuddy = ({ onScrollToAnimals }) => {
 
   const handleClick = () => {
     setIsJumping(true);
-    playAnimalSound('unicorn');
+    playPopSound();
     setQuoteIndex((prev) => (prev + 1) % QUOTES.length);
     setIsOpen(true);
     setTimeout(() => {
@@ -78,7 +79,7 @@ const FloatingBuddy = ({ onScrollToAnimals }) => {
                   onScrollToAnimals();
                 }}
               >
-                Go to Animal Safari 🐾
+                Find an Animal 🐾
               </button>
             )}
           </div>
@@ -91,7 +92,7 @@ const FloatingBuddy = ({ onScrollToAnimals }) => {
           title="Tap me! I'm Sparkle, your Kidroo Buddy"
         >
           <span className="floating-buddy__icon">🦄</span>
-          <span className="floating-buddy__badge">Sound!</span>
+          <span className="floating-buddy__badge">Hi!</span>
           <div className="floating-buddy__rings" aria-hidden="true">
             <span />
             <span />
