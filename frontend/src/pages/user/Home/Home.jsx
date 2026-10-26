@@ -24,9 +24,9 @@ import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import SEO from '../../../components/SEO/SEO';
-import AnimalSafari from '../../../components/AnimalSafari/AnimalSafari';
 import FloatingBuddy from '../../../components/FloatingBuddy/FloatingBuddy';
-import { playPopSound, playAnimalSound } from '../../../utils/animalSounds';
+import { AnimalCanvas, AnimalSpot, shuffleAnimals, callAnimal, callRandomAnimal } from '../../../components/AnimalWorld';
+import { playPopSound } from '../../../utils/animalSounds';
 import './Home.scss';
 
 const Home = () => {
@@ -61,16 +61,13 @@ const Home = () => {
 
   // ── Refs for smooth scroll ─────────────────────────────────────
   const themeSectionRef = useRef(null);
-  const animalSectionRef = useRef(null);
 
   const scrollToThemes = () => {
     themeSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const scrollToAnimals = () => {
-    const el = document.getElementById('animal-safari') || animalSectionRef.current;
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  // ── 3D animals: a fresh random line-up on every visit ──────────
+  const [cast] = useState(shuffleAnimals);
 
   // ── Scroll Reveal Intersection Observer ────────────────────────
   useEffect(() => {
@@ -170,10 +167,12 @@ const Home = () => {
       />
 
       {/* ── Floating Buddy Mascot & Top Scroll Progress Indicator ── */}
-      <FloatingBuddy onScrollToAnimals={scrollToAnimals} />
+      <FloatingBuddy onScrollToAnimals={callRandomAnimal} />
+      <AnimalCanvas />
 
       {/* ═══════════════════ HERO ═══════════════════ */}
-      <section className="hero-v2">
+      <section className="hero-v2 has-animal">
+        <AnimalSpot animalId={cast[0].id} side="right" top={[64, 68]} hint />
         {/* Whimsical Floating Background Elements */}
         <div className="hero-v2__floating-prop hero-v2__floating-prop--cloud-left" aria-hidden="true">☁️</div>
         <div className="hero-v2__floating-prop hero-v2__floating-prop--cloud-right" aria-hidden="true">☁️</div>
@@ -191,13 +190,10 @@ const Home = () => {
               <button
                 type="button"
                 className="hero-v2__animal-pill"
-                onClick={() => {
-                  playAnimalSound('lion');
-                  scrollToAnimals();
-                }}
-                title="Explore Animal Sounds"
+                onClick={callRandomAnimal}
+                title="Meet the animals hiding on this page"
               >
-                <span>🦁 Tap for Animal Sounds</span>
+                <span>🐾 Find the Animals</span>
                 <span className="pill-pulse" />
               </button>
             </div>
@@ -230,9 +226,9 @@ const Home = () => {
               <button
                 type="button"
                 className="hero-v2__btn hero-v2__btn--animals"
-                onClick={scrollToAnimals}
+                onClick={callRandomAnimal}
               >
-                🐾 Animal Zoo Sounds
+                🐾 Hear Real Animal Sounds
               </button>
               <button
                 type="button"
@@ -275,18 +271,16 @@ const Home = () => {
               {/* Floating Animal Mascot Badge */}
               <div
                 className="hero-v2__mascot-badge"
-                onClick={() => {
-                  playAnimalSound('elephant');
-                  scrollToAnimals();
-                }}
+                onClick={() => callAnimal(cast[0].id)}
+                onKeyDown={(e) => e.key === 'Enter' && callAnimal(cast[0].id)}
                 role="button"
                 tabIndex={0}
-                title="Click me to hear Elephant sound!"
+                title={`Hear the ${cast[0].name}!`}
               >
-                <span className="mascot-badge__emoji">🐘</span>
+                <span className="mascot-badge__emoji">{cast[0].emoji}</span>
                 <div className="mascot-badge__text">
                   <strong>Tap Me!</strong>
-                  <span>Hear animal sounds!</span>
+                  <span>Hear a real {cast[0].name.toLowerCase()}!</span>
                 </div>
               </div>
 
@@ -310,7 +304,8 @@ const Home = () => {
         </div>
       </section>
       {/* ═══════════════════ DISCOVERY BY THEME ═══════════════════ */}
-      <section className="theme-section scroll-reveal" ref={themeSectionRef}>
+      <section className="theme-section scroll-reveal has-animal" ref={themeSectionRef}>
+        <AnimalSpot animalId={cast[1].id} top={[1, 5]} />
         <div className="theme-section__container">
           <div className="theme-section__header">
             <span className="theme-section__chip">🎯 Curated Collections</span>
@@ -357,11 +352,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-      {/* ═══════════════════ INTERACTIVE ANIMAL SAFARI ═══════════════════ */}
-      <div ref={animalSectionRef} className="scroll-reveal">
-        <AnimalSafari />
-      </div>
-
       {/* Curved Wave Divider into Offers / Categories */}
       <div className="section-wave-divider" aria-hidden="true">
         <svg viewBox="0 0 1440 80" preserveAspectRatio="none">
@@ -374,7 +364,8 @@ const Home = () => {
 
       {/* ═══════════ HOME OFFERS (sorted by position) ═══════════ */}
       {allHomeOffers.length > 0 && (
-        <section className="home-offers-section scroll-reveal">
+        <section className="home-offers-section scroll-reveal has-animal">
+          <AnimalSpot animalId={cast[5].id} top={[0, 4]} />
           <div className="home-offers-section__container">
             <div className="home-offers-section__grid">
               {allHomeOffers.map((offer) => {
@@ -414,7 +405,9 @@ const Home = () => {
 
 
       {/* ═══════════════════ NEW ARRIVALS ═══════════════════ */}
-      <section className="featured-section scroll-reveal">
+      <section className="featured-section scroll-reveal has-animal">
+        <AnimalSpot animalId={cast[2].id} top={[1, 5]} />
+        <AnimalSpot animalId={cast[3].id} top={[88, 91]} />
         <div className="featured-section__container">
           <div className="featured-section__header">
             <span className="featured-section__chip">🚀 Fresh Off The Workshop</span>
@@ -499,7 +492,8 @@ const Home = () => {
 
       
       {/* ═══════════════════ WHY KIDS & PARENTS LOVE KIDROO ═══════════════════ */}
-      <section className="why-kidroo-section scroll-reveal">
+      <section className="why-kidroo-section scroll-reveal has-animal">
+        <AnimalSpot animalId={cast[4].id} top={[2, 8]} />
         <div className="why-kidroo-section__container">
           <div className="why-kidroo-section__header">
             <span className="why-kidroo-section__chip">💖 The Kidroo Promise</span>

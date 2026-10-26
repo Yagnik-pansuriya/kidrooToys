@@ -35,4 +35,12 @@ export default [
       ],
     },
   },
+  {
+    // react-three-fiber JSX props (position, intensity, args…) are valid three.js props
+    files: ['src/components/AnimalWorld/**/*.{js,jsx}'],
+    rules: {
+      'react/no-unknown-property': 'off',
+      'react/prop-types': 'off',
+    },
+  },
 ]
