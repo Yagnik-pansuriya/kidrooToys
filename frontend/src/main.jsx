@@ -7,6 +7,9 @@ import './styles/global.scss'
 import { Provider } from 'react-redux'
 import { store } from './store/store.js'
 import { HelmetProvider } from 'react-helmet-async'
+import { registerServiceWorker } from './utils/assetCache.js'
+
+registerServiceWorker()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

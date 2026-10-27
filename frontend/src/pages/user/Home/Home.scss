@@ -4,7 +4,12 @@
 // ─── Kidroo Home V2 — Figma-inspired warm, premium, animated design ─────────
 
 .home-v2 {
+  // `clip` hides sideways overflow without turning the page wrapper into its
+  // own scroll box. With `hidden`, touch swipes on the hero scrolled this div
+  // instead of the page, so mobile users could not scroll from the top.
+  // (`hidden` stays as the fallback for browsers without `clip`.)
   overflow-x: hidden;
+  overflow-x: clip;
   position: relative;
 }
 

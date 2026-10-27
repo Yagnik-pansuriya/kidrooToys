@@ -2,31 +2,19 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FiArrowRight,
-  FiTruck,
-  FiShield,
-  FiStar,
-  FiCheck,
   FiShoppingCart,
-  FiSmile,
-  FiHeart,
-  FiAward,
-  FiCompass,
-  FiPackage
 } from 'react-icons/fi';
 import { useSelector } from 'react-redux';
-
 import { useGetProductsQuery } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
-import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
 import { useGetOffersByPageQuery } from '../../../store/ActionApi/offerApi';
 import { useCart } from '../../../context/CartContext';
-import { useToast } from '../../../context/ToastContext';
-import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import SEO from '../../../components/SEO/SEO';
 import FloatingBuddy from '../../../components/FloatingBuddy/FloatingBuddy';
 import { AnimalCanvas, AnimalSpot, shuffleAnimals, callAnimal, callRandomAnimal } from '../../../components/AnimalWorld';
 import { playPopSound } from '../../../utils/animalSounds';
+import { cdnImage, warmAnimalAssets, warmAssets } from '../../../utils/assetCache';
 import './Home.scss';
 
 const Home = () => {
@@ -69,6 +57,21 @@ const Home = () => {
   // ── 3D animals: a fresh random line-up on every visit ──────────
   const [cast] = useState(shuffleAnimals);
 
+  // ── Asset cache: download every animal and the images further down the
+  //    page while the browser is idle, so they're ready before the user scrolls
+  useEffect(() => {
+    warmAnimalAssets();
+  }, []);
+
+  useEffect(() => {
+    warmAssets([
+      ...categoryList.map((c) => cdnImage(c.image || c.catagoryImage, 600)),
+      ...allHomeOffers.map((o) => cdnImage(o.images?.[0]?.url || o.images?.[0], 800)),
+      ...newArrivalList.slice(0, 8).map((p) => cdnImage(Array.isArray(p.images) ? p.images[0] : p.image, 500)),
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryList.length, newArrivalList.length, allHomeOffers.length]);
+
   // ── Scroll Reveal Intersection Observer ────────────────────────
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -88,26 +91,8 @@ const Home = () => {
     return () => observer.disconnect();
   }, [categoryList.length, newArrivalList.length, allHomeOffers.length]);
 
-  // ── Newsletter ────────────────────────────────────────────────
-  const [email, setEmail] = useState('');
-  const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
-  const { showSuccess, showError } = useToast();
   const { addToCart } = useCart();
-  const { requireAuth } = useCustomerAuth();
 
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!requireAuth('Please login to subscribe to our newsletter')) return;
-    if (!email.trim()) return;
-    try {
-      await subscribe(email.trim()).unwrap();
-      showSuccess('🎉 Welcome to the Kidroo family!');
-      setEmail('');
-      playPopSound();
-    } catch (err) {
-      showError(err?.data?.message || 'Subscription failed');
-    }
-  };
 
   // ── Handle Add to Cart with cheerful audio feedback ───────────
   const handleAddToCart = (product) => {
@@ -245,11 +230,12 @@ const Home = () => {
             <div className="hero-v2__img-wrap">
               <img
                 src={
-                  heroBanner?.image ||
+                  cdnImage(heroBanner?.image, 960) ||
                   'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&h=600&fit=crop'
                 }
                 alt={heroBanner?.title || 'Hero banner'}
                 className="hero-v2__img"
+                decoding="async"
               />
 
               {/* Floating Animal Mascot Badge */}
@@ -318,7 +304,7 @@ const Home = () => {
                 >
                   <div className="theme-card__img-wrap">
                     {imgSrc ? (
-                      <img src={imgSrc} alt={name} className="theme-card__img" loading="lazy" />
+                      <img src={cdnImage(imgSrc, 600)} alt={name} className="theme-card__img" loading="lazy" decoding="async" />
                     ) : (
                       <div className="theme-card__placeholder">🎯</div>
                     )}
@@ -365,9 +351,11 @@ const Home = () => {
                   >
                     {offer.images?.[0] && (
                       <img
-                        src={offer.images[0].url || offer.images[0]}
+                        src={cdnImage(offer.images[0].url || offer.images[0], 800)}
                         alt={offer.title}
                         className="home-offer-banner__img"
+                        loading="lazy"
+                        decoding="async"
                       />
                     )}
                     <div className="home-offer-banner__content">
@@ -430,7 +418,7 @@ const Home = () => {
                   <span className="product-card-v2__badge product-card-v2__badge--new">NEW</span>
                   <div className="product-card-v2__img-wrap">
                     {imgSrc ? (
-                      <img src={imgSrc} alt={name} className="product-card-v2__img" loading="lazy" />
+                      <img src={cdnImage(imgSrc, 500)} alt={name} className="product-card-v2__img" loading="lazy" decoding="async" />
                     ) : (
                       <div className="product-card-v2__img-placeholder">📦</div>
                     )}
@@ -474,7 +462,7 @@ const Home = () => {
         </div>
       </section>
 
-      
+
       {/* ═══════════════════ WHY KIDS & PARENTS LOVE KIDROO ═══════════════════ */}
       <section className="why-kidroo-section scroll-reveal has-animal">
         <AnimalSpot animalId={cast[4].id} top={[2, 8]} />
