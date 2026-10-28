@@ -698,16 +698,108 @@ $offpg-bg: #FAFAFA;
 // ═══════════════════════════════════════════════════════════════════
 // ANIMATIONS
 // ═══════════════════════════════════════════════════════════════════
-@keyframes offFadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes offPopIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes offFloat {
+  0%, 100% { transform: translate(0, 0) rotate(-8deg); }
+  50% { transform: translate(10px, -22px) rotate(10deg); }
+}
+@keyframes offWiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-6deg) scale(1.08); }
+  75% { transform: rotate(6deg) scale(1.08); }
+}
+@keyframes offShine {
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to { transform: translateX(260%) skewX(-20deg); }
+}
+@keyframes offGiftHop {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  30% { transform: translateY(-18px) rotate(-8deg); }
+  60% { transform: translateY(0) rotate(6deg); }
 }
 
-.offpg__hero { animation: offFadeUp 0.6s ease both; }
-.offpg__deals { animation: offFadeUp 0.6s ease 0.1s both; }
-.offpg__coupons { animation: offFadeUp 0.6s ease 0.2s both; }
+// Gate replaces the header and sits full-bleed under the fixed navbar
+.offpg--gate { padding-top: 0; }
+.offpg__content { position: relative; }
 
-.offpg__card { animation: offFadeUp 0.4s ease both; }
-@for $i from 1 through 9 {
-  .offpg__grid > :nth-child(#{$i}) { animation-delay: #{$i * 0.06}s; }
+// ── Scroll reveal ─────────────────────────────────────────────────
+.offpg [data-reveal] {
+  opacity: 0;
+  transform: translateY(48px) scale(0.95);
+  transition:
+    opacity 0.7s ease var(--rd, 0s),
+    transform 0.8s cubic-bezier(.34, 1.56, .64, 1) var(--rd, 0s);
+
+  &.is-in { opacity: 1; transform: none; }
+}
+
+// ── Carousel slide change: text and image pop in again ────────────
+.offpg__hero-body > * { animation: offPopIn 0.6s cubic-bezier(.34, 1.56, .64, 1) both; }
+.offpg__hero-body > :nth-child(2) { animation-delay: 0.12s; }
+.offpg__hero-visual img { animation: offFloat 6s ease-in-out infinite; }
+.offpg__hero-deco { animation: offFloat 9s ease-in-out infinite; }
+.offpg__hero-deco--2 { animation-delay: -4s; }
+.offpg__hero-badge { display: inline-block; animation: offWiggle 2.4s ease-in-out infinite; }
+
+// ── Floating toy decorations ──────────────────────────────────────
+.offpg__deals,
+.offpg__coupons { position: relative; overflow: hidden; }
+
+.offpg__floaties {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  span {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    font-size: 1.8rem;
+    opacity: 0.22;
+    animation: offFloat var(--s) ease-in-out var(--d) infinite;
+  }
+}
+.offpg__deals .offpg__container,
+.offpg__coupons .offpg__container { position: relative; z-index: 1; }
+
+// ── Cards & coupons ───────────────────────────────────────────────
+.offpg__card[data-reveal].is-in {
+  transition:
+    opacity 0.7s ease var(--rd, 0s),
+    transform 0.8s cubic-bezier(.34, 1.56, .64, 1) var(--rd, 0s),
+    box-shadow 0.3s;
+
+  &:hover { transform: translateY(-8px) rotate(-1deg); transition-delay: 0s; }
+}
+.offpg__card:hover .offpg__card-placeholder svg,
+.offpg__card:hover .offpg__card-img { animation: offWiggle 0.6s ease; }
+
+.offpg__coupon {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+    transform: translateX(-120%) skewX(-20deg);
+    pointer-events: none;
+  }
+  &.is-in::after { animation: offShine 1.2s ease 0.6s; }
+  &:hover::after { animation: offShine 0.9s ease; }
+}
+
+.offpg__empty-gift { animation: offGiftHop 1.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .offpg [data-reveal] { opacity: 1; transform: none; transition: none; }
+  .offpg *, .offpg *::after { animation: none !important; }
 }

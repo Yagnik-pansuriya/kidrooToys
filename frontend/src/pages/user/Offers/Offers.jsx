@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FiCopy, FiCheck, FiArrowRight, FiTag, FiChevronLeft, FiChevronRight, FiClock, FiGift, FiPercent } from 'react-icons/fi';
 
@@ -8,9 +8,47 @@ import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import SEO from '../../../components/SEO/SEO';
+import OfferGate from '../../../components/OfferGate/OfferGate';
+import { canShowGate } from '../../../components/OfferGate/canShowGate';
 import './Offers.scss';
 
 const safeColor = (c, fb) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fb;
+
+const DECOR_TOYS = ['🧸', '🪀', '🎈', '🚂', '🧩', '🪁', '🎨', '⭐'];
+
+// Toy emojis drifting behind a section
+// eslint-disable-next-line react/prop-types
+const FloatingToys = ({ count = 6, seed = 0 }) => (
+  <div className="offpg__floaties" aria-hidden="true">
+    {Array.from({ length: count }, (_, i) => (
+      <span key={i} style={{
+        '--x': `${(i * 37 + seed * 23) % 100}%`,
+        '--y': `${(i * 53 + seed * 17) % 90}%`,
+        '--d': `${(i % 4) * 1.3}s`,
+        '--s': `${6 + (i % 3) * 2}s`,
+      }}>{DECOR_TOYS[(i + seed) % DECOR_TOYS.length]}</span>
+    ))}
+  </div>
+);
+
+// Adds .is-in to every [data-reveal] element inside the root as it scrolls into view
+const useScrollReveal = (rootRef, deps) => {
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+    root.querySelectorAll('[data-reveal]:not(.is-in)').forEach((el) => io.observe(el));
+    return () => io.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+};
 
 const Offers = () => {
   const { data: offersResp, isFetching: offersLoading } = useGetActiveOffersQuery();
@@ -67,6 +105,9 @@ const Offers = () => {
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const { showSuccess, showError } = useToast();
   const { requireAuth } = useCustomerAuth();
+  const [showGate, setShowGate] = useState(canShowGate);
+  const pageRef = useRef(null);
+  useScrollReveal(pageRef, [offerList, publicCoupons, offersLoading]);
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -87,19 +128,10 @@ const Offers = () => {
     }
   };
 
-  // ── Loading ───────────────────────────────────────────────────
-  if (offersLoading) {
-    return (
-      <div className="offpg">
-        <div className="offpg__loading"><div className="offpg__spinner" /><p>Loading deals...</p></div>
-      </div>
-    );
-  }
-
   const hasContent = offerList.length > 0 || publicCoupons.length > 0;
 
   return (
-    <div className="offpg">
+    <div className={`offpg${showGate ? ' offpg--gate' : ''}`} ref={pageRef}>
       <SEO
         title="Toy Offers & Deals - Discounts on Kids Toys | Kidroo Toys"
         description="Today's best deals on kids toys at Kidroo - discounts on baby rattle sets, puzzles, board games and gifts. Limited-time toy offers in India."
@@ -107,27 +139,41 @@ const Offers = () => {
         canonical={`${window.location.origin}/offers`}
       />
 
-      {/* ════════ PAGE HEADER ════════ */}
-      <div className="offpg__header">
-        <div className="offpg__header-inner">
-          <h1><FiGift /> Offers & Deals</h1>
-          <p>Grab the best deals on premium kids toys before they're gone!</p>
+      {/* ════════ TOY GATE / PAGE HEADER ════════ */}
+      {showGate ? (
+        <OfferGate
+          dealCount={offerList.length + publicCoupons.length}
+          loading={offersLoading}
+          targetId="offer-deals"
+          onFail={() => setShowGate(false)}
+        />
+      ) : (
+        <div className="offpg__header">
+          <div className="offpg__header-inner">
+            <h1><FiGift /> Offers & Deals</h1>
+            <p>Grab the best deals on premium kids toys before they're gone!</p>
+          </div>
         </div>
-      </div>
+      )}
+
+      <div id="offer-deals" className="offpg__content">
+      {offersLoading && (
+        <div className="offpg__loading"><div className="offpg__spinner" /><p>Loading deals...</p></div>
+      )}
 
       {/* ════════ HERO CAROUSEL ════════ */}
-      {offerList.length > 0 && activeOffer && (() => {
+      {!offersLoading && offerList.length > 0 && activeOffer && (() => {
         const bg = safeColor(activeOffer.styling?.bgColor, '#6C3CE1');
         const txt = safeColor(activeOffer.styling?.textColor, '#FFFFFF');
         const img = activeOffer.images?.[0]?.url || activeOffer.images?.[0];
         return (
-          <section className="offpg__hero">
+          <section className="offpg__hero" data-reveal>
             <div className="offpg__hero-slide" style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg}dd 50%, ${bg}aa 100%)` }}>
               {/* Decorative circles */}
               <div className="offpg__hero-deco offpg__hero-deco--1" />
               <div className="offpg__hero-deco offpg__hero-deco--2" />
 
-              <div className="offpg__hero-body">
+              <div className="offpg__hero-body" key={slideIdx}>
                 <div className="offpg__hero-text" style={{ color: txt }}>
                   <span className="offpg__hero-badge">🔥 Limited Time</span>
                   <h2 className="offpg__hero-title">{activeOffer.title}</h2>
@@ -176,10 +222,11 @@ const Offers = () => {
       })()}
 
       {/* ════════ OFFERS GRID ════════ */}
-      {offerList.length > 1 && (
+      {!offersLoading && offerList.length > 1 && (
         <section className="offpg__deals">
+          <FloatingToys count={7} seed={1} />
           <div className="offpg__container">
-            <div className="offpg__sec-head">
+            <div className="offpg__sec-head" data-reveal>
               <h2><FiPercent /> All <span>Deals</span></h2>
               <p>Don't miss out on these exclusive offers</p>
             </div>
@@ -189,7 +236,8 @@ const Offers = () => {
                 const txt = safeColor(offer.styling?.textColor, '#fff');
                 const img = offer.images?.[0]?.url || offer.images?.[0];
                 return (
-                  <Link key={offer._id || offer.id} to={offer.targetUrl || '/shop'} className="offpg__card">
+                  <Link key={offer._id || offer.id} to={offer.targetUrl || '/shop'} className="offpg__card"
+                    data-reveal style={{ '--rd': `${(i % 4) * 0.08}s` }}>
                     <div className="offpg__card-img-wrap" style={{ background: `linear-gradient(145deg, ${bg}, ${bg}99)` }}>
                       {img ? (
                         <img src={img} alt={offer.title} className="offpg__card-img" />
@@ -215,14 +263,16 @@ const Offers = () => {
       {/* ════════ COUPONS ════════ */}
       {publicCoupons.length > 0 && (
         <section className="offpg__coupons">
+          <FloatingToys count={6} seed={4} />
           <div className="offpg__container">
-            <div className="offpg__sec-head">
+            <div className="offpg__sec-head" data-reveal>
               <h2><FiTag /> Coupon <span>Codes</span></h2>
               <p>Copy & apply at checkout for instant savings</p>
             </div>
             <div className="offpg__coupon-grid">
-              {publicCoupons.map(c => (
-                <div key={c._id || c.id} className="offpg__coupon">
+              {publicCoupons.map((c, i) => (
+                <div key={c._id || c.id} className="offpg__coupon"
+                  data-reveal style={{ '--rd': `${(i % 3) * 0.1}s` }}>
                   <div className="offpg__coupon-left">
                     <div className="offpg__coupon-amount">
                       {c.discountType === 'percentage' ? `${c.discountValue}%` : `₹${c.discountValue}`}
@@ -251,10 +301,10 @@ const Offers = () => {
       )}
 
       {/* ════════ EMPTY ════════ */}
-      {!hasContent && (
+      {!showGate && !offersLoading && !hasContent && (
         <section className="offpg__empty">
           <div className="offpg__empty-box">
-            <span>🎁</span>
+            <span className="offpg__empty-gift">🎁</span>
             <h3>No Offers Right Now</h3>
             <p>Check back soon — we're always cooking up new deals!</p>
             <Link to="/shop" className="offpg__empty-btn">Browse Products</Link>
@@ -262,8 +312,10 @@ const Offers = () => {
         </section>
       )}
 
+      </div>
+
       {/* ════════ NEWSLETTER ════════ */}
-      <section className="offpg__news">
+      <section className="offpg__news" data-reveal>
         <div className="offpg__container">
           <div className="offpg__news-inner">
             <div>

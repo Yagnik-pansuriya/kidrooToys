@@ -1,0 +1,276 @@
+@import '../../styles/variables';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OFFER GATE — scroll-driven 3D toy gate
+// ═══════════════════════════════════════════════════════════════════════════════
+
+$ogate-ink: #2d1b69;
+$ogate-accent: #6C3CE1;
+$ogate-pink: #ff3b8d;
+
+.ogate {
+  position: relative;
+  height: 340vh;
+}
+
+.ogate__stage {
+  --p: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 62%, rgba(255, 255, 255, 0.9), transparent 70%),
+    linear-gradient(180deg, #8fd3ff 0%, #c7e9ff 38%, #fdeef6 70%, #fdeef6 100%);
+}
+
+.ogate__canvas {
+  position: absolute;
+  inset: 0;
+
+  canvas { touch-action: pan-y; }
+}
+
+.ogate__canvas-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+
+  span {
+    font-size: 4rem;
+    animation: ogateBounce 0.9s ease-in-out infinite;
+  }
+}
+
+// ── Shared button ─────────────────────────────────────────────────
+.ogate__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, $ogate-pink, $ogate-accent);
+  color: #fff;
+  font-family: $font-heading;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba($ogate-accent, 0.35), inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+  transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.25s;
+
+  svg { animation: ogateNudge 1.4s ease-in-out infinite; }
+
+  &:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 16px 32px rgba($ogate-accent, 0.45), inset 0 -3px 0 rgba(0, 0, 0, 0.15);
+  }
+  &:active { transform: translateY(0) scale(0.97); }
+}
+
+// ── Intro overlay ─────────────────────────────────────────────────
+.ogate__intro {
+  position: absolute;
+  inset: 96px 16px auto;
+  text-align: center;
+  color: $ogate-ink;
+  opacity: calc(1 - var(--p) * 9);
+  transform: translateY(calc(var(--p) * -160px));
+  pointer-events: none;
+
+  .ogate__btn { pointer-events: auto; margin-top: 18px; }
+}
+
+.ogate--opening .ogate__intro,
+.ogate--revealed .ogate__intro {
+  .ogate__btn { pointer-events: none; }
+}
+
+.ogate__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(6px);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $ogate-accent;
+  animation: ogateDrop 0.7s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.ogate__title {
+  margin: 12px 0 6px;
+  font-family: $font-heading;
+  font-size: clamp(2.2rem, 7vw, 4.4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow: 0 4px 0 $ogate-accent, 0 10px 24px rgba($ogate-ink, 0.3);
+
+  span {
+    display: inline-block;
+    animation:
+      ogateDrop 0.7s cubic-bezier(.34, 1.56, .64, 1) both,
+      ogateWave 2.6s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.05s), calc(0.8s + var(--i) * 0.08s);
+  }
+}
+
+.ogate__sub {
+  max-width: 440px;
+  margin: 0 auto;
+  font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+  font-weight: 600;
+  color: rgba($ogate-ink, 0.8);
+  animation: ogateFade 0.8s ease 0.6s both;
+}
+
+// ── Scroll hint ───────────────────────────────────────────────────
+.ogate__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-50%);
+  color: $ogate-ink;
+  opacity: calc(1 - var(--p) * 2.5);
+  pointer-events: none;
+
+  small { font-weight: 800; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; }
+}
+
+.ogate__mouse {
+  width: 24px;
+  height: 38px;
+  border: 3px solid $ogate-ink;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+
+  span {
+    width: 4px;
+    height: 8px;
+    border-radius: 2px;
+    background: $ogate-pink;
+    animation: ogateScroll 1.4s ease-in-out infinite;
+  }
+}
+
+// ── Reveal overlay ────────────────────────────────────────────────
+.ogate__reveal {
+  position: absolute;
+  inset: auto 16px 9vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: $ogate-ink;
+  opacity: calc((var(--p) - 0.7) * 6);
+  transform: translateY(calc((1 - var(--p)) * 220px)) scale(calc(0.85 + var(--p) * 0.15));
+  pointer-events: none;
+}
+
+.ogate--revealed .ogate__reveal { pointer-events: auto; }
+
+.ogate__reveal-badge {
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: #feca57;
+  color: $ogate-ink;
+  font-weight: 800;
+  font-size: 0.85rem;
+  box-shadow: 0 6px 16px rgba(254, 202, 87, 0.5);
+
+  &--soft { background: rgba(255, 255, 255, 0.85); box-shadow: none; }
+}
+
+.ogate--revealed .ogate__reveal-badge { animation: ogateJelly 0.9s ease both; }
+
+.ogate__reveal-title {
+  margin: 12px 0 6px;
+  font-family: $font-heading;
+  font-size: clamp(1.7rem, 5vw, 3rem);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 3px 0 $ogate-accent, 0 10px 24px rgba($ogate-ink, 0.35);
+}
+
+.ogate__reveal-sub {
+  max-width: 420px;
+  margin: 0 0 18px;
+  font-weight: 700;
+  color: $ogate-ink;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(6px);
+  padding: 6px 14px;
+  border-radius: 12px;
+}
+
+// ── Progress ribbon ───────────────────────────────────────────────
+.ogate__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.5);
+
+  span {
+    display: block;
+    height: 100%;
+    transform-origin: left;
+    transform: scaleX(var(--p));
+    background: linear-gradient(90deg, #ff5c5c, #ff9f43, #feca57, #1dd1a1, #54a0ff, #5f27cd);
+  }
+}
+
+@media (max-width: 640px) {
+  .ogate { height: 300vh; }
+  .ogate__intro { inset: 84px 16px auto; }
+  .ogate__btn { padding: 12px 22px; font-size: 0.92rem; }
+}
+
+// ── Keyframes ─────────────────────────────────────────────────────
+@keyframes ogateDrop {
+  from { opacity: 0; transform: translateY(-40px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ogateWave {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-8px) rotate(-4deg); }
+}
+@keyframes ogateFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ogateNudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); }
+}
+@keyframes ogateScroll {
+  0% { opacity: 0; transform: translateY(-4px); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(12px); }
+}
+@keyframes ogateBounce {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-18px) rotate(6deg); }
+}
+@keyframes ogateJelly {
+  0% { transform: scale(0.4); }
+  40% { transform: scale(1.18, 0.86); }
+  60% { transform: scale(0.92, 1.08); }
+  80% { transform: scale(1.04, 0.97); }
+  100% { transform: scale(1); }
+}
