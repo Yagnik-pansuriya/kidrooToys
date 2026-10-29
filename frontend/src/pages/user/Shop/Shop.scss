@@ -788,25 +788,233 @@
   to { transform: rotate(360deg); }
 }
 
-// ── Fade-in animation for grid items ──────────────────────────────────────────
-.shop-page__grid > * {
-  animation: shopFadeIn 0.4s ease both;
+// ── Motion: hero, card entrance, hover and skeletons ──────────────────────────
+$shop-ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+.shop-page__hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255, 107, 53, 0.08), transparent 35%),
+    radial-gradient(circle at 88% 80%, rgba(123, 47, 247, 0.07), transparent 35%),
+    #fff;
 }
 
-@for $i from 1 through 12 {
-  .shop-page__grid > *:nth-child(#{$i}) {
-    animation-delay: #{$i * 0.05}s;
+.shop-page__hero-content { position: relative; }
+
+.shop-page__hero-title {
+  animation: shopRise 0.7s $shop-ease-back both;
+}
+
+.shop-page__hero-desc {
+  animation: shopRise 0.7s $shop-ease-back 0.12s both;
+}
+
+.shop-page__accent {
+  display: inline-block;
+  animation: shopWobble 3.5s ease-in-out 1s infinite;
+}
+
+.shop-page__hero-deco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  span {
+    position: absolute;
+    font-size: clamp(1.2rem, 2.5vw, 2rem);
+    opacity: 0.5;
+    animation:
+      shopPopIn 0.6s $shop-ease-back calc(0.3s + var(--i) * 0.1s) both,
+      shopFloat calc(5s + var(--i) * 0.7s) ease-in-out calc(var(--i) * -0.9s) infinite;
+  }
+
+  span:nth-child(1) { left: 6%;  top: 22%; }
+  span:nth-child(2) { left: 16%; top: 68%; }
+  span:nth-child(3) { left: 30%; top: 12%; }
+  span:nth-child(4) { right: 28%; top: 70%; }
+  span:nth-child(5) { right: 15%; top: 18%; }
+  span:nth-child(6) { right: 6%;  top: 60%; }
+
+  @media (max-width: $bp-md) {
+    span:nth-child(3), span:nth-child(4) { display: none; }
   }
 }
 
-@keyframes shopFadeIn {
-  from {
-    opacity: 0;
+// Cards pop in one after another (index comes from the --i style prop)
+.shop-page__grid > .shop-product-card {
+  // "backwards" so the finished animation doesn't pin transform and block the hover lift
+  animation: shopCardIn 0.6s $shop-ease-back backwards;
+  animation-delay: calc(min(var(--i, 0), 11) * 0.06s);
+}
+
+.shop-product-card {
+  transition: transform 0.4s $shop-ease-back, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-8px) rotate(-0.6deg);
+    box-shadow: 0 18px 40px rgba(13, 43, 62, 0.14);
+  }
+
+  &:hover .shop-product-card__img { transform: scale(1.1) rotate(1.5deg); }
+
+  &__hover-overlay {
+    background: linear-gradient(to top, rgba(13, 43, 62, 0.55), rgba(13, 43, 62, 0.05) 60%);
+    align-items: flex-end;
+    padding-bottom: $space-md;
+  }
+
+  &__cart-btn {
     transform: translateY(16px);
+    opacity: 0;
+    transition: transform 0.4s $shop-ease-back, opacity 0.3s ease, background 0.2s, color 0.2s;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+
+    svg { transition: transform 0.3s ease; }
+
+    &:hover svg { animation: shopCartWiggle 0.5s ease; }
   }
-  to {
+
+  &:hover &__cart-btn {
+    transform: none;
     opacity: 1;
-    transform: translateY(0);
+  }
+
+  // Light sweep across the image on hover
+  &__shine {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+    transform: translateX(-120%);
+  }
+
+  &:hover &__shine { animation: shopShine 0.9s ease; }
+
+  &__badge {
+    animation: shopBadgeSwing 2.8s ease-in-out infinite;
+    transform-origin: 50% -6px;
+  }
+
+  &__price { transition: color 0.2s; }
+  &:hover &__price { color: var(--color-primary); }
+
+  &__wish-btn:hover svg { animation: shopWishPop 0.4s ease; }
+}
+
+// Touch screens have no hover — keep the cart button visible
+@media (hover: none) {
+  .shop-product-card__hover-overlay { opacity: 1; background: none; }
+  .shop-product-card__cart-btn {
+    opacity: 1;
+    transform: none;
+    padding: 8px 14px;
+    font-size: 0.75rem;
+  }
+}
+
+// Skeleton cards while products load
+.shop-skeleton {
+  border-radius: $radius-xl;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  animation: shopRise 0.4s ease both;
+  animation-delay: calc(var(--i, 0) * 0.05s);
+
+  &__img,
+  &__line {
+    background: linear-gradient(90deg, #f1efeb 25%, #faf8f5 50%, #f1efeb 75%);
+    background-size: 200% 100%;
+    animation: shopShimmer 1.3s linear infinite;
+  }
+
+  &__img { aspect-ratio: 1; }
+
+  &__line {
+    height: 12px;
+    margin: $space-md $space-md 0;
+    border-radius: 6px;
+
+    &--short { width: 45%; margin-bottom: $space-md; }
+  }
+}
+
+.shop-page__filter-tag { animation: shopPopIn 0.35s $shop-ease-back both; }
+
+.shop-page__category-btn {
+  transition: transform 0.3s $shop-ease-back, background 0.2s, color 0.2s;
+
+  &:hover { transform: translateX(4px); }
+}
+
+.shop-page__empty-icon {
+  display: inline-block;
+  animation: shopSearchLook 2.4s ease-in-out infinite;
+}
+
+@keyframes shopCardIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes shopRise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes shopPopIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { transform: scale(1); }
+}
+
+@keyframes shopFloat {
+  0%, 100% { translate: 0 0; rotate: -6deg; }
+  50%      { translate: 0 -14px; rotate: 6deg; }
+}
+
+@keyframes shopWobble {
+  0%, 80%, 100% { transform: rotate(0); }
+  85% { transform: rotate(-4deg) scale(1.04); }
+  90% { transform: rotate(3deg) scale(1.04); }
+  95% { transform: rotate(-2deg); }
+}
+
+@keyframes shopShine {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(120%); }
+}
+
+@keyframes shopCartWiggle {
+  0%, 100% { transform: rotate(0); }
+  30%      { transform: rotate(-14deg) translateX(-2px); }
+  70%      { transform: rotate(10deg) translateX(2px); }
+}
+
+@keyframes shopBadgeSwing {
+  0%, 100% { transform: rotate(0); }
+  10%      { transform: rotate(-8deg); }
+  20%      { transform: rotate(6deg); }
+  30%      { transform: rotate(0); }
+}
+
+@keyframes shopShimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+@keyframes shopSearchLook {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25%      { transform: translateX(-8px) rotate(-10deg); }
+  75%      { transform: translateX(8px) rotate(10deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-page *,
+  .shop-page *::before,
+  .shop-page *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

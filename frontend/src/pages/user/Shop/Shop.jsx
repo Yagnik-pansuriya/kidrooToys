@@ -313,6 +313,11 @@ const Shop = () => {
 
       {/* ═══ Hero Banner ═══ */}
       <section className="shop-page__hero">
+        <div className="shop-page__hero-deco" aria-hidden="true">
+          {['🧸', '🎈', '🧩', '🚂', '🪀', '⭐'].map((toy, i) => (
+            <span key={i} style={{ '--i': i }}>{toy}</span>
+          ))}
+        </div>
         <div className="shop-page__container">
           <div className="shop-page__hero-content">
             <h1 className="shop-page__hero-title">
@@ -512,9 +517,14 @@ const Shop = () => {
 
             {/* Product Grid */}
             {isFetching ? (
-              <div className="shop-page__loading">
-                <div className="shop-page__spinner" />
-                <p>Loading products...</p>
+              <div className="shop-page__grid" aria-busy="true" aria-label="Loading products">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div key={i} className="shop-skeleton" style={{ '--i': i }}>
+                    <div className="shop-skeleton__img" />
+                    <div className="shop-skeleton__line" />
+                    <div className="shop-skeleton__line shop-skeleton__line--short" />
+                  </div>
+                ))}
               </div>
             ) : productList.length === 0 ? (
               <div className="shop-page__empty">
@@ -527,8 +537,9 @@ const Shop = () => {
               </div>
             ) : (
               <>
-                <div className="shop-page__grid">
-                  {productList.map((product) => {
+                {/* Keyed by page + first product so the pop-in replays on every page / filter change */}
+                <div className="shop-page__grid" key={`${currentPage}-${productList[0]?._id || productList[0]?.id}`}>
+                  {productList.map((product, index) => {
                     const name = product.productName || product.name;
                     const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
                     const price = Number(product.price || 0);
@@ -543,7 +554,7 @@ const Shop = () => {
                     })();
 
                     return (
-                      <div className="shop-product-card" key={product._id || product.id}>
+                      <div className="shop-product-card" key={product._id || product.id} style={{ '--i': index }}>
                         {discount > 0 && (
                           <span className="shop-product-card__badge">-{discount}%</span>
                         )}
@@ -553,6 +564,7 @@ const Shop = () => {
                           ) : (
                             <div className="shop-product-card__img-placeholder">📦</div>
                           )}
+                          <span className="shop-product-card__shine" aria-hidden="true" />
                           <div className="shop-product-card__hover-overlay">
                             <button
                               className="shop-product-card__cart-btn"

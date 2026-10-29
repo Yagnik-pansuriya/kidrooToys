@@ -8,6 +8,8 @@ import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import SEO from '../../../components/SEO/SEO';
+import { buildOfferSeo } from '../../../utils/offerSeo';
+import { useScrollReveal } from '../../../utils/useScrollReveal';
 import OfferGate from '../../../components/OfferGate/OfferGate';
 import { canShowGate } from '../../../components/OfferGate/canShowGate';
 import './Offers.scss';
@@ -30,25 +32,6 @@ const FloatingToys = ({ count = 6, seed = 0 }) => (
     ))}
   </div>
 );
-
-// Adds .is-in to every [data-reveal] element inside the root as it scrolls into view
-const useScrollReveal = (rootRef, deps) => {
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return;
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add('is-in');
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
-    root.querySelectorAll('[data-reveal]:not(.is-in)').forEach((el) => io.observe(el));
-    return () => io.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-};
 
 const Offers = () => {
   const { data: offersResp, isFetching: offersLoading } = useGetActiveOffersQuery();
@@ -130,13 +113,45 @@ const Offers = () => {
 
   const hasContent = offerList.length > 0 || publicCoupons.length > 0;
 
+  // SEO follows whatever offers / coupons are live right now
+  const offerSeo = useMemo(() => {
+    const { title, description, image, catalog } = buildOfferSeo(offerList, publicCoupons);
+    const crumbs = [
+      { name: 'Home', url: 'https://kidroo.in/' },
+      { name: 'Offers & Deals', url: 'https://kidroo.in/offers' },
+    ];
+    const keywords = [
+      'toy offers', 'kids toys sale', 'toy deals india', 'discount toys online', 'kidroo offers',
+      ...offerList.map((o) => o.title?.toLowerCase()).filter(Boolean),
+      ...publicCoupons.map((c) => `kidroo coupon ${c.code}`.toLowerCase()),
+    ].slice(0, 15).join(', ');
+    const graph = [
+      {
+        '@type': 'CollectionPage',
+        url: 'https://kidroo.in/offers',
+        name: title,
+        description,
+        isPartOf: { '@id': 'https://kidroo.in/#website' },
+        ...(catalog ? { mainEntity: { '@id': catalog['@id'] } } : {}),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, item: c.url })),
+      },
+      ...(catalog ? [catalog] : []),
+    ];
+    return { title, description, image, keywords, jsonLd: { '@context': 'https://schema.org', '@graph': graph } };
+  }, [offerList, publicCoupons]);
+
   return (
     <div className={`offpg${showGate ? ' offpg--gate' : ''}`} ref={pageRef}>
       <SEO
-        title="Toy Offers & Deals - Discounts on Kids Toys | Kidroo Toys"
-        description="Today's best deals on kids toys at Kidroo - discounts on baby rattle sets, puzzles, board games and gifts. Limited-time toy offers in India."
-        keywords="toy offers, kids toys sale, toy deals india, discount toys online, kidroo offers"
-        canonical={`${window.location.origin}/offers`}
+        title={offerSeo.title}
+        description={offerSeo.description}
+        keywords={offerSeo.keywords}
+        image={offerSeo.image}
+        canonical="https://kidroo.in/offers"
+        jsonLd={offerSeo.jsonLd}
       />
 
       {/* ════════ TOY GATE / PAGE HEADER ════════ */}

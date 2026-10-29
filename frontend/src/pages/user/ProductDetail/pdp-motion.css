@@ -1,0 +1,168 @@
+/* ═══════════ PRODUCT PAGE MOTION ═══════════ */
+
+/* Page entrance: gallery slides in, info column rises item by item */
+.pdp__gallery {
+  animation: pdpSlideIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pdp__info > * {
+  animation: pdpRise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+.pdp__info > :nth-child(1) { animation-delay: 0.08s; }
+.pdp__info > :nth-child(2) { animation-delay: 0.14s; }
+.pdp__info > :nth-child(3) { animation-delay: 0.2s; }
+.pdp__info > :nth-child(4) { animation-delay: 0.26s; }
+.pdp__info > :nth-child(5) { animation-delay: 0.32s; }
+.pdp__info > :nth-child(6) { animation-delay: 0.38s; }
+.pdp__info > :nth-child(n + 7) { animation-delay: 0.44s; }
+
+/* Main image: soft crossfade when the slide changes */
+.pdp__main-image img {
+  animation: pdpImageIn 0.45s ease;
+}
+
+/* Zoom that follows the cursor (mouse / trackpad only) */
+@media (hover: hover) and (pointer: fine) {
+  .pdp__main-image { cursor: zoom-in; }
+
+  .pdp__main-image:hover img {
+    transform: scale(1.8);
+    transform-origin: var(--zx, 50%) var(--zy, 50%);
+    transition: transform 0.25s ease-out;
+  }
+}
+
+.pdp__badge {
+  animation: pdpBadgeSwing 2.8s ease-in-out infinite;
+  transform-origin: 50% -6px;
+}
+
+.pdp__thumb {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, border-color 0.2s;
+}
+
+.pdp__thumb:hover { transform: translateY(-3px); }
+.pdp__thumb--active { transform: scale(1.06); }
+
+.pdp__slider-arrow {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+}
+
+.pdp__slider-arrow:hover { transform: translateY(-50%) scale(1.12); }
+
+/* Price and discount */
+.pdp__discount-tag {
+  display: inline-block;
+  animation: pdpPulse 2s ease-in-out infinite;
+}
+
+/* Buttons */
+.pdp__add-btn,
+.pdp__buy-btn {
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+
+.pdp__add-btn:not(:disabled):hover,
+.pdp__buy-btn:not(:disabled):hover { transform: translateY(-3px); }
+
+.pdp__add-btn:not(:disabled):active,
+.pdp__buy-btn:not(:disabled):active { transform: scale(0.96); }
+
+/* Light sweep across the buy button every few seconds */
+.pdp__buy-btn:not(:disabled)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.4) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: pdpShine 3.5s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+
+.pdp__add-btn:not(:disabled):hover svg { animation: pdpCartWiggle 0.5s ease; }
+
+/* Variant and skill cards */
+.pdp__variant-card,
+.pdp__skill-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s;
+}
+
+.pdp__variant-card:hover,
+.pdp__skill-card:hover { transform: translateY(-4px); }
+
+/* Trust badges bounce their icons on hover */
+.pdp__trust span:hover svg { animation: pdpCartWiggle 0.5s ease; }
+
+/* Scroll reveal (data-reveal gets .is-in from useScrollReveal) */
+.pdp [data-reveal] {
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity 0.6s ease var(--rd, 0s),
+    transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) var(--rd, 0s);
+}
+
+.pdp [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Related cards keep their hover lift after revealing */
+.pdp .pdp__related-card[data-reveal].is-in {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.6s ease;
+}
+
+.pdp .pdp__related-card[data-reveal].is-in:hover { transform: translateY(-8px) rotate(-1deg); }
+
+/* ── Keyframes ── */
+@keyframes pdpSlideIn {
+  from { opacity: 0; transform: translateX(-30px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes pdpRise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes pdpImageIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pdpBadgeSwing {
+  0%, 100% { transform: rotate(0); }
+  10%      { transform: rotate(-8deg); }
+  20%      { transform: rotate(6deg); }
+  30%      { transform: rotate(0); }
+}
+
+@keyframes pdpPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+
+@keyframes pdpShine {
+  0%   { transform: translateX(-120%); }
+  40%, 100% { transform: translateX(120%); }
+}
+
+@keyframes pdpCartWiggle {
+  0%, 100% { transform: rotate(0); }
+  30%      { transform: rotate(-14deg); }
+  70%      { transform: rotate(10deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdp *,
+  .pdp *::before,
+  .pdp *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .pdp [data-reveal] { opacity: 1; transform: none; }
+}

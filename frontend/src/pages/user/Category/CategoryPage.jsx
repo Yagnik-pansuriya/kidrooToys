@@ -194,9 +194,14 @@ const CategoryPage = () => {
             </div>
 
             {isFetching ? (
-              <div className="shop-page__loading">
-                <div className="shop-page__spinner" />
-                <p>Loading products...</p>
+              <div className="shop-page__grid" aria-busy="true" aria-label="Loading products">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div key={i} className="shop-skeleton" style={{ '--i': i }}>
+                    <div className="shop-skeleton__img" />
+                    <div className="shop-skeleton__line" />
+                    <div className="shop-skeleton__line shop-skeleton__line--short" />
+                  </div>
+                ))}
               </div>
             ) : productList.length === 0 ? (
               <div className="shop-page__empty">
@@ -210,7 +215,7 @@ const CategoryPage = () => {
             ) : (
               <>
                 <div className="shop-page__grid">
-                  {productList.map((product) => {
+                  {productList.map((product, index) => {
                     const name = product.productName || product.name;
                     const imgSrc = Array.isArray(product.images) ? product.images[0] : product.image;
                     const price = Number(product.price || 0);
@@ -218,7 +223,7 @@ const CategoryPage = () => {
                     const discount = product.discountPercentage || (originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0);
 
                     return (
-                      <div className="shop-product-card" key={product._id || product.id}>
+                      <div className="shop-product-card" key={product._id || product.id} style={{ '--i': index }}>
                         {discount > 0 && (
                           <span className="shop-product-card__badge">-{discount}%</span>
                         )}

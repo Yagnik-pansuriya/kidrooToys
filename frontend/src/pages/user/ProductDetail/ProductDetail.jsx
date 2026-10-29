@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { FiStar, FiTruck, FiRefreshCw, FiShoppingCart, FiMinus, FiPlus, FiChevronRight, FiChevronLeft, FiShield, FiPackage, FiPlay, FiHeart, FiZap } from 'react-icons/fi';
 import { useDispatch } from 'react-redux';
@@ -12,12 +12,15 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
 import SEO from '../../../components/SEO/SEO';
+import { useScrollReveal } from '../../../utils/useScrollReveal';
+import { flyToCart } from '../../../utils/flyToCart';
 import './pdp-layout.css';
 import './pdp-gallery.css';
 import './pdp-info.css';
 import './pdp-pincode.css';
 import './pdp-tabs.css';
 import './pdp-related.css';
+import './pdp-motion.css';
 import { shortProductTitle } from '../../../utils/seoTitle';
 
 const ProductDetail = () => {
@@ -89,6 +92,17 @@ const ProductDetail = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+
+  // Motion: scroll reveals, image zoom and the fly-to-cart effect
+  const pageRef = useRef(null);
+  const mainImgRef = useRef(null);
+  useScrollReveal(pageRef, [product, relatedProducts.length]);
+
+  const handleImageMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--zx', `${((e.clientX - rect.left) / rect.width) * 100}%`);
+    e.currentTarget.style.setProperty('--zy', `${((e.clientY - rect.top) / rect.height) * 100}%`);
+  };
 
   // Review form
   const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, title: '', comment: '' });
@@ -163,6 +177,7 @@ const ProductDetail = () => {
   const skuCode = product.skuCode || '';
 
   const handleAddToCart = () => {
+    flyToCart(mainImgRef.current);
     addToCart({ ...product, quantity });
     showSuccess(`${name} added to cart!`);
   };
@@ -298,7 +313,7 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="pdp">
+    <div className="pdp" ref={pageRef}>
       {/* ── SEO Head ── */}
       <SEO
         title={seoTitle}
@@ -333,7 +348,7 @@ const ProductDetail = () => {
         <div className="pdp__gallery">
           <div className="pdp__slider">
             {/* Main display area */}
-            <div className="pdp__main-image">
+            <div className="pdp__main-image" onMouseMove={handleImageMove}>
               {isVideoSlide ? (
                 <div className="pdp__video-wrap">
                   <iframe
@@ -346,7 +361,7 @@ const ProductDetail = () => {
                   />
                 </div>
               ) : images[selectedImage] ? (
-                <img src={images[selectedImage]} alt={name} />
+                <img key={selectedImage} ref={mainImgRef} src={images[selectedImage]} alt={name} />
               ) : (
                 <div className="pdp__img-placeholder">📦</div>
               )}
@@ -653,7 +668,7 @@ const ProductDetail = () => {
           )}
 
           {/* Trust badges */}
-          <div className="pdp__trust">
+          <div className="pdp__trust" data-reveal>
             <span><FiTruck /> Free Shipping</span>
             <span><FiRefreshCw /> 30-Day Returns</span>
             <span><FiShield /> Secure Payment</span>
@@ -662,7 +677,7 @@ const ProductDetail = () => {
       </section>
 
       {/* ═══════════ TABS ═══════════ */}
-      <section className="pdp__tabs-section">
+      <section className="pdp__tabs-section" data-reveal>
         <div className="pdp__tab-nav">
           <button className={activeTab === 'description' ? 'active' : ''} onClick={() => setActiveTab('description')}>
             Description
@@ -790,14 +805,14 @@ const ProductDetail = () => {
       {/* ═══════════ RELATED PRODUCTS ═══════════ */}
       {relatedProducts.length > 0 && (
         <section className="pdp__related">
-          <h2>You May Also Like</h2>
+          <h2 data-reveal>You May Also Like</h2>
           <div className="pdp__related-grid">
-            {relatedProducts.slice(0, 4).map((p) => {
+            {relatedProducts.slice(0, 4).map((p, i) => {
               const pName = p.productName || p.name;
               const pImg = Array.isArray(p.images) ? p.images[0] : p.image;
               const pPrice = Number(p.price || 0);
               return (
-                <Link to={`/product/${p.slug || p._id || p.id}`} className="pdp__related-card" key={p._id || p.id}>
+                <Link to={`/product/${p.slug || p._id || p.id}`} className="pdp__related-card" key={p._id || p.id} data-reveal style={{ '--rd': `${i * 0.08}s` }}>
                   <div className="pdp__related-img">
                     {pImg ? <img src={pImg} alt={pName} loading="lazy" /> : <span>📦</span>}
                   </div>
