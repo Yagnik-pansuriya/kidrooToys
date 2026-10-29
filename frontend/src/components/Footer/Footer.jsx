@@ -3,6 +3,7 @@ import { FiFacebook, FiInstagram, FiTwitter, FiYoutube, FiMail, FiPhone, FiMapPi
 import { useSelector } from 'react-redux';
 import { useGetCategoriesQuery } from '../../store/ActionApi/categoryApi';
 import { useTheme } from '../../context/ThemeContext';
+import { trimmedLogoUrl } from '../../utils/logoUrl';
 import './Footer.scss';
 
 const Footer = () => {
@@ -36,7 +37,7 @@ const Footer = () => {
             <div className="footer__brand">
               <div className="footer__logo">
                 {settings.logo ? (
-                  <img src={settings.logo} alt={settings.siteName || 'Kidroo Toys'} className="footer__logo-img" />
+                  <img src={trimmedLogoUrl(settings.logo)} alt={settings.siteName || 'Kidroo Toys'} className="footer__logo-img" />
                 ) : (
                   <>
                     <span className="footer__logo-icon">🧸</span>

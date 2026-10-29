@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout, setPermissions } from '../../../store/ReducerApi/authSlice';
 import { useGetUserPermissionsQuery } from '../../../store/ActionApi/permissionApi';
 import { useTheme } from '../../../context/ThemeContext';
+import { trimmedLogoUrl } from '../../../utils/logoUrl';
 import './AdminLayout.scss';
 
 // Map sidebar items to their backend permission route
@@ -88,7 +89,7 @@ const AdminLayout = () => {
       <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar--open' : ''}`}>
         <div className="admin-sidebar__header">
           {settings.logo ? (
-            <img src={settings.logo} alt={settings.siteName || 'Kidroo'} className="admin-sidebar__logo-img" />
+            <img src={trimmedLogoUrl(settings.logo)} alt={settings.siteName || 'Kidroo'} className="admin-sidebar__logo-img" />
           ) : (
             <span className="admin-sidebar__logo">🧸</span>
           )}
