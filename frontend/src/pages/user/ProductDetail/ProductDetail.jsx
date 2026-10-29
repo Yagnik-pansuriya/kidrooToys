@@ -12,6 +12,7 @@ import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Loader from '../../../components/Loader/Loader';
 import SEO from '../../../components/SEO/SEO';
+import OfferSlot from '../../../components/OfferSlot/OfferSlot';
 import { useScrollReveal } from '../../../utils/useScrollReveal';
 import { flyToCart } from '../../../utils/flyToCart';
 import './pdp-layout.css';
@@ -420,6 +421,9 @@ const ProductDetail = () => {
               )}
             </div>
           )}
+
+          {/* Offers placed "below product gallery" */}
+          <OfferSlot page="product" section="below-gallery" />
         </div>
 
         {/* Product info */}
@@ -801,6 +805,9 @@ const ProductDetail = () => {
           )}
         </div>
       </section>
+
+      {/* ═══════════ OFFERS — related products area (also catches unplaced offers) ═══════════ */}
+      <OfferSlot page="product" section="related-section" catchAll title="Special Offers For You" className="pdp__offer-slot" />
 
       {/* ═══════════ RELATED PRODUCTS ═══════════ */}
       {relatedProducts.length > 0 && (

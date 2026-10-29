@@ -102,3 +102,10 @@
   font-weight: 800;
   color: var(--color-header, #1a1d2e);
 }
+
+/* Offer slot near related products — page already provides side padding */
+.pdp__offer-slot {
+  padding-left: 0;
+  padding-right: 0;
+  --offer-notch: var(--color-bg, #FAFBFE);
+}

@@ -1,0 +1,716 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+// =============================================
+// OFFER SLOT — admin-managed offers on any page
+// Colours come from each offer via --of-bg / --of-bg-deep / --of-bg-soft / --of-txt
+// =============================================
+
+$of-ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+.offer-slot {
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: $space-xl $container-padding;
+
+  &__head {
+    text-align: center;
+    margin-bottom: $space-xl;
+  }
+
+  &__chip {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: $radius-full;
+    background: #FFF1E8;
+    color: $default-primary-dark;
+    font-weight: 800;
+    font-size: 0.8rem;
+    margin-bottom: $space-xs;
+  }
+
+  &__heading {
+    font-family: $font-heading;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    color: var(--color-text-primary, $default-text-primary);
+  }
+
+  &__grid {
+    display: grid;
+    gap: $space-lg;
+    grid-template-columns: 1fr;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg {
+      &--n3 { grid-template-columns: repeat(3, 1fr); }
+      &--n4 { grid-template-columns: repeat(4, 1fr); }
+    }
+  }
+
+  &__stack {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+  }
+
+  // ── Shared pieces ──
+  &__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transform: scale(1.08);
+    transition: opacity 0.8s ease, transform 1.2s $of-ease;
+
+    &.is-active {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  &__img-fallback {
+    position: absolute;
+    inset: 0;
+    @include flex-center;
+    font-size: 3rem;
+    background: var(--of-bg-soft);
+  }
+
+  &__img-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 2;
+
+    span {
+      width: 6px;
+      height: 6px;
+      border-radius: $radius-full;
+      background: rgba(255, 255, 255, 0.5);
+      transition: width 0.3s, background 0.3s;
+
+      &.is-active { width: 18px; background: #fff; }
+    }
+  }
+
+  &__timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    width: fit-content;
+    padding: 4px 10px;
+    border-radius: $radius-full;
+    font-size: 0.75rem;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--of-txt);
+    backdrop-filter: blur(4px);
+
+    &--urgent {
+      background: #fff;
+      color: $default-danger;
+      animation: ofPulse 1.6s ease-in-out infinite;
+    }
+  }
+
+  &__shine {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+    transform: translateX(-120%);
+    z-index: 3;
+  }
+
+  &__sparkles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+
+    i {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.55);
+      left: calc(8% + var(--n) * 16%);
+      top: 18%;
+      animation: ofFloat calc(3s + var(--n) * 0.6s) ease-in-out infinite alternate;
+      animation-delay: calc(var(--n) * -0.7s);
+
+      &:nth-child(odd) { border-radius: 50%; width: 6px; height: 6px; top: 72%; }
+      &:nth-child(3n) { top: 45%; }
+    }
+  }
+
+  // Entry: cards pop in one after another once the slot is on screen
+  .offer-ticket,
+  .offer-compact,
+  .offer-spot {
+    opacity: 0;
+    transform: translateY(28px) scale(0.97);
+  }
+
+  &.is-visible {
+    .offer-ticket,
+    .offer-compact,
+    .offer-spot {
+      animation: ofEnter 0.7s $of-ease forwards;
+      animation-delay: calc(var(--i, 0) * 0.12s);
+    }
+  }
+}
+
+// ═════════════ TICKET CARD ═════════════
+.offer-ticket {
+  --rx: 0deg;
+  --ry: 0deg;
+  --gx: 50%;
+  --gy: 0%;
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: var(--of-txt);
+  border-radius: $radius-2xl;
+  perspective: 900px;
+  isolation: isolate;
+
+  // Rotating gradient border
+  &__glow {
+    position: absolute;
+    inset: -2px;
+    border-radius: calc(#{$radius-2xl} + 2px);
+    background: conic-gradient(from var(--of-angle, 0deg), var(--of-bg), #FFD166, var(--of-bg-soft), var(--of-bg));
+    z-index: -1;
+    opacity: 0.55;
+    filter: blur(0.5px);
+    animation: ofSpin 6s linear infinite;
+    transition: opacity 0.3s, filter 0.3s;
+  }
+
+  &__body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border-radius: $radius-2xl;
+    background:
+      radial-gradient(circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.22), transparent 55%),
+      linear-gradient(150deg, var(--of-bg) 0%, var(--of-bg-deep) 100%);
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transform-style: preserve-3d;
+    transition: transform 0.25s ease-out, box-shadow 0.3s;
+    box-shadow: 0 10px 30px -10px var(--of-bg-deep);
+  }
+
+  &__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, var(--of-overlay));
+    }
+  }
+
+  &__ribbon {
+    position: absolute;
+    top: 12px;
+    left: -6px;
+    z-index: 2;
+    padding: 5px 14px 5px 16px;
+    background: #FFD166;
+    color: $default-text-primary;
+    font-weight: 900;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-radius: 4px $radius-full $radius-full 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    animation: ofWiggle 3s ease-in-out infinite;
+    transform-origin: left center;
+  }
+
+  // Perforated tear line with notches on both edges — the "ticket" look
+  &__perf {
+    position: relative;
+    display: block;
+    height: 0;
+    border-top: 2px dashed rgba(255, 255, 255, 0.45);
+    margin: 0 18px;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--offer-notch, var(--color-bg, #{$default-bg}));
+    }
+    &::before { left: -30px; }
+    &::after { right: -30px; }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: $space-md $space-lg $space-lg;
+    flex: 1;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 1.3rem;
+    line-height: 1.2;
+    color: inherit;
+    @include text-truncate(2);
+  }
+
+  &__subtitle {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    @include text-truncate(2);
+  }
+
+  &__cta {
+    margin-top: auto;
+    padding-top: $space-xs;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 0.9rem;
+
+    svg { transition: transform 0.3s $of-ease; }
+  }
+
+  &:hover,
+  &:focus-visible {
+    .offer-ticket__glow { opacity: 1; filter: blur(6px); }
+    .offer-ticket__body { box-shadow: 0 22px 45px -12px var(--of-bg-deep); }
+    .offer-slot__img.is-active { transform: scale(1.07); }
+    .offer-slot__shine { animation: ofShine 0.9s ease forwards; }
+    .offer-ticket__cta svg { transform: translateX(5px); }
+  }
+
+  &:focus-visible { outline: 3px solid var(--of-bg); outline-offset: 4px; }
+}
+
+// ═════════════ SPOTLIGHT ═════════════
+.offer-spot {
+  position: relative;
+  display: grid;
+  border-radius: 28px;
+  overflow: hidden;
+  min-height: 340px;
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.35);
+
+  @include md { min-height: 380px; }
+
+  &__slide {
+    grid-area: 1 / 1;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: center;
+    gap: $space-lg;
+    padding: $space-xl $space-lg 3.5rem;
+    text-decoration: none;
+    color: var(--of-txt);
+    background: linear-gradient(125deg, var(--of-bg) 0%, var(--of-bg-deep) 100%);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.03);
+    transition: opacity 0.7s ease, transform 0.9s $of-ease, visibility 0.7s;
+
+    @include md {
+      grid-template-columns: 1.1fr 1fr;
+      padding: $space-2xl $space-3xl;
+    }
+
+    &.is-active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      z-index: 1;
+
+      .offer-spot__content > * { animation: ofRise 0.7s $of-ease both; }
+      .offer-spot__content > :nth-child(2) { animation-delay: 0.08s; }
+      .offer-spot__content > :nth-child(3) { animation-delay: 0.16s; }
+      .offer-spot__content > :nth-child(4) { animation-delay: 0.24s; }
+      .offer-spot__content > :nth-child(5) { animation-delay: 0.32s; }
+      .offer-spot__frame { animation: ofPop 0.9s $of-ease both 0.1s, ofBob 5s ease-in-out 1s infinite; }
+    }
+
+    &:hover .offer-slot__shine { animation: ofShine 1s ease forwards; }
+    &:hover .offer-spot__cta svg { transform: translateX(5px); }
+  }
+
+  &__blob {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(2px);
+
+    &--a {
+      width: 320px;
+      height: 320px;
+      top: -120px;
+      right: 30%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 70%);
+      animation: ofDrift 9s ease-in-out infinite alternate;
+    }
+    &--b {
+      width: 240px;
+      height: 240px;
+      bottom: -100px;
+      left: -60px;
+      background: radial-gradient(circle, rgba(255, 209, 102, 0.35), transparent 70%);
+      animation: ofDrift 11s ease-in-out infinite alternate-reverse;
+    }
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    order: 2;
+
+    @include md { order: 1; }
+  }
+
+  &__tag {
+    width: fit-content;
+    padding: 6px 14px;
+    border-radius: $radius-full;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.4px;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: clamp(1.7rem, 4vw, 2.8rem);
+    line-height: 1.1;
+    color: inherit;
+  }
+
+  &__subtitle {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 700;
+    opacity: 0.95;
+  }
+
+  &__desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    opacity: 0.85;
+    @include text-truncate(3);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-sm;
+    margin-top: $space-xs;
+  }
+
+  &__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 26px;
+    border-radius: $radius-full;
+    background: #fff;
+    color: var(--of-bg-deep);
+    font-weight: 900;
+    font-size: 0.95rem;
+    box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+    transition: transform 0.3s $of-ease, box-shadow 0.3s;
+
+    svg { transition: transform 0.3s $of-ease; }
+  }
+
+  &__slide:hover &__cta { transform: translateY(-2px); box-shadow: 0 12px 26px -6px rgba(0, 0, 0, 0.4); }
+
+  &__media {
+    position: relative;
+    z-index: 2;
+    order: 1;
+    display: flex;
+    justify-content: center;
+
+    @include md { order: 2; }
+  }
+
+  &__frame {
+    position: relative;
+    display: block;
+    width: 100%;
+    max-width: 460px;
+    aspect-ratio: 4 / 3;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 4px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.45);
+    transform: rotate(2.5deg);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, var(--of-overlay));
+    }
+  }
+
+  &__arrow {
+    position: absolute;
+    top: 50%;
+    z-index: 4;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    @include flex-center;
+    font-size: 1.3rem;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s, background 0.3s, transform 0.3s;
+
+    &--prev { left: 14px; }
+    &--next { right: 14px; }
+    &:hover { background: rgba(0, 0, 0, 0.45); transform: translateY(-50%) scale(1.08); }
+
+    @media (hover: none) { opacity: 1; }
+  }
+
+  &:hover &__arrow,
+  &__arrow:focus-visible { opacity: 1; }
+
+  &__dots {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    display: flex;
+    gap: 8px;
+  }
+
+  // Each dot doubles as a progress bar for the auto-advance timer
+  &__dot {
+    position: relative;
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-full;
+    background: rgba(255, 255, 255, 0.45);
+    overflow: hidden;
+    cursor: pointer;
+    transition: width 0.4s $of-ease;
+
+    &.is-active {
+      width: 36px;
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: #fff;
+        transform-origin: left;
+        animation: ofProgress 6s linear forwards;
+      }
+    }
+  }
+
+  &.is-paused &__dot.is-active::after { animation-play-state: paused; }
+}
+
+// ═════════════ COMPACT CARD ═════════════
+.offer-compact {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  padding: 10px 12px 10px 10px;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--of-txt);
+  background: linear-gradient(135deg, var(--of-bg), var(--of-bg-deep));
+  box-shadow: 0 8px 20px -10px var(--of-bg-deep);
+  transition: transform 0.3s $of-ease, box-shadow 0.3s;
+
+  &__media {
+    position: relative;
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    .offer-slot__timer { padding: 2px 8px; font-size: 0.7rem; }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 0.98rem;
+    @include text-truncate(1);
+  }
+
+  &__subtitle {
+    font-size: 0.78rem;
+    opacity: 0.9;
+    @include text-truncate(1);
+  }
+
+  &__arrow {
+    flex-shrink: 0;
+    transition: transform 0.3s $of-ease;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px -10px var(--of-bg-deep);
+    .offer-compact__arrow { transform: translateX(4px); }
+    .offer-slot__shine { animation: ofShine 0.8s ease forwards; }
+  }
+}
+
+.offer-slot--compact {
+  padding: 0;
+  margin: $space-md 0 0;
+}
+
+// ═════════════ ANNOUNCEMENT STRIP ═════════════
+.offer-strip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--of-bg-deep), var(--of-bg), var(--of-bg-deep));
+  background-size: 200% 100%;
+  color: var(--of-txt);
+  animation: ofSlideBg 8s linear infinite;
+
+  &__track {
+    display: flex;
+    width: max-content;
+    animation: ofMarquee var(--dur, 30s) linear infinite;
+  }
+
+  &:hover &__track { animation-play-state: paused; }
+
+  &__group {
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 28px;
+    white-space: nowrap;
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.88rem;
+
+    strong { font-weight: 900; }
+    span { opacity: 0.9; }
+    &:hover strong { text-decoration: underline; }
+  }
+
+  &__star {
+    display: inline-block;
+    color: #FFD166;
+    animation: ofTwinkle 2s ease-in-out infinite;
+  }
+
+  &__close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 0 14px 0 24px;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    background: linear-gradient(90deg, transparent, var(--of-bg-deep) 40%);
+    @include flex-center;
+  }
+}
+
+// ═════════════ KEYFRAMES ═════════════
+@property --of-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes ofSpin { to { --of-angle: 360deg; } }
+@keyframes ofEnter { to { opacity: 1; transform: none; } }
+@keyframes ofRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes ofPop { from { opacity: 0; transform: rotate(8deg) scale(0.85); } to { opacity: 1; transform: rotate(2.5deg) scale(1); } }
+@keyframes ofShine { to { transform: translateX(120%); } }
+@keyframes ofPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+@keyframes ofProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ofMarquee { to { transform: translateX(-50%); } }
+@keyframes ofSlideBg { to { background-position: -200% 0; } }
+@keyframes ofTwinkle { 0%, 100% { transform: scale(1) rotate(0); opacity: 1; } 50% { transform: scale(1.4) rotate(90deg); opacity: 0.6; } }
+@keyframes ofWiggle { 0%, 85%, 100% { transform: rotate(0); } 90% { transform: rotate(-6deg); } 95% { transform: rotate(4deg); } }
+@keyframes ofFloat { from { transform: translateY(0) rotate(0); opacity: 0.3; } to { transform: translateY(-18px) rotate(120deg); opacity: 0.9; } }
+@keyframes ofBob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -10px; } }
+@keyframes ofDrift { from { transform: translate(0, 0) scale(1); } to { transform: translate(40px, 30px) scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .offer-slot *,
+  .offer-strip,
+  .offer-strip * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  .offer-slot .offer-ticket,
+  .offer-slot .offer-compact,
+  .offer-slot .offer-spot {
+    opacity: 1;
+    transform: none;
+  }
+  .offer-strip__track { overflow-x: auto; }
+}

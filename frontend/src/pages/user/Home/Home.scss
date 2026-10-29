@@ -1028,66 +1028,23 @@
   }
 }
 
-// ─── Home Offers Section & Banner Cards ──────────────────────────────────────
-.home-offers-section {
-  padding: 3rem 0;
-  background: white;
+// ─── Home Offer Slots (component styles live in components/OfferSlot) ─────────
+// Full-bleed background behind the centred slot so it blends with neighbours
+.home-offer-slot {
+  --offer-notch: #FFFFFF;
+  position: relative;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 100vmax #FFFFFF;
+  clip-path: inset(0 -100vmax);
+  padding-top: 2.5rem;
+  padding-bottom: 2.5rem;
 
-  &__container {
-    max-width: $container-max;
-    margin: 0 auto;
-    padding: 0 $container-padding;
-  }
+  &--hero { padding-top: 1.5rem; }
 
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: $space-lg;
-  }
-}
-
-.home-offer-banner {
-  display: flex;
-  align-items: center;
-  gap: $space-lg;
-  padding: $space-xl;
-  border-radius: $radius-2xl;
-  text-decoration: none;
-  color: inherit;
-  overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  min-height: 140px;
-
-  &:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
-  }
-
-  &__img {
-    width: 110px;
-    height: 110px;
-    object-fit: cover;
-    border-radius: $radius-xl;
-    flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-
-  &__content {
-    flex: 1;
-    h3 { font-family: $font-heading; font-size: 1.25rem; margin-bottom: 4px; }
-    p { font-size: 0.88rem; opacity: 0.9; margin-bottom: $space-sm; }
-  }
-
-  &__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    opacity: 0.95;
-    transition: gap 0.2s;
-
-    &:hover { gap: 8px; }
+  &:last-child {
+    --offer-notch: #FFFDF9;
+    background: #FFFDF9;
+    box-shadow: 0 0 0 100vmax #FFFDF9;
   }
 }
 

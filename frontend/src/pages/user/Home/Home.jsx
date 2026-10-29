@@ -11,6 +11,7 @@ import { useGetBannersQuery } from '../../../store/ActionApi/bannerApi';
 import { useGetOffersByPageQuery } from '../../../store/ActionApi/offerApi';
 import { useCart } from '../../../context/CartContext';
 import SEO from '../../../components/SEO/SEO';
+import OfferSlot from '../../../components/OfferSlot/OfferSlot';
 import FloatingBuddy from '../../../components/FloatingBuddy/FloatingBuddy';
 import { AnimalCanvas, AnimalSpot, shuffleAnimals, callAnimal, callRandomAnimal } from '../../../components/AnimalWorld';
 import { playPopSound } from '../../../utils/animalSounds';
@@ -43,9 +44,6 @@ const Home = () => {
   const allHomeOffers = Array.isArray(homeOffers)
     ? [...homeOffers].sort((a, b) => (a.placement?.position || 0) - (b.placement?.position || 0))
     : [];
-
-  // Safe color helper
-  const safeColor = (c, fallback) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fallback;
 
   // ── Refs for smooth scroll ─────────────────────────────────────
   const themeSectionRef = useRef(null);
@@ -273,6 +271,11 @@ const Home = () => {
           </svg>
         </div>
       </section>
+
+      {/* ═══════════ OFFERS — announcement strip, hero spotlight, below hero ═══════════ */}
+      <OfferSlot page="home" section="top-strip" />
+      <OfferSlot page="home" section="hero" className="home-offer-slot home-offer-slot--hero" />
+      <OfferSlot page="home" section="below-hero" className="home-offer-slot" />
       {/* ═══════════════════ DISCOVERY BY THEME ═══════════════════ */}
       <section className="theme-section scroll-reveal has-animal" ref={themeSectionRef}>
         <AnimalSpot animalId={cast[1].id} top={[1, 5]} />
@@ -332,49 +335,8 @@ const Home = () => {
         </svg>
       </div>
 
-      {/* ═══════════ HOME OFFERS (sorted by position) ═══════════ */}
-      {allHomeOffers.length > 0 && (
-        <section className="home-offers-section scroll-reveal has-animal">
-          <AnimalSpot animalId={cast[5].id} top={[0, 4]} />
-          <div className="home-offers-section__container">
-            <div className="home-offers-section__grid">
-              {allHomeOffers.map((offer) => {
-                const bg = safeColor(offer.styling?.bgColor, '#FF6B35');
-                const txt = safeColor(offer.styling?.textColor, '#FFFFFF');
-                return (
-                  <Link
-                    key={offer._id || offer.id}
-                    to={offer.targetUrl || '/offers'}
-                    className="home-offer-banner"
-                    style={{ background: `linear-gradient(135deg, ${bg}, ${bg}cc)`, color: txt }}
-                    onClick={() => playPopSound()}
-                  >
-                    {offer.images?.[0] && (
-                      <img
-                        src={cdnImage(offer.images[0].url || offer.images[0], 800)}
-                        alt={offer.title}
-                        className="home-offer-banner__img"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    )}
-                    <div className="home-offer-banner__content">
-                      <h3>{offer.title}</h3>
-                      {offer.subtitle && <p>{offer.subtitle}</p>}
-                      <span className="home-offer-banner__cta">
-                        Shop Now <FiArrowRight />
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-
-
+      {/* ═══════════ HOME OFFERS — between categories & products (also catches unplaced offers) ═══════════ */}
+      <OfferSlot page="home" section="between-categories" catchAll title="Offers You'll Love" className="home-offer-slot" />
 
       {/* ═══════════════════ NEW ARRIVALS ═══════════════════ */}
       <section className="featured-section scroll-reveal has-animal">
@@ -491,6 +453,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* ═══════════ OFFERS — before footer ═══════════ */}
+      <OfferSlot page="home" section="before-footer" title="Don't Miss These Deals" className="home-offer-slot" />
     </div>
   );
 };
