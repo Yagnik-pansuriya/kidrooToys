@@ -5,6 +5,7 @@ import { FiBell, FiBellOff } from 'react-icons/fi';
 import { baseApi } from '../../store/Api';
 import { useLazyGetRealtimeTokenQuery } from '../../store/ActionApi/realtimeApi';
 import { useToast } from '../../context/ToastContext';
+import { openSseStream } from '../../utils/sseStream';
 import {
   unlockAdminAudio,
   isAdminAudioLocked,
@@ -71,7 +72,7 @@ const AdminRealtime = () => {
   }, []);
 
   useEffect(() => {
-    let es = null;
+    let abort = null;
     let retryTimer = null;
     let stopped = false;
     let attempt = 0;
@@ -135,25 +136,28 @@ const AdminRealtime = () => {
       if (stopped || !config?.hubUrl) return;
 
       const url = new URL(config.hubUrl, window.location.origin);
-      config.topics.forEach((t) => url.searchParams.append('topic', t));
-      url.searchParams.set('authorization', config.token);
+      config.topics.forEach((t) => url.searchParams.append('match', t));
 
-      es = new EventSource(url.toString());
-      es.addEventListener('new-order', onNewOrder);
-      es.addEventListener('cart-add', onCartAdd);
-      es.onopen = () => {
-        attempt = 0;
-        setStatus('live');
-        // Catch up on anything missed while disconnected
-        if (hasConnected) dispatch(baseApi.util.invalidateTags(['Orders', 'AdminCarts']));
-        hasConnected = true;
-      };
-      // Reconnect with a fresh token (the old one may have expired)
-      es.onerror = () => {
-        es.close();
-        setStatus('connecting');
-        scheduleRetry();
-      };
+      abort = new AbortController();
+      try {
+        await openSseStream(url.toString(), {
+          token: config.token,
+          signal: abort.signal,
+          handlers: { 'new-order': onNewOrder, 'cart-add': onCartAdd },
+          onOpen: () => {
+            attempt = 0;
+            setStatus('live');
+            // Catch up on anything missed while disconnected
+            if (hasConnected) dispatch(baseApi.util.invalidateTags(['Orders', 'AdminCarts']));
+            hasConnected = true;
+          },
+        });
+      } catch {
+        if (stopped) return;
+      }
+      // Stream ended or failed: reconnect with a fresh token (the old one may have expired)
+      setStatus('connecting');
+      scheduleRetry();
     };
 
     connect();
@@ -161,7 +165,7 @@ const AdminRealtime = () => {
     return () => {
       stopped = true;
       clearTimeout(retryTimer);
-      es?.close();
+      abort?.abort();
     };
   }, [dispatch, fetchToken]);
 

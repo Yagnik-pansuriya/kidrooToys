@@ -2,12 +2,18 @@
 # Runs behind Nginx on 127.0.0.1:3001 — Nginx terminates TLS and proxies
 # https://kidroo.in/.well-known/mercure here.
 #
+# Written for Mercure 1.x (modern mode, RFC 9068 access tokens).
+#
 # Required env (same values as kidrooBackend/.env):
 #   MERCURE_PUBLISHER_JWT_KEY, MERCURE_SUBSCRIBER_JWT_KEY
 # Optional:
 #   SERVER_NAME           listen address, port only (default :3001) — no host name,
 #                         or Caddy would reject Nginx's "Host: kidroo.in" requests
 #   MERCURE_BIND          interface to bind (default 0.0.0.0; use 127.0.0.1 on the VPS)
+#   MERCURE_ISSUER        token "iss" (default https://kidroo.in; backend MERCURE_ISSUER)
+#   MERCURE_RESOURCE_IDENTIFIER  token "aud" (default https://kidroo.in/.well-known/mercure;
+#                         backend MERCURE_AUDIENCE). Pinned because the backend publishes on
+#                         127.0.0.1 while browsers subscribe on kidroo.in.
 #   MERCURE_CORS_ORIGINS  (only needed when the admin runs on another origin, e.g. Vite dev)
 
 {
@@ -20,8 +26,15 @@
 
 	route {
 		mercure {
-			publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} HS256
-			subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} HS256
+			issuer {$MERCURE_ISSUER:https://kidroo.in} {
+				publisher {
+					jwt {env.MERCURE_PUBLISHER_JWT_KEY} HS256
+				}
+				subscriber {
+					jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} HS256
+				}
+			}
+			resource_identifier {$MERCURE_RESOURCE_IDENTIFIER:https://kidroo.in/.well-known/mercure}
 			cors_origins {$MERCURE_CORS_ORIGINS:http://localhost:5173}
 		}
 

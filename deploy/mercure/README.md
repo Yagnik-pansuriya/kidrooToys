@@ -1,5 +1,12 @@
 # Mercure hub — live admin alerts
 
+Written for **Mercure 1.x** (tested with v1.1.5). 1.x is not compatible with 0.x
+clients: tokens are RFC 9068 access tokens (`typ: at+jwt`, `iss`, `aud`,
+`authorization_details`), subscribers use `?match=` instead of `?topic=`, and
+the token must go in the `Authorization` header (never the URL). The admin panel
+therefore reads the stream with `fetch()` (`frontend/src/utils/sseStream.js`)
+instead of `EventSource`.
+
 When a customer **places an order** or **adds to cart**, the backend publishes a
 private update to a [Mercure](https://mercure.rocks) hub. Every open admin panel
 is subscribed to the hub. It plays a sound, shows a toast and refreshes the
@@ -25,8 +32,8 @@ Online orders alert only after payment succeeds, so an abandoned Razorpay checko
 ```bash
 # 1. Install the hub binary (Linux x86_64 build from the GitHub releases page)
 sudo mkdir -p /opt/mercure && cd /opt/mercure
-# Download mercure_Linux_x86_64.tar.gz from https://github.com/dunglas/mercure/releases
-sudo tar xzf mercure_Linux_x86_64.tar.gz mercure
+sudo curl -fL -o mercure.tar.gz https://github.com/dunglas/mercure/releases/download/v1.1.5/mercure_Linux_x86_64.tar.gz
+sudo tar xzf mercure.tar.gz mercure && sudo rm mercure.tar.gz
 sudo cp /var/www/kidrooToys/deploy/mercure/Caddyfile /opt/mercure/Caddyfile
 
 # 2. Keys (same values go into kidrooBackend/.env)
@@ -44,6 +51,7 @@ sudo chown -R www-data:www-data /opt/mercure
 sudo cp /var/www/kidrooToys/deploy/mercure/mercure.service /etc/systemd/system/
 sudo systemctl daemon-reload && sudo systemctl enable --now mercure
 curl -s http://127.0.0.1:3001/healthz   # → 200
+curl -s "http://127.0.0.1:3001/.well-known/mercure?match=x"   # → Unauthorized (correct: no token)
 
 # 4. Nginx already proxies /.well-known/mercure → 127.0.0.1:3001 (deploy/nginx.conf)
 sudo nginx -t && sudo systemctl reload nginx
