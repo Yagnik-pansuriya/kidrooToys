@@ -12,9 +12,66 @@ import { buildOfferSeo } from '../../../utils/offerSeo';
 import { useScrollReveal } from '../../../utils/useScrollReveal';
 import OfferGate from '../../../components/OfferGate/OfferGate';
 import { canShowGate } from '../../../components/OfferGate/canShowGate';
+import { trackOfferImpression, trackOfferClick } from '../../../utils/offerTracking';
 import './Offers.scss';
 
 const safeColor = (c, fb) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fb;
+
+const isExternal = (url) => /^https?:\/\//i.test(url || '');
+
+// Router link for internal paths, new tab for absolute URLs; records the click either way
+// eslint-disable-next-line react/prop-types
+const OfferHref = ({ offer, fallback = '/shop', children, ...rest }) => {
+  const to = offer.targetUrl || fallback;
+  const onClick = () => trackOfferClick(offer._id || offer.id);
+  return isExternal(to)
+    ? <a href={to} target="_blank" rel="noopener noreferrer" onClick={onClick} {...rest}>{children}</a>
+    : <Link to={to} onClick={onClick} {...rest}>{children}</Link>;
+};
+
+// Records one impression when the element is at least half on screen
+const useTrackOnView = (id) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !id) return;
+    if (typeof IntersectionObserver === 'undefined') { trackOfferImpression(id); return; }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { trackOfferImpression(id); io.disconnect(); }
+    }, { threshold: 0.5 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [id]);
+  return ref;
+};
+
+// eslint-disable-next-line react/prop-types
+const DealCard = ({ offer, index }) => {
+  const ref = useTrackOnView(offer._id || offer.id);
+  const bg = safeColor(offer.styling?.bgColor, ['#6C3CE1', '#E84393', '#00B894', '#0984E3', '#FF6B35'][index % 5]);
+  const img = offer.images?.[0]?.url || offer.images?.[0];
+  return (
+    <OfferHref offer={offer} className="offpg__card" data-reveal style={{ '--rd': `${(index % 4) * 0.08}s` }}>
+      <div ref={ref} className="offpg__card-img-wrap" style={{ background: `linear-gradient(145deg, ${bg}, ${bg}99)` }}>
+        {img ? (
+          <img src={img} alt={offer.images?.[0]?.altText || offer.title} className="offpg__card-img" loading="lazy" />
+        ) : (
+          <div className="offpg__card-placeholder"><FiGift /></div>
+        )}
+        {offer.badgeText && <span className="offpg__card-badge" style={{ background: bg }}>{offer.badgeText}</span>}
+      </div>
+      <div className="offpg__card-body" style={{ borderTop: `3px solid ${bg}` }}>
+        <h3 style={{ color: bg }}>{offer.title}</h3>
+        {offer.subtitle && <p>{offer.subtitle}</p>}
+        <span className="offpg__card-cta" style={{ color: bg }}>
+          {offer.ctaText || 'View Deal'} <FiArrowRight />
+        </span>
+      </div>
+    </OfferHref>
+  );
+};
+
+const HERO_SECTIONS = ['hero', 'featured'];
 
 const DECOR_TOYS = ['🧸', '🪀', '🎈', '🚂', '🧩', '🪁', '🎨', '⭐'];
 
@@ -47,9 +104,20 @@ const Offers = () => {
     return Array.isArray(raw) ? raw : [];
   }, [couponsResp]);
 
+  // Hero carousel: offers the admin placed on this page's hero/featured slots,
+  // otherwise every live offer
+  const heroOffers = useMemo(() => {
+    const placed = offerList
+      .filter((o) => o.placement?.page === 'offers' && HERO_SECTIONS.includes(o.placement?.section))
+      .sort((a, b) =>
+        HERO_SECTIONS.indexOf(a.placement.section) - HERO_SECTIONS.indexOf(b.placement.section)
+        || (a.placement.position || 0) - (b.placement.position || 0));
+    return placed.length ? placed : offerList;
+  }, [offerList]);
+
   // ── Carousel state ────────────────────────────────────────────
   const [slideIdx, setSlideIdx] = useState(0);
-  const total = offerList.length;
+  const total = heroOffers.length;
   const goNext = useCallback(() => setSlideIdx(i => (i + 1) % total), [total]);
   const goPrev = useCallback(() => setSlideIdx(i => (i - 1 + total) % total), [total]);
 
@@ -64,7 +132,21 @@ const Offers = () => {
   useEffect(() => { setSlideIdx(0); }, [total]);
 
   // Countdown
-  const activeOffer = offerList[slideIdx] || null;
+  const activeOffer = heroOffers[slideIdx] || null;
+  const heroRef = useRef(null);
+  const heroShown = !offersLoading && !!activeOffer;
+  const [heroOnScreen, setHeroOnScreen] = useState(false);
+  useEffect(() => {
+    if (!heroShown) return;
+    const el = heroRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') { setHeroOnScreen(true); return; }
+    const io = new IntersectionObserver(([e]) => setHeroOnScreen(e.isIntersecting), { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [heroShown]);
+  useEffect(() => {
+    if (heroOnScreen && activeOffer) trackOfferImpression(activeOffer._id || activeOffer.id);
+  }, [heroOnScreen, activeOffer]);
   const [countdown, setCountdown] = useState({ d: 0, h: 0, m: 0 });
   useEffect(() => {
     if (!activeOffer?.validity?.to) return;
@@ -182,7 +264,7 @@ const Offers = () => {
         const txt = safeColor(activeOffer.styling?.textColor, '#FFFFFF');
         const img = activeOffer.images?.[0]?.url || activeOffer.images?.[0];
         return (
-          <section className="offpg__hero" data-reveal>
+          <section className="offpg__hero" data-reveal ref={heroRef}>
             <div className="offpg__hero-slide" style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg}dd 50%, ${bg}aa 100%)` }}>
               {/* Decorative circles */}
               <div className="offpg__hero-deco offpg__hero-deco--1" />
@@ -190,7 +272,7 @@ const Offers = () => {
 
               <div className="offpg__hero-body" key={slideIdx}>
                 <div className="offpg__hero-text" style={{ color: txt }}>
-                  <span className="offpg__hero-badge">🔥 Limited Time</span>
+                  <span className="offpg__hero-badge">{activeOffer.badgeText || '🔥 Limited Time'}</span>
                   <h2 className="offpg__hero-title">{activeOffer.title}</h2>
                   {activeOffer.subtitle && <p className="offpg__hero-sub">{activeOffer.subtitle}</p>}
                   {activeOffer.description && <p className="offpg__hero-desc">{activeOffer.description}</p>}
@@ -206,14 +288,14 @@ const Offers = () => {
                     </div>
                   )}
 
-                  <Link to={activeOffer.targetUrl || '/shop'} className="offpg__hero-cta">
-                    Shop This Deal <FiArrowRight />
-                  </Link>
+                  <OfferHref offer={activeOffer} className="offpg__hero-cta">
+                    {activeOffer.ctaText || 'Shop This Deal'} <FiArrowRight />
+                  </OfferHref>
                 </div>
 
                 {img && (
                   <div className="offpg__hero-visual">
-                    <img src={img} alt={activeOffer.title} />
+                    <img src={img} alt={activeOffer.images?.[0]?.altText || activeOffer.title} />
                   </div>
                 )}
               </div>
@@ -221,12 +303,12 @@ const Offers = () => {
               {/* Carousel controls */}
               {total > 1 && (
                 <>
-                  <button className="offpg__hero-arrow offpg__hero-arrow--l" onClick={goPrev}><FiChevronLeft /></button>
-                  <button className="offpg__hero-arrow offpg__hero-arrow--r" onClick={goNext}><FiChevronRight /></button>
+                  <button className="offpg__hero-arrow offpg__hero-arrow--l" onClick={goPrev} aria-label="Previous offer"><FiChevronLeft /></button>
+                  <button className="offpg__hero-arrow offpg__hero-arrow--r" onClick={goNext} aria-label="Next offer"><FiChevronRight /></button>
                   <div className="offpg__hero-dots">
-                    {offerList.map((_, i) => (
+                    {heroOffers.map((_, i) => (
                       <button key={i} className={`offpg__hero-dot${i === slideIdx ? ' offpg__hero-dot--on' : ''}`}
-                        onClick={() => setSlideIdx(i)} />
+                        onClick={() => setSlideIdx(i)} aria-label={`Show offer ${i + 1}`} />
                     ))}
                   </div>
                 </>
@@ -246,30 +328,9 @@ const Offers = () => {
               <p>Don't miss out on these exclusive offers</p>
             </div>
             <div className="offpg__grid">
-              {offerList.map((offer, i) => {
-                const bg = safeColor(offer.styling?.bgColor, ['#6C3CE1','#E84393','#00B894','#0984E3','#FF6B35'][i % 5]);
-                const txt = safeColor(offer.styling?.textColor, '#fff');
-                const img = offer.images?.[0]?.url || offer.images?.[0];
-                return (
-                  <Link key={offer._id || offer.id} to={offer.targetUrl || '/shop'} className="offpg__card"
-                    data-reveal style={{ '--rd': `${(i % 4) * 0.08}s` }}>
-                    <div className="offpg__card-img-wrap" style={{ background: `linear-gradient(145deg, ${bg}, ${bg}99)` }}>
-                      {img ? (
-                        <img src={img} alt={offer.title} className="offpg__card-img" />
-                      ) : (
-                        <div className="offpg__card-placeholder"><FiGift /></div>
-                      )}
-                    </div>
-                    <div className="offpg__card-body" style={{ borderTop: `3px solid ${bg}` }}>
-                      <h3 style={{ color: bg }}>{offer.title}</h3>
-                      {offer.subtitle && <p>{offer.subtitle}</p>}
-                      <span className="offpg__card-cta" style={{ color: bg }}>
-                        View Deal <FiArrowRight />
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
+              {offerList.map((offer, i) => (
+                <DealCard key={offer._id || offer.id} offer={offer} index={i} />
+              ))}
             </div>
           </div>
         </section>

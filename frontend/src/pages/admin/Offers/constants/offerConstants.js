@@ -1,15 +1,45 @@
 export const displayTypes = [
-  { value: 'single-banner', label: '🖼️ Single Image Banner', desc: 'One full-width promotional image' },
-  { value: 'slider', label: '🎠 Image Slider / Carousel', desc: 'Multiple images that auto-scroll' },
+  { value: 'single-banner', label: 'Single Image Banner', icon: '🖼️', desc: 'One promotional image with your text' },
+  { value: 'slider', label: 'Image Slider', icon: '🎠', desc: 'Several images that cross-fade automatically' },
 ];
 
+// Only pages that actually render offer slots on the storefront
 export const pageTargets = [
   { value: 'home', label: '🏠 Home Page' },
   { value: 'shop', label: '🛍️ Shop Page' },
   { value: 'product', label: '📦 Product Page' },
   { value: 'offers', label: '🏷️ Offers Page' },
-  { value: 'custom', label: '⚙️ Custom Section' },
 ];
+
+export const displayTypeLabel = (v) => displayTypes.find((t) => t.value === v)?.label || v || 'Banner';
+export const pageLabel = (v) => pageTargets.find((p) => p.value === v)?.label || (v === 'custom' ? '⚙️ Custom (not shown)' : v);
+export const sectionLabel = (page, section) =>
+  (sectionPresets[page] || []).find((s) => s.value === section)?.label || section || 'main';
+
+/** live | scheduled | expired | inactive — mirrors what the storefront will actually show */
+export const getOfferStatus = (offer, now = Date.now()) => {
+  const to = offer?.validity?.to ? new Date(offer.validity.to).getTime() : null;
+  const from = offer?.validity?.from ? new Date(offer.validity.from).getTime() : null;
+  if (to && to < now) return 'expired';
+  if (!offer?.isActive) return 'inactive';
+  if (from && from > now) return 'scheduled';
+  return 'live';
+};
+
+export const statusMeta = {
+  live: { label: 'Live', className: 'badge-active' },
+  scheduled: { label: 'Scheduled', className: 'badge-scheduled' },
+  expired: { label: 'Expired', className: 'badge-expired' },
+  inactive: { label: 'Paused', className: 'badge-inactive' },
+};
+
+// <input type="datetime-local"> value for a date, in the browser's local time
+export const toLocalInput = (date) => {
+  const d = date ? new Date(date) : new Date();
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 export const sectionPresets = {
   home: [
@@ -29,15 +59,14 @@ export const sectionPresets = {
     { value: 'related-section', label: '🔗 Related Products Area', desc: 'Near the related products section' },
   ],
   offers: [
-    { value: 'hero', label: '🔝 Hero Banner', desc: 'Main hero at the top of offers page' },
-    { value: 'featured', label: '⭐ Featured Section', desc: 'Highlighted promotional area' },
-    { value: 'grid', label: '📐 Offers Grid', desc: 'Part of the main offers grid' },
-  ],
-  custom: [
-    { value: 'custom-1', label: '⚙️ Custom Section 1', desc: 'Custom placement area 1' },
-    { value: 'custom-2', label: '⚙️ Custom Section 2', desc: 'Custom placement area 2' },
+    { value: 'hero', label: '🔝 Hero Carousel', desc: 'Big rotating banner at the top of /offers' },
+    { value: 'featured', label: '⭐ Featured', desc: 'Also shown in the hero carousel, after Hero offers' },
+    { value: 'grid', label: '📐 Deals Grid', desc: 'Card in the "All Deals" grid' },
   ],
 };
+
+// Every live offer also appears in the /offers page grid, whatever page it targets
+export const OFFERS_PAGE_NOTE = 'Every live offer is also listed on the /offers page.';
 
 export const positionOptions = [
   { value: 1, label: '1st — First / Top Priority' },
@@ -56,14 +85,14 @@ export const initialOfferForm = {
   title: '',
   subtitle: '',
   description: '',
+  badgeText: '',
+  ctaText: '',
   displayType: 'single-banner',
   page: 'home',
   section: 'hero',
   position: 1,
-  images: [],
-  existingImages: [],
-  imageAltTexts: [],
-  imageLinks: [],
+  existingImages: [], // [{ url, altText, link }] already uploaded
+  newImages: [],      // [{ file, preview, altText, link }] to upload
   bgColor: '#FF6B35',
   textColor: '#FFFFFF',
   overlayOpacity: 0,

@@ -587,6 +587,17 @@ $of-ease: cubic-bezier(0.16, 1, 0.3, 1);
     .offer-slot__timer { padding: 2px 8px; font-size: 0.7rem; }
   }
 
+  &__badge {
+    align-self: flex-start;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
   &__title {
     font-family: $font-heading;
     font-size: 0.98rem;
@@ -653,6 +664,15 @@ $of-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
     strong { font-weight: 900; }
     span { opacity: 0.9; }
+    em {
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.22);
+      font-style: normal;
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
     &:hover strong { text-decoration: underline; }
   }
 
@@ -713,4 +733,11 @@ $of-ease: cubic-bezier(0.16, 1, 0.3, 1);
     transform: none;
   }
   .offer-strip__track { overflow-x: auto; }
+}
+
+// Admin preview: same visuals, nothing to click through to
+.offer-slot--preview {
+  margin: 0;
+
+  .offer-ticket, .offer-spot__slide, .offer-compact { cursor: default; }
 }

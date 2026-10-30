@@ -12,6 +12,7 @@ import { useToast } from '../../../context/ToastContext';
 
 import SEO from '../../../components/SEO/SEO';
 import './Checkout.scss';
+import { getAttributedOffer, clearOfferAttribution } from '../../../utils/offerTracking';
 
 // Load Razorpay checkout script dynamically
 const loadRazorpayScript = () => {
@@ -275,9 +276,11 @@ const Checkout = () => {
         paymentMethod,
         shippingAddress,
         ...(couponApplied ? { couponCode: couponApplied.code } : {}),
+        ...(getAttributedOffer() ? { sourceOffer: getAttributedOffer() } : {}),
       };
 
       const result = await createOrder(orderPayload).unwrap();
+      clearOfferAttribution();
       const order = result.data?.order || result.data;
 
       if (paymentMethod === 'online') {

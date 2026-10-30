@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiChevronLeft, FiChevronRight, FiClock, FiX } from 'react-icons/fi';
 import { useGetOffersByPageQuery } from '../../store/ActionApi/offerApi';
 import { cdnImage } from '../../utils/assetCache';
+import { trackOfferImpression, trackOfferClick } from '../../utils/offerTracking';
 import './OfferSlot.scss';
 
 // Sections the admin can pick per page (mirrors admin offerConstants.sectionPresets)
@@ -94,13 +95,31 @@ const useInView = () => {
   return [ref, visible];
 };
 
+// Admin preview renders the real layouts without links or analytics
+const PreviewCtx = createContext(false);
+
+const offerId = (o) => o?._id || o?.id;
+
 // Internal paths use the router, absolute URLs open in a new tab
-const OfferLink = ({ to, className, children, ...rest }) => {
-  const href = to || '/offers';
+const OfferLink = ({ offer, className, children, ...rest }) => {
+  const preview = useContext(PreviewCtx);
+  if (preview) return <div className={className} {...rest}>{children}</div>;
+  const href = offer?.targetUrl || '/offers';
+  const onClick = () => trackOfferClick(offerId(offer));
   if (/^https?:\/\//i.test(href)) {
-    return <a href={href} className={className} target="_blank" rel="noopener noreferrer" {...rest}>{children}</a>;
+    return <a href={href} className={className} target="_blank" rel="noopener noreferrer" onClick={onClick} {...rest}>{children}</a>;
   }
-  return <Link to={href} className={className} {...rest}>{children}</Link>;
+  return <Link to={href} className={className} onClick={onClick} {...rest}>{children}</Link>;
+};
+
+// Count a view once the offer is actually on screen
+const useImpressions = (offers, active) => {
+  const preview = useContext(PreviewCtx);
+  const ids = offers.map(offerId).join(',');
+  useEffect(() => {
+    if (!active || preview || !ids) return;
+    ids.split(',').forEach(trackOfferImpression);
+  }, [ids, active, preview]);
 };
 
 const Countdown = ({ offer, now }) => {
@@ -174,7 +193,7 @@ const Sparkles = () => (
 // Ticket-style card used in grids
 const TicketCard = ({ offer, index, now }) => (
   <OfferLink
-    to={offer.targetUrl}
+    offer={offer}
     className="offer-ticket"
     style={{ ...offerTheme(offer), '--i': index }}
     {...tiltHandlers}
@@ -183,14 +202,14 @@ const TicketCard = ({ offer, index, now }) => (
     <span className="offer-ticket__body">
       <span className="offer-ticket__media">
         <OfferImages offer={offer} width={700} alt={offer.title} />
-        <span className="offer-ticket__ribbon">🔥 Deal</span>
+        <span className="offer-ticket__ribbon">{offer.badgeText || '🔥 Deal'}</span>
       </span>
       <span className="offer-ticket__perf" aria-hidden="true" />
       <span className="offer-ticket__content">
         <Countdown offer={offer} now={now} />
         <h3 className="offer-ticket__title">{offer.title}</h3>
         {offer.subtitle && <p className="offer-ticket__subtitle">{offer.subtitle}</p>}
-        <span className="offer-ticket__cta">Grab Offer <FiArrowRight /></span>
+        <span className="offer-ticket__cta">{offer.ctaText || 'Grab Offer'} <FiArrowRight /></span>
       </span>
       <span className="offer-slot__shine" aria-hidden="true" />
       <Sparkles />
@@ -199,7 +218,7 @@ const TicketCard = ({ offer, index, now }) => (
 );
 
 // Large carousel banner — one offer at a time
-const Spotlight = ({ offers, now }) => {
+const Spotlight = ({ offers, now, visible }) => {
   const [idx, setIdx] = useState(0);
   const [paused, setPaused] = useState(false);
   const touchX = useRef(null);
@@ -208,6 +227,7 @@ const Spotlight = ({ offers, now }) => {
   const go = useCallback((d) => setIdx((i) => (i + d + total) % total), [total]);
 
   useEffect(() => { if (idx >= total) setIdx(0); }, [idx, total]);
+  useImpressions(offers[idx] ? [offers[idx]] : [], visible);
   useEffect(() => {
     if (total <= 1 || paused) return;
     const t = setInterval(() => go(1), 6000);
@@ -230,7 +250,7 @@ const Spotlight = ({ offers, now }) => {
       {offers.map((offer, i) => (
         <OfferLink
           key={offer._id || offer.id || i}
-          to={offer.targetUrl}
+          offer={offer}
           className={`offer-spot__slide${i === idx ? ' is-active' : ''}`}
           style={offerTheme(offer)}
           aria-hidden={i !== idx}
@@ -239,12 +259,12 @@ const Spotlight = ({ offers, now }) => {
           <span className="offer-spot__blob offer-spot__blob--a" aria-hidden="true" />
           <span className="offer-spot__blob offer-spot__blob--b" aria-hidden="true" />
           <span className="offer-spot__content">
-            <span className="offer-spot__tag">🎉 Limited Time Offer</span>
+            <span className="offer-spot__tag">{offer.badgeText || '🎉 Limited Time Offer'}</span>
             <h2 className="offer-spot__title">{offer.title}</h2>
             {offer.subtitle && <p className="offer-spot__subtitle">{offer.subtitle}</p>}
             {offer.description && <p className="offer-spot__desc">{offer.description}</p>}
             <span className="offer-spot__actions">
-              <span className="offer-spot__cta">Shop the Deal <FiArrowRight /></span>
+              <span className="offer-spot__cta">{offer.ctaText || 'Shop the Deal'} <FiArrowRight /></span>
               <Countdown offer={offer} now={now} />
             </span>
           </span>
@@ -281,9 +301,10 @@ const Spotlight = ({ offers, now }) => {
 
 // Small stacked cards for sidebars / under the product gallery
 const CompactCard = ({ offer, index, now }) => (
-  <OfferLink to={offer.targetUrl} className="offer-compact" style={{ ...offerTheme(offer), '--i': index }}>
+  <OfferLink offer={offer} className="offer-compact" style={{ ...offerTheme(offer), '--i': index }}>
     <span className="offer-compact__media"><OfferImages offer={offer} width={300} alt={offer.title} /></span>
     <span className="offer-compact__content">
+      {offer.badgeText && <span className="offer-compact__badge">{offer.badgeText}</span>}
       <strong className="offer-compact__title">{offer.title}</strong>
       {offer.subtitle && <span className="offer-compact__subtitle">{offer.subtitle}</span>}
       <Countdown offer={offer} now={now} />
@@ -296,9 +317,12 @@ const CompactCard = ({ offer, index, now }) => (
 // Scrolling announcement ticker
 const STRIP_KEY = 'kidroo:offer-strip-hidden';
 const Strip = ({ offers }) => {
+  const preview = useContext(PreviewCtx);
   const [hidden, setHidden] = useState(() => {
+    if (preview) return false;
     try { return sessionStorage.getItem(STRIP_KEY) === '1'; } catch { return false; }
   });
+  useImpressions(offers, !hidden);
   if (hidden) return null;
 
   const dismiss = () => {
@@ -314,8 +338,9 @@ const Strip = ({ offers }) => {
         {[0, 1].map((half) => (
           <div className="offer-strip__group" key={half} aria-hidden={half === 1}>
             {loop.map((o, i) => (
-              <OfferLink key={`${half}-${i}`} to={o.targetUrl} className="offer-strip__item" tabIndex={half === 1 ? -1 : 0}>
+              <OfferLink key={`${half}-${i}`} offer={o} className="offer-strip__item" tabIndex={half === 1 ? -1 : 0}>
                 <span className="offer-strip__star">✦</span>
+                {o.badgeText && <em className="offer-strip__badge">{o.badgeText}</em>}
                 <strong>{o.title}</strong>
                 {o.subtitle && <span>{o.subtitle}</span>}
               </OfferLink>
@@ -323,7 +348,7 @@ const Strip = ({ offers }) => {
           </div>
         ))}
       </div>
-      <button type="button" className="offer-strip__close" onClick={dismiss} aria-label="Hide announcements"><FiX /></button>
+      <button type="button" className="offer-strip__close" onClick={preview ? undefined : dismiss} aria-label="Hide announcements"><FiX /></button>
     </div>
   );
 };
@@ -340,7 +365,6 @@ const Strip = ({ offers }) => {
 const OfferSlot = ({ page, section, catchAll = false, variant, title, className = '' }) => {
   const { data } = useGetOffersByPageQuery(page);
   const now = useNow();
-  const [ref, visible] = useInView();
 
   const offers = useMemo(() => {
     const raw = data?.data || data || [];
@@ -359,9 +383,22 @@ const OfferSlot = ({ page, section, catchAll = false, variant, title, className 
   if (offers.length === 0) return null;
 
   const primary = Array.isArray(section) ? section[0] : section;
-  let layout = variant || SECTION_VARIANT[primary] || 'cards';
+  return (
+    <OfferLayout
+      offers={offers}
+      layout={variant || SECTION_VARIANT[primary] || 'cards'}
+      title={title}
+      className={className}
+      now={now}
+    />
+  );
+};
+
+const OfferLayout = ({ offers, layout: wanted, title, className = '', now }) => {
+  const [ref, visible] = useInView();
   // A lone offer in a grid slot looks better as a full-width spotlight
-  if (layout === 'cards' && offers.length === 1) layout = 'spotlight';
+  const layout = wanted === 'cards' && offers.length === 1 ? 'spotlight' : wanted;
+  useImpressions(layout === 'cards' || layout === 'compact' ? offers : [], visible);
 
   if (layout === 'strip') return <Strip offers={offers} />;
 
@@ -377,7 +414,7 @@ const OfferSlot = ({ page, section, catchAll = false, variant, title, className 
           <h2 className="offer-slot__heading">{title}</h2>
         </div>
       )}
-      {layout === 'spotlight' && <Spotlight offers={offers} now={now} />}
+      {layout === 'spotlight' && <Spotlight offers={offers} now={now} visible={visible} />}
       {layout === 'cards' && (
         <div className={`offer-slot__grid offer-slot__grid--n${Math.min(offers.length, 4)}`}>
           {offers.map((o, i) => <TicketCard key={o._id || o.id || i} offer={o} index={i} now={now} />)}
@@ -391,5 +428,21 @@ const OfferSlot = ({ page, section, catchAll = false, variant, title, className 
     </section>
   );
 };
+
+/**
+ * Admin-side preview: renders offers exactly as the storefront slot would, without links or tracking.
+ * @param section  placement.section — picks the same layout the storefront uses
+ */
+export const OfferSlotPreview = ({ offers, section, title }) => (
+  <PreviewCtx.Provider value>
+    <OfferLayout
+      offers={offers}
+      layout={SECTION_VARIANT[section] || 'cards'}
+      title={title}
+      className="offer-slot--preview is-visible"
+      now={Date.now()}
+    />
+  </PreviewCtx.Provider>
+);
 
 export default OfferSlot;

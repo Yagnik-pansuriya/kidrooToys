@@ -63,6 +63,15 @@ export const offerApi = baseApi.injectEndpoints({
       invalidatesTags: ['Offers'],
     }),
 
+    // Admin: Duplicate offer as an inactive draft
+    duplicateOffer: builder.mutation({
+      query: (id) => ({
+        url: `${API_ENDPOINTS.OFFERS}/${id}/duplicate`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Offers'],
+    }),
+
     // Admin: Delete offer
     deleteOffer: builder.mutation({
       query: (id) => ({
@@ -82,5 +91,6 @@ export const {
   useAddOfferMutation,
   useUpdateOfferMutation,
   useReorderOffersMutation,
+  useDuplicateOfferMutation,
   useDeleteOfferMutation,
 } = offerApi;

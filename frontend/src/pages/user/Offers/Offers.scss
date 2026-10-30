@@ -803,3 +803,18 @@ $offpg-bg: #FAFAFA;
   .offpg [data-reveal] { opacity: 1; transform: none; transition: none; }
   .offpg *, .offpg *::after { animation: none !important; }
 }
+
+.offpg__card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
