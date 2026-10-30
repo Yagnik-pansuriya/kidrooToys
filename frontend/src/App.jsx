@@ -40,6 +40,8 @@ import AdminSkills from './pages/admin/Skills/AdminSkills';
 import AdminCustomers from './pages/admin/Customers/AdminCustomers';
 import AdminCustomerDetail from './pages/admin/Customers/AdminCustomerDetail';
 import AdminOrders from './pages/admin/Orders/AdminOrders';
+import AdminCarts from './pages/admin/Carts/AdminCarts';
+import AdminCartDetail from './pages/admin/Carts/AdminCartDetail';
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
@@ -122,6 +124,8 @@ function App() {
                   <Route path="users" element={<PermissionRoute permRoute="/users" adminOnly><AdminUsers /></PermissionRoute>} />
                   <Route path="customers" element={<PermissionRoute adminOnly><AdminCustomers /></PermissionRoute>} />
                   <Route path="customers/:id" element={<PermissionRoute adminOnly><AdminCustomerDetail /></PermissionRoute>} />
+                  <Route path="carts" element={<PermissionRoute adminOnly><AdminCarts /></PermissionRoute>} />
+                  <Route path="carts/:customerId" element={<PermissionRoute adminOnly><AdminCartDetail /></PermissionRoute>} />
                 </Route>
               </Routes>
             </Router>

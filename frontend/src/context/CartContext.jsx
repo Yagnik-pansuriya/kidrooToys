@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { useLazyGetCustomerCartQuery, useSyncCustomerCartMutation } from '../store/ActionApi/cartApi';
 
 const CartContext = createContext();
 
@@ -40,6 +42,24 @@ const normalizeCartItem = (product, quantity = 1) => {
   };
 };
 
+/**
+ * Merge the server cart into the local cart (used on login / page load).
+ * Items present in both keep the larger quantity so repeated syncs never double up.
+ */
+const mergeCarts = (localItems, serverItems) => {
+  const merged = localItems.map((item) => {
+    const match = serverItems.find((s) => s.id === item.id);
+    return match ? { ...item, quantity: Math.max(item.quantity, match.quantity) } : item;
+  });
+  serverItems.forEach((s) => {
+    if (!merged.some((item) => item.id === s.id)) merged.push(s);
+  });
+  return merged;
+};
+
+const toSyncPayload = (items) =>
+  items.map(({ productId, variantId, quantity }) => ({ productId, variantId, quantity }));
+
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState(() => {
     const saved = localStorage.getItem('kidroo_cart');
@@ -50,6 +70,68 @@ export const CartProvider = ({ children }) => {
   const saveCart = (items) => {
     localStorage.setItem('kidroo_cart', JSON.stringify(items));
   };
+
+  // ── Server sync (logged-in customers only) ──────────────────
+  const { isCustomerAuthenticated } = useSelector((state) => state.customerAuth);
+  const [fetchServerCart] = useLazyGetCustomerCartQuery();
+  const [syncServerCart] = useSyncCustomerCartMutation();
+  const [isServerSynced, setIsServerSynced] = useState(false);
+  const wasAuthenticated = useRef(isCustomerAuthenticated);
+  const lastSyncedPayload = useRef(null);
+
+  // On login (or page load while logged in) pull the saved cart and merge it in.
+  useEffect(() => {
+    if (!isCustomerAuthenticated) {
+      setIsServerSynced(false);
+      lastSyncedPayload.current = null;
+      // The cart now lives on the account, so don't leave it on this device after logout
+      if (wasAuthenticated.current) {
+        setCartItems([]);
+        localStorage.removeItem('kidroo_cart');
+      }
+      wasAuthenticated.current = false;
+      return;
+    }
+
+    wasAuthenticated.current = true;
+    let cancelled = false;
+
+    fetchServerCart(undefined, false)
+      .unwrap()
+      .then((res) => {
+        if (cancelled) return;
+        const serverItems = res?.data?.items || [];
+        setCartItems((prev) => {
+          const merged = mergeCarts(prev, serverItems);
+          saveCart(merged);
+          return merged;
+        });
+        // Only start pushing once we know the server state, so a failed fetch
+        // can never overwrite the saved cart with a stale local one.
+        setIsServerSynced(true);
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [isCustomerAuthenticated, fetchServerCart]);
+
+  // Push local changes to the server (debounced).
+  useEffect(() => {
+    if (!isCustomerAuthenticated || !isServerSynced) return;
+
+    const payload = toSyncPayload(cartItems);
+    const serialized = JSON.stringify(payload);
+    if (serialized === lastSyncedPayload.current) return;
+
+    const timer = setTimeout(() => {
+      syncServerCart(payload)
+        .unwrap()
+        .then(() => { lastSyncedPayload.current = serialized; })
+        .catch(() => {});
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [cartItems, isCustomerAuthenticated, isServerSynced, syncServerCart]);
 
   const addToCart = useCallback((product, quantity = 1) => {
     const normalized = normalizeCartItem(product, quantity);
