@@ -1,0 +1,38 @@
+@import '../../styles/variables';
+
+.admin-realtime {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: $radius;
+  font-size: 1.25rem;
+  color: #1A1D2E;
+  transition: background $transition-base;
+
+  &:hover { background: #F1F2F6; }
+
+  &__dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: #A0A4B8;
+  }
+
+  &--live &__dot { background: #00B894; }
+  &--connecting &__dot { background: #FDCB6E; }
+
+  // Sound is on but the browser hasn't allowed audio yet
+  &--locked { animation: adminRealtimePulse 1.6s ease-in-out infinite; }
+}
+
+@keyframes adminRealtimePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(253, 203, 110, 0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(253, 203, 110, 0); }
+}

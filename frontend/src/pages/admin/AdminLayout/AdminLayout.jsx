@@ -21,6 +21,7 @@ import { logout, setPermissions } from '../../../store/ReducerApi/authSlice';
 import { useGetUserPermissionsQuery } from '../../../store/ActionApi/permissionApi';
 import { useTheme } from '../../../context/ThemeContext';
 import { trimmedLogoUrl } from '../../../utils/logoUrl';
+import AdminRealtime from '../../../components/AdminRealtime/AdminRealtime';
 import './AdminLayout.scss';
 
 // Map sidebar items to their backend permission route
@@ -135,7 +136,10 @@ const AdminLayout = () => {
             <FiMenu />
           </button>
           <h2 className="admin-topbar__title">Admin Panel</h2>
-          <NavLink to="/" className="admin-topbar__view-site" target="_blank">View Site →</NavLink>
+          <div className="admin-topbar__actions">
+            <AdminRealtime />
+            <NavLink to="/" className="admin-topbar__view-site" target="_blank">View Site →</NavLink>
+          </div>
         </header>
         <main className="admin-content">
           <Outlet />

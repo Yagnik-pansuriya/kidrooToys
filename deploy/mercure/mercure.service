@@ -1,0 +1,18 @@
+# systemd unit for the Mercure hub
+#   sudo cp deploy/mercure/mercure.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now mercure
+[Unit]
+Description=Mercure hub (Kidroo live admin alerts)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/mercure
+EnvironmentFile=/opt/mercure/.env
+ExecStart=/opt/mercure/mercure run --config /opt/mercure/Caddyfile
+Restart=always
+RestartSec=3
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

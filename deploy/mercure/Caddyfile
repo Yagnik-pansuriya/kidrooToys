@@ -1,0 +1,27 @@
+# Mercure hub for live admin alerts (new orders / add to cart).
+# Runs behind Nginx on 127.0.0.1:3001 — Nginx terminates TLS and proxies
+# https://kidroo.in/.well-known/mercure here.
+#
+# Required env (same values as kidrooBackend/.env):
+#   MERCURE_PUBLISHER_JWT_KEY, MERCURE_SUBSCRIBER_JWT_KEY
+# Optional:
+#   SERVER_NAME           (default :3001)
+#   MERCURE_CORS_ORIGINS  (only needed when the admin runs on another origin, e.g. Vite dev)
+
+{
+	auto_https off
+	admin off
+}
+
+{$SERVER_NAME::3001} {
+	route {
+		mercure {
+			publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} HS256
+			subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} HS256
+			cors_origins {$MERCURE_CORS_ORIGINS:http://localhost:5173}
+		}
+
+		respond /healthz 200
+		respond "Not Found" 404
+	}
+}
