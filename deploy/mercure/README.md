@@ -31,7 +31,10 @@ sudo cp /var/www/kidrooToys/deploy/mercure/Caddyfile /opt/mercure/Caddyfile
 
 # 2. Keys (same values go into kidrooBackend/.env)
 sudo tee /opt/mercure/.env >/dev/null <<ENV
-SERVER_NAME=127.0.0.1:3001
+SERVER_NAME=:3001
+MERCURE_BIND=127.0.0.1
+XDG_CONFIG_HOME=/opt/mercure/config
+XDG_DATA_HOME=/opt/mercure/data
 MERCURE_PUBLISHER_JWT_KEY=<publisher-secret>
 MERCURE_SUBSCRIBER_JWT_KEY=<subscriber-secret>
 ENV

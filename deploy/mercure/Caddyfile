@@ -5,7 +5,9 @@
 # Required env (same values as kidrooBackend/.env):
 #   MERCURE_PUBLISHER_JWT_KEY, MERCURE_SUBSCRIBER_JWT_KEY
 # Optional:
-#   SERVER_NAME           (default :3001)
+#   SERVER_NAME           listen address, port only (default :3001) — no host name,
+#                         or Caddy would reject Nginx's "Host: kidroo.in" requests
+#   MERCURE_BIND          interface to bind (default 0.0.0.0; use 127.0.0.1 on the VPS)
 #   MERCURE_CORS_ORIGINS  (only needed when the admin runs on another origin, e.g. Vite dev)
 
 {
@@ -14,6 +16,8 @@
 }
 
 {$SERVER_NAME::3001} {
+	bind {$MERCURE_BIND:0.0.0.0}
+
 	route {
 		mercure {
 			publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} HS256
