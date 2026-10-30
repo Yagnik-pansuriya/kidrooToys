@@ -356,6 +356,22 @@
   transition: all $transition-base;
 
   &:hover { background: var(--color-primary); color: white; }
+
+  &--wa {
+    background: white;
+    border-color: #25D366;
+    color: #128C7E;
+    cursor: pointer;
+    font-family: inherit;
+
+    &:hover { background: #25D366; color: white; }
+  }
+}
+
+.acart-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-sm;
 }
 
 .acart-items {

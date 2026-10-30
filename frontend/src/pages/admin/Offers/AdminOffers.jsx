@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import {
   FiPlus, FiSearch, FiTag, FiPercent, FiDownload,
   FiTrendingUp, FiBarChart2, FiCalendar, FiShoppingBag, FiEye, FiMousePointer, FiRadio,
@@ -15,6 +16,7 @@ import Loader from '../../../components/Loader/Loader';
 import OfferTableRow from './components/OfferTableRow';
 import OfferFormModal from './components/OfferFormModal';
 import OfferPreviewModal from './components/OfferPreviewModal';
+import OfferWhatsAppModal from '../../../components/WhatsAppSend/OfferWhatsAppModal';
 import CouponTableRow from './components/CouponTableRow';
 import CouponFormModal from './components/CouponFormModal';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
@@ -87,6 +89,8 @@ const AdminOffers = () => {
   const timeframeLabel = TIMEFRAMES.find((t) => t.value === analyticsTimeframe)?.label || '';
 
   const { showSuccess, showError } = useToast();
+  const isAdmin = useSelector((state) => state.auth.user?.role === 'admin');
+  const [waOffer, setWaOffer] = useState(null);
 
   // ── Analytics API ───────────────────────────────────────────────
   const { data: analyticsResponse, isLoading: isAnalyticsLoading } = useGetCouponAnalyticsQuery({
@@ -598,6 +602,7 @@ const AdminOffers = () => {
                     onDuplicate={handleDuplicateOffer}
                     onDelete={handleDeleteOffer}
                     onToggleStatus={handleToggleOfferStatus}
+                    onWhatsApp={isAdmin ? setWaOffer : undefined}
                     busy={togglingId === (offer._id || offer.id)}
                   />
                 ))}
@@ -639,6 +644,7 @@ const AdminOffers = () => {
 
       {/* ── Modals ──────────────────────────────────────────────── */}
       <OfferPreviewModal preview={preview} onClose={() => setPreview(null)} onEdit={openEditOffer} />
+      {waOffer && <OfferWhatsAppModal offer={waOffer} onClose={() => setWaOffer(null)} />}
 
       <OfferFormModal
         isOpen={showOfferModal}

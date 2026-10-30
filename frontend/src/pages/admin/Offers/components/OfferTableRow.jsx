@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiEye, FiEdit2, FiCopy, FiTrash2, FiImage } from 'react-icons/fi';
+import { RiWhatsappLine } from 'react-icons/ri';
 import { displayTypeLabel, pageLabel, sectionLabel, getOfferStatus, statusMeta } from '../constants/offerConstants';
 
 const fmtDate = (d) =>
@@ -20,7 +21,7 @@ const relative = (status, offer) => {
 /**
  * @param perf  this offer's analytics for the selected timeframe (views/clicks/orders), if any
  */
-const OfferTableRow = ({ offer, perf, timeframeLabel, onPreview, onEdit, onDuplicate, onDelete, onToggleStatus, busy }) => {
+const OfferTableRow = ({ offer, perf, timeframeLabel, onPreview, onEdit, onDuplicate, onDelete, onToggleStatus, onWhatsApp, busy }) => {
   const status = getOfferStatus(offer);
   const meta = statusMeta[status];
   const thumb = offer.images?.[0]?.url || offer.images?.[0];
@@ -81,6 +82,9 @@ const OfferTableRow = ({ offer, perf, timeframeLabel, onPreview, onEdit, onDupli
       </td>
       <td>
         <div className="action-btns">
+          {onWhatsApp && (
+            <button type="button" className="icon-btn icon-btn--wa" onClick={() => onWhatsApp(offer)} title="Send on WhatsApp" aria-label="Send on WhatsApp"><RiWhatsappLine /></button>
+          )}
           <button type="button" className="icon-btn" onClick={() => onPreview(offer)} title="Preview" aria-label="Preview"><FiEye /></button>
           <button type="button" className="icon-btn" onClick={() => onEdit(offer)} title="Edit" aria-label="Edit"><FiEdit2 /></button>
           <button type="button" className="icon-btn" onClick={() => onDuplicate(offer)} title="Duplicate as draft" aria-label="Duplicate"><FiCopy /></button>

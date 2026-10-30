@@ -6,8 +6,10 @@ import {
   FiAlertCircle, FiExternalLink, FiUser,
 } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
+import { RiWhatsappLine } from 'react-icons/ri';
 import { useGetAdminCartByCustomerQuery } from '../../../store/ActionApi/cartApi';
 import Loader from '../../../components/Loader/Loader';
+import CartWhatsAppModal from '../../../components/WhatsAppSend/CartWhatsAppModal';
 import '../Customers/AdminCustomerDetail.scss';
 import './AdminCarts.scss';
 
@@ -41,6 +43,7 @@ const AdminCartDetail = () => {
   const { customerId } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('items'); // items | addresses
+  const [waOpen, setWaOpen] = useState(false);
 
   const { data, isLoading } = useGetAdminCartByCustomerQuery(customerId, {
     skip: !customerId,
@@ -110,10 +113,26 @@ const AdminCartDetail = () => {
           </div>
         </div>
 
-        <Link to={`/admin/customers/${customer._id}`} className="acart-profile-link">
-          <FiUser /> Customer profile
-        </Link>
+        <div className="acart-header-actions">
+          {items.some((i) => !i.unavailable) && customer.mobile && (
+            <button type="button" className="acart-profile-link acart-profile-link--wa" onClick={() => setWaOpen(true)}>
+              <RiWhatsappLine /> Send WhatsApp
+            </button>
+          )}
+          <Link to={`/admin/customers/${customer._id}`} className="acart-profile-link">
+            <FiUser /> Customer profile
+          </Link>
+        </div>
       </div>
+
+      {waOpen && (
+        <CartWhatsAppModal
+          customer={customer}
+          items={items}
+          subtotal={totals.subtotal}
+          onClose={() => setWaOpen(false)}
+        />
+      )}
 
       {/* ═══════════ Stats ═══════════ */}
       <div className="acd-stats">

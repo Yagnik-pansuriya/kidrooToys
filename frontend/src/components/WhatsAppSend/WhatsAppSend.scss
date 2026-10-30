@@ -1,0 +1,73 @@
+@import '../../styles/variables';
+
+// Extras on top of the shared .sms-modal styles (pages/admin/Customers/AdminCustomers.scss)
+.wa-send {
+  &__image {
+    width: 100%;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: $radius;
+    display: block;
+    margin-bottom: $space-xs;
+  }
+
+  &__bubble-title { font-weight: 700; }
+
+  &__link {
+    display: block;
+    margin-top: $space-xs;
+    font-size: 0.78rem;
+    color: #0E7C66;
+    word-break: break-all;
+  }
+
+  &__test-row {
+    display: flex;
+    gap: $space-xs;
+
+    input { flex: 1; }
+  }
+
+  &__test-btn {
+    flex-shrink: 0;
+    padding: 0 $space-md;
+    border-radius: $radius;
+    border: 2px solid #25D366;
+    background: white;
+    color: #128C7E;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+  }
+
+  &__problems {
+    margin: 0;
+    padding: $space-sm $space-md;
+    list-style: none;
+    background: #FEF2F2;
+    border-radius: $radius;
+    color: #B91C1C;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__confirm {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+
+    input { margin-top: 2px; }
+  }
+}
+
+.sms-modal__btn-send.wa-send__btn {
+  background: #25D366;
+
+  &:hover:not(:disabled) { background: #1EBE5A; }
+}
