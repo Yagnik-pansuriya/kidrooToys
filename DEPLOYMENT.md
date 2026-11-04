@@ -213,7 +213,22 @@ ALLOWED_ORIGINS=https://kidrootoys.co,https://www.kidrootoys.co
 # Cloudinary, Brevo SMTP, Razorpay, MSG91 — fill in your values
 # IMPORTANT: Use Razorpay LIVE keys, not test keys!
 # IMPORTANT: Set SMS_PROVIDER=msg91 or twilio, NOT console!
+
+# Razorpay webhook secret — any strong random string; the SAME value goes in the Razorpay Dashboard
+RAZORPAY_WEBHOOK_SECRET=<run: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))">
 ```
+
+#### Razorpay webhook (required for online payments)
+
+Without the webhook, an order paid online stays `Pending` if the customer closes the tab before the
+browser confirms the payment. Set it up in the Razorpay Dashboard (do it separately in Test and Live mode):
+
+1. **Account & Settings → Webhooks → Add New Webhook**
+2. **Webhook URL:** `https://<your-domain>/api/webhooks/razorpay`
+3. **Secret:** the same value as `RAZORPAY_WEBHOOK_SECRET` above
+4. **Active events:** `payment.captured` and `order.paid`
+5. Save, and check **Account & Settings → Payment Capture** is set to **automatic**
+   (authorized-but-uncaptured payments are auto-refunded and never trigger `payment.captured`).
 
 ### 5.2. Frontend Environment
 
