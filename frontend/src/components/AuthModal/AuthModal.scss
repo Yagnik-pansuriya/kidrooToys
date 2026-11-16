@@ -14,6 +14,7 @@
   -webkit-backdrop-filter: blur(10px);
   animation: authFadeIn 0.2s ease;
   padding: 1rem;
+  overscroll-behavior: contain;
 }
 
 .auth-modal {
@@ -23,7 +24,11 @@
   width: 100%;
   max-width: 460px;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain; // scrolling inside the popup never scrolls the page
+  box-sizing: border-box;
   box-shadow:
     0 32px 80px rgba(0, 0, 0, 0.3),
     0 12px 32px rgba(0, 0, 0, 0.1),
@@ -236,8 +241,11 @@
 
   &__row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    // minmax(0, …) lets the columns shrink below the inputs' default width, so "Last name" stays inside
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0.75rem;
+
+    > * { min-width: 0; }
   }
 }
 
@@ -305,6 +313,7 @@
     font-size: 0.9rem;
     color: #1a1d2e;
     outline: none;
+    width: 100%;
     min-width: 0;
     font-weight: 500;
 
@@ -551,6 +560,7 @@
 @media (max-width: 480px) {
   .auth-modal {
     max-height: 92vh;
+    max-height: 92dvh;
     border-radius: 20px;
   }
 

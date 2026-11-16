@@ -12,6 +12,13 @@
     h1 { font-family: $font-heading; font-size: 1.8rem; }
   }
 
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $space-sm;
+  }
+
   // ── Search bar ────────────────────────────────────────────────
   &__search-bar {
     display: flex;

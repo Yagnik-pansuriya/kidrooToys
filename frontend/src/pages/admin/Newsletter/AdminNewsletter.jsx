@@ -4,10 +4,13 @@ import {
   useGetSubscribersQuery,
   useGetNewsletterStatsQuery,
   useRemoveSubscriberMutation,
+  useLazyExportSubscribersQuery,
 } from '../../../store/ActionApi/newsletterApi';
 import { useToast } from '../../../context/ToastContext';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
 import Loader from '../../../components/Loader/Loader';
+import ExportCsvButton from '../../../components/ExportCsvButton/ExportCsvButton';
+import { downloadCsv, csvDate, fileStamp } from '../../../utils/csv';
 import './AdminNewsletter.scss';
 
 const AdminNewsletter = () => {
@@ -19,6 +22,24 @@ const AdminNewsletter = () => {
 
   const subscribers = subscribersResp?.data?.subscribers || subscribersResp?.subscribers || (Array.isArray(subscribersResp?.data) ? subscribersResp.data : []);
   const stats = statsResp?.data || statsResp || { total: 0, active: 0, inactive: 0 };
+
+  const [fetchSubscribersExport] = useLazyExportSubscribersQuery();
+
+  // Active subscribers only — ready to import into Mailchimp / Brevo / WhatsApp
+  const handleExport = async () => {
+    try {
+      const res = await fetchSubscribersExport({ activeOnly: true }).unwrap();
+      const rows = res?.data?.subscribers || [];
+      if (!rows.length) return showError('No active subscribers to export');
+      downloadCsv(`kidroo-newsletter-subscribers-${fileStamp()}.csv`, [
+        ['Email', 'Status', 'Subscribed on'],
+        ...rows.map((s) => [s.email, s.isActive ? 'Active' : 'Inactive', csvDate(s.subscribedAt || s.createdAt)]),
+      ]);
+      showSuccess(`Exported ${rows.length} subscribers`);
+    } catch (err) {
+      showError(err?.data?.message || 'Export failed');
+    }
+  };
 
   const confirmDelete = async () => {
     if (!toDelete) return;
@@ -36,6 +57,7 @@ const AdminNewsletter = () => {
     <div className="admin-newsletter">
       <div className="admin-newsletter__header">
         <h1><FiMail /> Newsletter Subscribers</h1>
+        <ExportCsvButton label="Export active (CSV)" onExport={handleExport} />
       </div>
 
       {/* Stats */}

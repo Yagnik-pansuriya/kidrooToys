@@ -53,6 +53,22 @@ const AuthModal = ({ isOpen, onClose, onSuccess, message }) => {
     }
   }, [isOpen]);
 
+  // Lock the page behind the popup so only the popup scrolls
+  useEffect(() => {
+    if (!isOpen) return;
+    const { body, documentElement: html } = document;
+    const prev = { body: body.style.overflow, html: html.style.overflow, pad: body.style.paddingRight };
+    const scrollbar = window.innerWidth - html.clientWidth;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    if (scrollbar > 0) body.style.paddingRight = `${scrollbar}px`; // avoid a layout jump when the scrollbar disappears
+    return () => {
+      html.style.overflow = prev.html;
+      body.style.overflow = prev.body;
+      body.style.paddingRight = prev.pad;
+    };
+  }, [isOpen]);
+
   // OTP countdown
   useEffect(() => {
     if (countdown > 0) {

@@ -19,6 +19,12 @@ export const newsletterApi = baseApi.injectEndpoints({
       providesTags: ['Newsletter'],
     }),
 
+    // GET /api/newsletter/export (admin) — all subscribers, for CSV
+    exportSubscribers: builder.query({
+      query: ({ activeOnly = false } = {}) => `newsletter/export${activeOnly ? '?active=true' : ''}`,
+      keepUnusedDataFor: 0,
+    }),
+
     // GET /api/newsletter/stats (admin)
     getNewsletterStats: builder.query({
       query: () => 'newsletter/stats',
@@ -42,4 +48,5 @@ export const {
   useGetSubscribersQuery,
   useGetNewsletterStatsQuery,
   useRemoveSubscriberMutation,
+  useLazyExportSubscribersQuery,
 } = newsletterApi;

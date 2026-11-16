@@ -12,6 +12,7 @@ import {
   useGetCouponAnalyticsQuery,
 } from '../../../store/ActionApi/couponApi';
 import { useToast } from '../../../context/ToastContext';
+import { downloadCsv } from '../../../utils/csv';
 import Loader from '../../../components/Loader/Loader';
 import OfferTableRow from './components/OfferTableRow';
 import OfferFormModal from './components/OfferFormModal';
@@ -52,20 +53,6 @@ const couponStatus = (c, now = Date.now()) => {
   if (c.validTo && new Date(c.validTo) < now) return 'expired';
   if (c.validFrom && new Date(c.validFrom) > now) return 'scheduled';
   return c.isActive ? 'active' : 'inactive';
-};
-
-const downloadCsv = (filename, rows) => {
-  const esc = (v) => {
-    const s = v === null || v === undefined ? '' : String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const csv = rows.map((r) => r.map(esc).join(',')).join('\n');
-  const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 const StatTile = ({ icon, label, value, sub, tone = 'primary' }) => (

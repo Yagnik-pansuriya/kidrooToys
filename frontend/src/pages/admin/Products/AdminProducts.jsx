@@ -2,12 +2,16 @@ import { useState, useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FiPlus } from 'react-icons/fi';
 import Loader from '../../../components/Loader/Loader';
+import ExportCsvButton from '../../../components/ExportCsvButton/ExportCsvButton';
+import { useToast } from '../../../context/ToastContext';
+import { downloadCsv, csvDate, fileStamp, rangeSuffix } from '../../../utils/csv';
 
 import {
   useGetProductsQuery,
   useReorderProductsMutation,
   useMoveProductPositionMutation,
   useToggleProductStatusMutation,
+  useLazyExportProductsQuery,
 } from '../../../store/ActionApi/productApi';
 import { useGetCategoriesQuery } from '../../../store/ActionApi/categoryApi';
 import { useGetSkillsQuery } from '../../../store/ActionApi/skillApi';
@@ -120,6 +124,31 @@ const AdminProducts = () => {
   // ── Toggle status mutation ──────────────────────────────────────
   const [toggleProductStatus] = useToggleProductStatusMutation();
 
+  // ── CSV export (all products; units sold / revenue for the chosen range) ──
+  const { showSuccess, showError } = useToast();
+  const [fetchProductsExport] = useLazyExportProductsQuery();
+  const handleExport = async ({ from, to }) => {
+    try {
+      const res = await fetchProductsExport({ from, to }).unwrap();
+      const rows = res?.data?.products || [];
+      if (!rows.length) return showError('No products to export');
+      const yn = (b) => (b ? 'Yes' : 'No');
+      downloadCsv(`kidroo-products${rangeSuffix(from, to)}-${fileStamp()}.csv`, [
+        ['Product', 'Code', 'SKU', 'Categories', 'Price', 'MRP', 'Discount %', 'Stock', 'Active',
+          'Featured', 'New arrival', 'Best seller', 'Age range', 'Rating', 'Reviews',
+          from || to ? 'Units sold (range)' : 'Units sold (all time)', from || to ? 'Revenue (range)' : 'Revenue (all time)', 'Added on'],
+        ...rows.map((p) => [
+          p.productName, p.productCode, p.skuCode, p.categories, p.price, p.originalPrice, p.discountPercentage, p.stock, yn(p.isActive),
+          yn(p.featured), yn(p.newArrival), yn(p.bestSeller), p.ageRange, p.ratings, p.numReviews,
+          p.unitsSold, p.revenue, csvDate(p.createdAt),
+        ]),
+      ]);
+      showSuccess(`Exported ${rows.length} products`);
+    } catch (err) {
+      showError(err?.data?.message || 'Export failed');
+    }
+  };
+
   // ── Search handlers ───────────────────────────────────────────
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -189,9 +218,12 @@ const AdminProducts = () => {
       {/* ── Page header ── */}
       <div className="admin-products__header">
         <h1>Products 📦</h1>
-        <button className="admin-btn admin-btn--primary" onClick={openAdd}>
-          <FiPlus aria-hidden="true" /> Add Product
-        </button>
+        <div className="admin-products__header-actions">
+          <ExportCsvButton withRange rangeTitle="Sales date range for units sold / revenue (leave empty for all time)" onExport={handleExport} />
+          <button className="admin-btn admin-btn--primary" onClick={openAdd}>
+            <FiPlus aria-hidden="true" /> Add Product
+          </button>
+        </div>
       </div>
 
       {/* ── Search bar ── */}

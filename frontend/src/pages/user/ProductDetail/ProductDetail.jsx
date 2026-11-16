@@ -221,6 +221,10 @@ const ProductDetail = () => {
     }
   };
 
+  // Text pasted into the Quill editor often joins words with &nbsp;, which stops the
+  // browser wrapping between them — swap those for normal spaces so lines break at words
+  const descriptionHtml = (product?.description || '').replace(/&nbsp;|\u00a0/g, ' ');
+
   // ── SEO: Build JSON-LD Product structured data ────────────────
   const cleanHtmlDescription = (html) => {
     if (!html) return '';
@@ -448,7 +452,7 @@ const ProductDetail = () => {
           </div>
 
 
-          <div className="pdp__desc" dangerouslySetInnerHTML={{ __html: product.description }} />
+          <div className="pdp__desc" dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
 
           {/* Categories */}
           {productCategories.length > 0 && (
@@ -698,7 +702,7 @@ const ProductDetail = () => {
           {activeTab === 'description' && (
             <div className="pdp__tab-desc">
               <h3>Designed for Little Hands, Built for Big Dreams</h3>
-              <div className="pdp__rich-content" dangerouslySetInnerHTML={{ __html: product.description }} />
+              <div className="pdp__rich-content" dangerouslySetInnerHTML={{ __html: descriptionHtml }} />
               {product.tags?.length > 0 && (
                 <div className="pdp__bullet-points">
                   <h4>Bullet Points</h4>

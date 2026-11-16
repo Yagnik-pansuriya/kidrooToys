@@ -3,7 +3,8 @@ import {
   useGetAllOrdersQuery, 
   useGetAdminOrderByIdQuery, 
   useUpdateOrderStatusMutation, 
-  useConfirmAdminOrderMutation 
+  useConfirmAdminOrderMutation,
+  useLazyExportOrdersQuery,
 } from '../../../store/ActionApi/orderApi';
 import { 
   FiEye, 
@@ -20,6 +21,8 @@ import {
 } from 'react-icons/fi';
 import { useToast } from '../../../context/ToastContext';
 import Loader from '../../../components/Loader/Loader';
+import ExportCsvButton from '../../../components/ExportCsvButton/ExportCsvButton';
+import { downloadCsv, csvDateTime, fileStamp, rangeSuffix } from '../../../utils/csv';
 import './AdminOrders.scss';
 
 const AdminOrders = () => {
@@ -58,6 +61,30 @@ const AdminOrders = () => {
   // Shiprocket automated confirmation progress modal state
   const [confirmingOrderId, setConfirmingOrderId] = useState(null);
   const [currentStep, setCurrentStep] = useState(0); // 0: Idle, 1: Creating Order, 2: Assigning AWB, 3: Printing Documents, 4: Scheduling Pickup, 5: Done
+
+  const [fetchOrdersExport] = useLazyExportOrdersQuery();
+
+  // Exports every order matching the current filters (not just this page) for the chosen date range
+  const handleExport = async ({ from, to }) => {
+    try {
+      const res = await fetchOrdersExport({ search: searchTerm, status: statusFilter, paymentStatus: paymentFilter, from, to }).unwrap();
+      const rows = res?.data?.orders || [];
+      if (!rows.length) return showError('No orders to export for these filters');
+      downloadCsv(`kidroo-orders${rangeSuffix(from, to)}-${fileStamp()}.csv`, [
+        ['Order ID', 'Date', 'Status', 'Payment method', 'Payment status', 'Razorpay payment ID',
+          'Customer', 'Email', 'Phone', 'City', 'State', 'PIN', 'Items', 'Qty',
+          'Items total', 'Shipping', 'Coupon', 'Coupon discount', 'Net amount', 'AWB', 'Courier'],
+        ...rows.map((o) => [
+          o.orderId, csvDateTime(o.date), o.status, o.paymentMethod === 'cod' ? 'COD' : 'Online', o.paymentStatus, o.razorpayPaymentId,
+          o.customerName, o.customerEmail, o.customerPhone, o.city, o.state, o.zipCode, o.items, o.itemCount,
+          o.itemsTotal, o.shipping, o.couponCode, o.couponDiscount, o.netAmount, o.awb, o.courier,
+        ]),
+      ]);
+      showSuccess(`Exported ${rows.length} orders`);
+    } catch (err) {
+      showError(err?.data?.message || 'Export failed');
+    }
+  };
 
   const handleManualStatusUpdate = async (id, status) => {
     try {
@@ -143,6 +170,8 @@ const AdminOrders = () => {
             </select>
           </div>
         </div>
+
+        <ExportCsvButton withRange rangeTitle="Order date range (leave empty for all)" onExport={handleExport} />
       </div>
 
       {/* Main Order Table */}

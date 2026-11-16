@@ -25,6 +25,17 @@ export const adminCustomerApi = baseApi.injectEndpoints({
       providesTags: ['AdminCustomers'],
     }),
 
+    // GET /api/admin/customers/export — every matching customer with order totals, for CSV
+    exportAdminCustomers: builder.query({
+      query: (params = {}) => {
+        const sp = new URLSearchParams();
+        ['search', 'filter', 'from', 'to'].forEach((k) => { if (params[k]) sp.set(k, params[k]); });
+        const qs = sp.toString();
+        return `admin/customers/export${qs ? `?${qs}` : ''}`;
+      },
+      keepUnusedDataFor: 0,
+    }),
+
     // GET /api/admin/customers/:id
     getAdminCustomerById: builder.query({
       query: (id) => `admin/customers/${id}`,
@@ -48,4 +59,5 @@ export const {
   useGetAllAdminCustomersQuery,
   useGetAdminCustomerByIdQuery,
   useToggleAdminCustomerStatusMutation,
+  useLazyExportAdminCustomersQuery,
 } = adminCustomerApi;

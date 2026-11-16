@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 
-const RevenueTrendChart = ({ data = [], timeframe = 'monthly' }) => {
+const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) => {
   const containerRef = useRef(null);
   const svgRef = useRef(null);
   const [tooltip, setTooltip] = useState(null);
@@ -209,7 +209,7 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly' }) => {
         <div>
           <h3 className="chart-card__title">Revenue & Sales Performance</h3>
           <span className="chart-card__subtitle">
-            {timeframe === 'weekly' ? 'Last 7 Days' : timeframe === 'yearly' ? 'Last 12 Months' : 'Last 30 Days'} overview
+            {periodLabel || (timeframe === 'weekly' ? 'Last 7 Days' : timeframe === 'yearly' ? 'Last 12 Months' : 'Last 30 Days')} overview
           </span>
         </div>
         <div className="chart-card__badge">

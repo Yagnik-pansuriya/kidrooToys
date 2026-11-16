@@ -14,6 +14,7 @@ import {
   useGetAdminCustomerSummaryQuery,
   useGetAllAdminCustomersQuery,
   useToggleAdminCustomerStatusMutation,
+  useLazyExportAdminCustomersQuery,
 } from '../../../store/ActionApi/adminCustomerApi';
 import {
   useGetSmsCampaignStatsQuery,
@@ -23,6 +24,8 @@ import {
 } from '../../../store/ActionApi/adminSmsCampaignApi';
 import { useToast } from '../../../context/ToastContext';
 import Loader from '../../../components/Loader/Loader';
+import ExportCsvButton from '../../../components/ExportCsvButton/ExportCsvButton';
+import { downloadCsv, csvDate, fileStamp, rangeSuffix } from '../../../utils/csv';
 import './AdminCustomers.scss';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -393,6 +396,27 @@ const AdminCustomers = () => {
     setSearchInput(e.target.value);
     if (e.target.value === '') { setSearch(''); setPage(1); }
   };
+  // CSV of every customer matching the current search / filter, optionally by signup date
+  const [fetchCustomersExport] = useLazyExportAdminCustomersQuery();
+  const handleExport = async ({ from, to }) => {
+    try {
+      const res = await fetchCustomersExport({ search, filter, from, to }).unwrap();
+      const rows = res?.data?.customers || [];
+      if (!rows.length) return showError('No customers to export for these filters');
+      downloadCsv(`kidroo-customers${rangeSuffix(from, to)}-${fileStamp()}.csv`, [
+        ['First name', 'Last name', 'Email', 'Mobile', 'City', 'State', 'Verified', 'Active',
+          'Orders', 'Total spent', 'Last order', 'Signed up', 'Last login'],
+        ...rows.map((c) => [
+          c.firstName, c.lastName, c.email, c.mobile, c.city, c.state, c.isVerified ? 'Yes' : 'No', c.isActive ? 'Yes' : 'No',
+          c.totalOrders, c.totalSpent, csvDate(c.lastOrderDate), csvDate(c.createdAt), csvDate(c.lastLogin),
+        ]),
+      ]);
+      showSuccess(`Exported ${rows.length} customers`);
+    } catch (err) {
+      showError(err?.data?.message || 'Export failed');
+    }
+  };
+
   const handleFilterChange = useCallback((key) => { setFilter(key); setPage(1); setSelectedIds(new Set()); }, []);
   const handleSortChange   = useCallback((e)   => { setSort(e.target.value); setPage(1); }, []);
 
@@ -501,6 +525,7 @@ const AdminCustomers = () => {
                 id="customer-search-input"
               />
             </div>
+            <ExportCsvButton withRange rangeTitle="Signup date range (leave empty for all)" onExport={handleExport} />
           </div>
 
           {/* ── KPI Stats Row ── */}

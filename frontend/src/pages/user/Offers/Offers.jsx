@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FiCopy, FiCheck, FiArrowRight, FiTag, FiChevronLeft, FiChevronRight, FiClock, FiGift, FiPercent } from 'react-icons/fi';
 
-import { useGetActiveOffersQuery } from '../../../store/ActionApi/offerApi';
-import { useGetPublicCouponsQuery } from '../../../store/ActionApi/couponApi';
 import { useSubscribeMutation } from '../../../store/ActionApi/newsletterApi';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
@@ -13,6 +11,7 @@ import { useScrollReveal } from '../../../utils/useScrollReveal';
 import OfferGate from '../../../components/OfferGate/OfferGate';
 import { canShowGate } from '../../../components/OfferGate/canShowGate';
 import { trackOfferImpression, trackOfferClick } from '../../../utils/offerTracking';
+import { useHasOffers } from '../../../utils/useHasOffers';
 import './Offers.scss';
 
 const safeColor = (c, fb) => /^#[0-9A-Fa-f]{3,6}$/.test(c) ? c : fb;
@@ -71,6 +70,36 @@ const DealCard = ({ offer, index }) => {
   );
 };
 
+// A discounted toy from the catalogue — shown so the page always has real deals
+// eslint-disable-next-line react/prop-types
+const SaleProductCard = ({ product, index }) => {
+  const bg = ['#E84393', '#6C3CE1', '#00B894', '#0984E3', '#FF6B35'][index % 5];
+  const pct = product.discountPercentage
+    || (product.originalPrice > product.price ? Math.round((1 - product.price / product.originalPrice) * 100) : 0);
+  return (
+    <Link to={`/product/${product.slug || product._id}`} className="offpg__card offpg__card--product" data-reveal style={{ '--rd': `${(index % 4) * 0.08}s` }}>
+      <div className="offpg__card-img-wrap offpg__card-img-wrap--product">
+        {product.image ? (
+          <img src={product.image} alt={product.productName} className="offpg__card-img" loading="lazy" />
+        ) : (
+          <div className="offpg__card-placeholder"><FiGift /></div>
+        )}
+        {pct > 0 && <span className="offpg__card-badge" style={{ background: bg }}>{pct}% OFF</span>}
+      </div>
+      <div className="offpg__card-body" style={{ borderTop: `3px solid ${bg}` }}>
+        <h3>{product.productName}</h3>
+        <p className="offpg__card-price">
+          <strong>₹{Number(product.price).toLocaleString('en-IN')}</strong>
+          {product.originalPrice > product.price && <s>₹{Number(product.originalPrice).toLocaleString('en-IN')}</s>}
+        </p>
+        <span className="offpg__card-cta" style={{ color: bg }}>
+          View Toy <FiArrowRight />
+        </span>
+      </div>
+    </Link>
+  );
+};
+
 const HERO_SECTIONS = ['hero', 'featured'];
 
 const DECOR_TOYS = ['🧸', '🪀', '🎈', '🚂', '🧩', '🪁', '🎨', '⭐'];
@@ -91,18 +120,9 @@ const FloatingToys = ({ count = 6, seed = 0 }) => (
 );
 
 const Offers = () => {
-  const { data: offersResp, isFetching: offersLoading } = useGetActiveOffersQuery();
-  const { data: couponsResp } = useGetPublicCouponsQuery();
-
-  const offerList = useMemo(() => {
-    const raw = offersResp?.data || offersResp || [];
-    return Array.isArray(raw) ? raw : [];
-  }, [offersResp]);
-
-  const publicCoupons = useMemo(() => {
-    const raw = couponsResp?.data || couponsResp || [];
-    return Array.isArray(raw) ? raw : [];
-  }, [couponsResp]);
+  const {
+    offerList, couponList: publicCoupons, dealProducts, offersLoading, loading: dealsLoading, hasOffers: hasContent,
+  } = useHasOffers();
 
   // Hero carousel: offers the admin placed on this page's hero/featured slots,
   // otherwise every live offer
@@ -172,7 +192,7 @@ const Offers = () => {
   const { requireAuth } = useCustomerAuth();
   const [showGate, setShowGate] = useState(canShowGate);
   const pageRef = useRef(null);
-  useScrollReveal(pageRef, [offerList, publicCoupons, offersLoading]);
+  useScrollReveal(pageRef, [offerList, publicCoupons, dealProducts, offersLoading]);
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -193,7 +213,8 @@ const Offers = () => {
     }
   };
 
-  const hasContent = offerList.length > 0 || publicCoupons.length > 0;
+  // Only play the gate when it opens onto real deals — never onto an empty page
+  const gateOn = showGate && (dealsLoading || hasContent);
 
   // SEO follows whatever offers / coupons are live right now
   const offerSeo = useMemo(() => {
@@ -226,7 +247,7 @@ const Offers = () => {
   }, [offerList, publicCoupons]);
 
   return (
-    <div className={`offpg${showGate ? ' offpg--gate' : ''}`} ref={pageRef}>
+    <div className={`offpg${gateOn ? ' offpg--gate' : ''}`} ref={pageRef}>
       <SEO
         title={offerSeo.title}
         description={offerSeo.description}
@@ -237,10 +258,10 @@ const Offers = () => {
       />
 
       {/* ════════ TOY GATE / PAGE HEADER ════════ */}
-      {showGate ? (
+      {gateOn ? (
         <OfferGate
-          dealCount={offerList.length + publicCoupons.length}
-          loading={offersLoading}
+          dealCount={offerList.length + publicCoupons.length + dealProducts.length}
+          loading={dealsLoading}
           targetId="offer-deals"
           onFail={() => setShowGate(false)}
         />
@@ -376,8 +397,29 @@ const Offers = () => {
         </section>
       )}
 
+      {/* ════════ ON SALE (discounted toys from the catalogue) ════════ */}
+      {dealProducts.length > 0 && (
+        <section className="offpg__deals">
+          <FloatingToys count={6} seed={2} />
+          <div className="offpg__container">
+            <div className="offpg__sec-head" data-reveal>
+              <h2><FiPercent /> On <span>Sale</span></h2>
+              <p>Toys with the biggest discounts right now</p>
+            </div>
+            <div className="offpg__grid">
+              {dealProducts.map((p, i) => (
+                <SaleProductCard key={p._id} product={p} index={i} />
+              ))}
+            </div>
+            <div className="offpg__sale-more" data-reveal>
+              <Link to="/shop" className="offpg__empty-btn">Shop All Toys</Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ════════ EMPTY ════════ */}
-      {!showGate && !offersLoading && !hasContent && (
+      {!dealsLoading && !hasContent && (
         <section className="offpg__empty">
           <div className="offpg__empty-box">
             <span className="offpg__empty-gift">🎁</span>
@@ -396,7 +438,7 @@ const Offers = () => {
           <div className="offpg__news-inner">
             <div>
               <h2>🎉 Get Exclusive Deals</h2>
-              <p>Subscribe and get <strong>₹200 OFF</strong> your first order over ₹999</p>
+              <p>Subscribe to hear about new offers and toy launches first</p>
             </div>
             <form onSubmit={handleSubscribe} className="offpg__news-form">
               <input type="email" placeholder="your@email.com" value={email}

@@ -41,6 +41,16 @@ export const productApi = baseApi.injectEndpoints({
       },
     }),
 
+    // GET /api/products?onSale=true — biggest live discounts (for the Offers page; no product-slice side effects)
+    getDealProducts: builder.query({
+      query: ({ limit = 8 } = {}) => `${API_ENDPOINTS.PRODUCTS}?onSale=true&isActive=true&sort=-discountPercentage&limit=${limit}`,
+      transformResponse: (resp) => {
+        const inner = resp?.data || resp;
+        return Array.isArray(inner?.data) ? inner.data : Array.isArray(inner) ? inner : [];
+      },
+      providesTags: ['Products'],
+    }),
+
     // POST /api/products  (multipart/form-data)
     addProduct: builder.mutation({
       query: (formData) => ({
@@ -110,11 +120,24 @@ export const productApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: 'Products', id: `related-${id}` }],
     }),
 
+    // GET /api/products/export (admin) — all products with units sold / revenue for the range
+    exportProducts: builder.query({
+      query: ({ from, to } = {}) => {
+        const sp = new URLSearchParams();
+        if (from) sp.set('from', from);
+        if (to) sp.set('to', to);
+        const qs = sp.toString();
+        return `${API_ENDPOINTS.PRODUCTS}/export${qs ? `?${qs}` : ''}`;
+      },
+      keepUnusedDataFor: 0,
+    }),
+
   }),
 });
 
 export const {
   useGetProductsQuery,
+  useGetDealProductsQuery,
   useGetProductByIdQuery,
   useGetRelatedProductsQuery,
   useAddProductMutation,
@@ -123,4 +146,5 @@ export const {
   useReorderProductsMutation,
   useMoveProductPositionMutation,
   useToggleProductStatusMutation,
+  useLazyExportProductsQuery,
 } = productApi;

@@ -9,6 +9,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { trimmedLogoUrl } from '../../utils/logoUrl';
+import { useHasOffers } from '../../utils/useHasOffers';
 import './Footer.scss';
 
 // Same profiles as the Organization "sameAs" in index.html
@@ -31,6 +32,7 @@ const Footer = () => {
   const { requireAuth } = useCustomerAuth();
   const [subscribe, { isLoading: subscribing }] = useSubscribeMutation();
   const [email, setEmail] = useState('');
+  const { hasOffers } = useHasOffers();
   const [isVisible, setIsVisible] = useState(false);
   const footerRef = useRef(null);
 
@@ -152,7 +154,7 @@ const Footer = () => {
               <ul className="footer__links">
                 <li><Link to="/"><FiChevronRight />Home</Link></li>
                 <li><Link to="/shop"><FiChevronRight />Shop All</Link></li>
-                <li><Link to="/offers"><FiChevronRight />Offers</Link></li>
+                {hasOffers && <li><Link to="/offers"><FiChevronRight />Offers</Link></li>}
                 <li><Link to="/about"><FiChevronRight />About Us</Link></li>
                 <li><Link to="/profile"><FiChevronRight />My Account</Link></li>
               </ul>

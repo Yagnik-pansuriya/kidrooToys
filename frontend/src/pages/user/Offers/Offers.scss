@@ -451,6 +451,29 @@ $offpg-bg: #FAFAFA;
   }
 }
 
+// Discounted catalogue toys ("On Sale")
+.offpg__card-img-wrap--product {
+  background: linear-gradient(145deg, #fff5f9, #f3eeff);
+}
+
+.offpg__card--product h3 { color: #1A1D2E; }
+
+.offpg__card-body .offpg__card-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #1A1D2E;
+
+  strong { font-size: 1rem; }
+  s { color: #999; font-size: 0.8rem; }
+}
+
+.offpg__sale-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
 .offpg__card-cta {
   display: inline-flex;
   align-items: center;

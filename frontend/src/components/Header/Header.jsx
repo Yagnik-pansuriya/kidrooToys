@@ -9,10 +9,11 @@ import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import { trimmedLogoUrl } from '../../utils/logoUrl';
+import { useHasOffers } from '../../utils/useHasOffers';
 import UserConfirmModal from '../ConfirmModal/UserConfirmModal';
 import './Header.scss';
 
-const navLinks = [
+const allNavLinks = [
   { to: '/', label: 'Home', icon: FiHome, tint: 'orange' },
   { to: '/shop', label: 'Shop', icon: FiShoppingBag, tint: 'purple' },
   { to: '/offers', label: 'Offers', icon: FiTag, tint: 'pink', badge: '🔥' },
@@ -28,6 +29,9 @@ const Header = () => {
   const { customer, isCustomerAuthenticated, wishlistIds, openAuthModal, handleLogout } = useCustomerAuth();
   const location = useLocation();
   const logoSrc = trimmedLogoUrl(settings.logo);
+  // No "Offers" link while there are no live offers, coupons or discounted toys to show
+  const { hasOffers } = useHasOffers();
+  const navLinks = hasOffers ? allNavLinks : allNavLinks.filter((l) => l.to !== '/offers');
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);

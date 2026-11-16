@@ -18,8 +18,8 @@
   color: var(--color-header, #1a1d2e);
   line-height: 1.25;
   margin: 0;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 /* Rating row */
@@ -86,16 +86,18 @@
   font-size: 0.93rem;
   color: #6b6e7e;
   line-height: 1.75;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  /* Wrap between words; only split a word if it alone is wider than the column */
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: manual;
   overflow: hidden;
   max-width: 100%;
 }
 
 .pdp__desc p {
   margin: 0 0 0.4rem;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .pdp__desc p:last-child { margin-bottom: 0; }

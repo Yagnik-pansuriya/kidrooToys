@@ -51,12 +51,27 @@ export const orderApi = baseApi.injectEndpoints({
         if (params.paymentStatus) searchParams.set('paymentStatus', params.paymentStatus);
         if (params.paymentMethod) searchParams.set('paymentMethod', params.paymentMethod);
         if (params.search) searchParams.set('search', params.search);
+        if (params.from) searchParams.set('from', params.from);
+        if (params.to) searchParams.set('to', params.to);
         if (params.page) searchParams.set('page', params.page.toString());
         if (params.limit) searchParams.set('limit', params.limit.toString());
         const qs = searchParams.toString();
         return `${API_ENDPOINTS.ORDERS}${qs ? `?${qs}` : ''}`;
       },
       providesTags: ['Orders'],
+    }),
+
+    // GET /api/orders/export — every matching order, for CSV
+    exportOrders: builder.query({
+      query: (params = {}) => {
+        const searchParams = new URLSearchParams();
+        ['status', 'paymentStatus', 'paymentMethod', 'search', 'from', 'to'].forEach((k) => {
+          if (params[k]) searchParams.set(k, params[k]);
+        });
+        const qs = searchParams.toString();
+        return `${API_ENDPOINTS.ORDERS}/export${qs ? `?${qs}` : ''}`;
+      },
+      keepUnusedDataFor: 0,
     }),
 
     // GET /api/orders/:id
@@ -84,9 +99,11 @@ export const orderApi = baseApi.injectEndpoints({
       invalidatesTags: ['Orders'],
     }),
 
-    // GET /api/orders/analytics?timeframe=weekly|monthly|yearly
+    // GET /api/orders/analytics?timeframe=weekly|monthly|yearly  or  { from, to } for a custom range
     getDashboardAnalytics: builder.query({
-      query: (timeframe = 'monthly') => `${API_ENDPOINTS.ORDERS}/analytics?timeframe=${timeframe}`,
+      query: (arg = 'monthly') => (typeof arg === 'object'
+        ? `${API_ENDPOINTS.ORDERS}/analytics?from=${arg.from}&to=${arg.to}`
+        : `${API_ENDPOINTS.ORDERS}/analytics?timeframe=${arg}`),
       providesTags: ['Orders'],
     }),
 
@@ -113,5 +130,6 @@ export const {
   useUpdateOrderStatusMutation,
   useConfirmAdminOrderMutation,
   useGetDashboardAnalyticsQuery,
+  useLazyExportOrdersQuery,
 } = orderApi;
 
