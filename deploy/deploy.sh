@@ -116,34 +116,44 @@ echo ""
 echo "🌐 Updating Nginx configuration..."
 cd "$PROJECT_DIR"
 
-if [ -f deploy/nginx.conf ]; then
-    if [ -f /etc/nginx/sites-available/kidroo ] && grep -q "managed by Certbot" /etc/nginx/sites-available/kidroo; then
-        echo "   ⏩ Nginx config is managed by Certbot (SSL active) — skipping overwrite to protect SSL configuration."
-        echo "      To manually apply Nginx changes, edit /etc/nginx/sites-available/kidroo"
-    else
-        sudo cp deploy/nginx.conf /etc/nginx/sites-available/kidroo
+SITE_CONF=/etc/nginx/sites-available/kidroo
+CERT_DIR=/etc/letsencrypt/live/kidroo.in
 
-        # Enable site if not already enabled
-        if [ ! -L /etc/nginx/sites-enabled/kidroo ]; then
-            sudo ln -sf /etc/nginx/sites-available/kidroo /etc/nginx/sites-enabled/kidroo
-        fi
-
-        # Remove default site if it exists
-        if [ -f /etc/nginx/sites-enabled/default ]; then
-            sudo rm -f /etc/nginx/sites-enabled/default
-        fi
-
-        # Test and reload Nginx
-        if sudo nginx -t; then
-            sudo systemctl reload nginx
-            echo "   ✅ Nginx config updated and reloaded"
-        else
-            echo "   ❌ Nginx config has errors! Check: sudo nginx -t"
-            exit 1
-        fi
-    fi
-else
+if [ ! -f deploy/nginx.conf ]; then
     echo "   ⚠️  deploy/nginx.conf not found — skipping Nginx update"
+elif [ ! -f "$CERT_DIR/fullchain.pem" ] || [ ! -f /etc/letsencrypt/options-ssl-nginx.conf ] || [ ! -f /etc/letsencrypt/ssl-dhparams.pem ]; then
+    # deploy/nginx.conf serves HTTPS and needs the certificate; never install it without one
+    echo "   ⚠️  No SSL certificate at $CERT_DIR — leaving current Nginx config untouched."
+    echo "      Get one, then deploy again:  sudo certbot certonly --nginx -d kidroo.in -d www.kidroo.in"
+else
+    # deploy/nginx.conf already contains the HTTPS blocks, so it is always safe to apply.
+    # Keep the live file and put it back if the new one fails the syntax check.
+    BACKUP=""
+    if [ -f "$SITE_CONF" ]; then
+        BACKUP="$SITE_CONF.bak-$TIMESTAMP"
+        sudo cp "$SITE_CONF" "$BACKUP"
+    fi
+    sudo cp deploy/nginx.conf "$SITE_CONF"
+
+    # Enable site if not already enabled
+    if [ ! -L /etc/nginx/sites-enabled/kidroo ]; then
+        sudo ln -sf "$SITE_CONF" /etc/nginx/sites-enabled/kidroo
+    fi
+
+    # Remove default site if it exists
+    if [ -f /etc/nginx/sites-enabled/default ]; then
+        sudo rm -f /etc/nginx/sites-enabled/default
+    fi
+
+    # Test and reload Nginx
+    if sudo nginx -t; then
+        sudo systemctl reload nginx
+        echo "   ✅ Nginx config updated and reloaded (HTTPS for kidroo.in)"
+    else
+        echo "   ❌ New Nginx config has errors — restoring the previous one"
+        [ -n "$BACKUP" ] && sudo cp "$BACKUP" "$SITE_CONF"
+        exit 1
+    fi
 fi
 
 # ── Start/Restart Backend with PM2 ────────────────────────────────────────
@@ -206,6 +216,6 @@ echo "    Nginx errors:   sudo tail -f /var/log/nginx/kidroo_error.log"
 echo "    MongoDB:        sudo systemctl status mongod"
 echo "    Redis:          sudo systemctl status redis-server"
 echo ""
-echo "  If you haven't set up SSL yet, run:"
-echo "    sudo certbot --nginx -d kidroo.in -d www.kidroo.in"
+echo "  Check HTTPS (should print CN=kidroo.in):"
+echo "    echo | openssl s_client -connect kidroo.in:443 -servername kidroo.in 2>/dev/null | openssl x509 -noout -subject"
 echo ""
