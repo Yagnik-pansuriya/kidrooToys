@@ -12,7 +12,7 @@
 // same name — old caches are deleted on activate.
 // ============================================================================
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2'; // v2: drop page caches that may hold a non-HTML page (e.g. sitemap.xml) as "/"
 const STATIC_CACHE = `kidroo-static-${CACHE_VERSION}`; // bundles, models, sounds, fonts
 const IMAGE_CACHE = `kidroo-images-${CACHE_VERSION}`;
 const PAGE_CACHE = `kidroo-pages-${CACHE_VERSION}`;
@@ -73,7 +73,9 @@ const networkFirstPage = async (request) => {
   const cache = await caches.open(PAGE_CACHE);
   try {
     const response = await fetch(request);
-    if (response.ok) cache.put('/', response.clone());
+    // Only an HTML page may become the offline app shell — never sitemap.xml, robots.txt etc.
+    const isHtml = (response.headers.get('content-type') || '').includes('text/html');
+    if (response.ok && response.type === 'basic' && isHtml) cache.put('/', response.clone());
     return response;
   } catch (err) {
     // SPA: every route renders from the same index.html
