@@ -475,7 +475,7 @@ const ProductDetail = () => {
                 {productCategories.map((c) => (
                   <Link
                     key={c.id}
-                    to={`/shop?category=${c.id}`}
+                    to={c.slug ? `/category/${c.slug}` : `/shop?category=${c.id}`}
                     className="pdp__category-tag"
                   >
                     {c.name}

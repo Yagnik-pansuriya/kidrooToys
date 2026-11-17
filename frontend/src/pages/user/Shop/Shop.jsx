@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { FiSearch, FiX, FiShoppingCart, FiFilter, FiGrid, FiList, FiChevronRight, FiHeart } from 'react-icons/fi';
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -14,6 +14,7 @@ import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
 import Pagination from '../../../components/Pagination/Pagination';
 import SEO from '../../../components/SEO/SEO';
 import OfferSlot from '../../../components/OfferSlot/OfferSlot';
+import { titleCase } from '../../../utils/seoTitle';
 import './Shop.scss';
 
 const PRODUCTS_PER_PAGE = 12;
@@ -33,13 +34,18 @@ const AGE_GROUPS = [
   { value: '8+',  label: '8+ years'  },
 ];
 
+// Category links use the clean /category/:slug URL; /shop is the unfiltered list
+const categoryPath = (cat) => (cat?.slug ? `/category/${cat.slug}` : `/shop?category=${cat._id || cat.id}`);
+
 const Shop = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const categoryFromUrl = searchParams.get('category') || '';
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Rendered for both /category/:slug and legacy /shop?category=<id or slug>
+  const categoryRef = slug || searchParams.get('category') || '';
 
   // ── Local state ─────────────────────────────────────────────────
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl);
   const [selectedPriceRange, setSelectedPriceRange] = useState('');
   const [selectedAgeGroup, setSelectedAgeGroup] = useState('');
   const [selectedSkill, setSelectedSkill] = useState('');
@@ -47,11 +53,10 @@ const Shop = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
-  // Sync category from URL
+  // Back to page 1 whenever the category in the URL changes
   useEffect(() => {
-    setSelectedCategory(categoryFromUrl);
     setPage(1);
-  }, [categoryFromUrl]);
+  }, [categoryRef]);
 
   // ── Expand priceRange → minPrice / maxPrice ─────────────────────
   const priceFilter = useMemo(() => {
@@ -60,25 +65,45 @@ const Shop = () => {
   }, [selectedPriceRange]);
 
   // ── API queries ─────────────────────────────────────────────────
-  useGetCategoriesQuery();
+  const { isSuccess: categoriesLoaded, isError: categoriesFailed } = useGetCategoriesQuery();
   const { data: skillsResp } = useGetSkillsQuery();
   const skillsRaw = skillsResp?.data || skillsResp || [];
   const skillOptions = Array.isArray(skillsRaw) ? skillsRaw : [];
 
-  const { data: productsResponse, isFetching } = useGetProductsQuery({
-    page,
-    limit: PRODUCTS_PER_PAGE,
-    search: search.trim(),
-    category: selectedCategory,
-    ageRange: selectedAgeGroup,
-    skill: selectedSkill,
-    isActive: 'true',
-    ...priceFilter,
-  });
-
   const categories = useSelector((s) => s.category.categories) || [];
   const allCategories = Array.isArray(categories) ? categories : categories?.data || [];
   const categoryList = allCategories.filter((c) => c.isActive !== false);
+
+  const activeCategory = useMemo(
+    () => (categoryRef ? categoryList.find((c) => c.slug === categoryRef || (c._id || c.id) === categoryRef) : null),
+    [categoryRef, categoryList]
+  );
+  const selectedCategory = activeCategory ? activeCategory._id || activeCategory.id : '';
+
+  // Legacy ?category=<id> links → clean /category/:slug; unknown categories → /shop
+  useEffect(() => {
+    if (!categoryRef) return;
+    if (activeCategory) {
+      if (!slug && activeCategory.slug) navigate(`/category/${activeCategory.slug}`, { replace: true });
+    } else if (categoriesLoaded || categoriesFailed) {
+      navigate('/shop', { replace: true });
+    }
+  }, [categoryRef, slug, activeCategory, categoriesLoaded, categoriesFailed, navigate]);
+
+  const { data: productsResponse, isFetching } = useGetProductsQuery(
+    {
+      page,
+      limit: PRODUCTS_PER_PAGE,
+      search: search.trim(),
+      category: selectedCategory,
+      ageRange: selectedAgeGroup,
+      skill: selectedSkill,
+      isActive: 'true',
+      ...priceFilter,
+    },
+    // Wait for the category to resolve so the unfiltered list doesn't flash first
+    { skip: Boolean(categoryRef) && !activeCategory }
+  );
 
   // Extract products & pagination directly from the query response (not shared Redux slice)
   const inner = productsResponse?.data || productsResponse || {};
@@ -106,12 +131,8 @@ const Shop = () => {
     }
   };
 
-  // Find active category name for breadcrumb
-  const activeCategoryName = useMemo(() => {
-    if (!selectedCategory) return '';
-    const cat = categoryList.find((c) => (c._id || c.id) === selectedCategory);
-    return cat?.catagoryName || cat?.name || '';
-  }, [selectedCategory, categoryList]);
+  const activeCategoryName = activeCategory?.catagoryName || activeCategory?.name || '';
+  const activeCategoryDescription = activeCategory?.description || '';
 
   // Active skill name for filter tag
   const activeSkillName = useMemo(() => {
@@ -133,15 +154,10 @@ const Shop = () => {
   }, [selectedAgeGroup]);
 
   // ── Handlers ────────────────────────────────────────────────────
-  const handleCategoryClick = (catId) => {
-    const newCat = catId === selectedCategory ? '' : catId;
-    setSelectedCategory(newCat);
+  const handleCategoryClick = (cat) => {
+    const isSame = cat && (cat._id || cat.id) === selectedCategory;
     setPage(1);
-    if (newCat) {
-      setSearchParams({ category: newCat });
-    } else {
-      setSearchParams({});
-    }
+    navigate(cat && !isSame ? categoryPath(cat) : '/shop');
     setMobileFiltersOpen(false);
   };
 
@@ -152,35 +168,55 @@ const Shop = () => {
 
   const clearFilters = () => {
     setSearch('');
-    setSelectedCategory('');
     setSelectedPriceRange('');
     setSelectedAgeGroup('');
     setSelectedSkill('');
     setPage(1);
-    setSearchParams({});
+    if (categoryRef) navigate('/shop');
   };
 
   const hasActiveFilters = selectedCategory || search.trim() || selectedPriceRange || selectedAgeGroup || selectedSkill;
 
   // ── SEO ──────────────────────────────────────────────────────────
-  // Find slug for active category (if any) for canonical URL
-  const activeCategorySlug = useMemo(() => {
-    if (!selectedCategory) return '';
-    const cat = categoryList.find((c) => (c._id || c.id) === selectedCategory);
-    return cat?.slug || '';
-  }, [selectedCategory, categoryList]);
-
+  // Category titles: keep in sync with buildCategory() in kidrooBackend/src/routes/seoRenderRoutes.ts
   const shopSeoTitle = activeCategoryName
-    ? `${activeCategoryName} Toys - Shop Online`
+    ? `${titleCase(activeCategoryName)} for Kids - Buy Online in India | Kidroo Toys`
     : 'Shop All Kids Toys Online - Rattles, Puzzles, Board Games | Kidroo Toys';
   const shopSeoDescription = activeCategoryName
-    ? `Browse our curated collection of ${activeCategoryName.toLowerCase()} toys for kids. Safe, educational, and fun! Free shipping on orders over ₹500.`
+    ? activeCategoryDescription || `Shop the best ${activeCategoryName.toLowerCase()} toys for kids at Kidroo. Safe, educational, and fun! Browse our curated ${activeCategoryName.toLowerCase()} collection with free shipping on orders over ₹500.`
     : 'Browse all Kidroo toys: baby rattle sets, ramp racer car tracks, STEM puzzle mazes, hover balls and family board games. Safe, BIS approved toys delivered across India.';
 
-  // If the selected category has a slug, canonical should point to the clean category URL
-  const shopCanonicalUrl = activeCategorySlug
-    ? `${window.location.origin}/category/${activeCategorySlug}`
+  const shopCanonicalUrl = activeCategory
+    ? `${window.location.origin}${categoryPath(activeCategory)}`
     : `${window.location.origin}/shop`;
+
+  const shopJsonLd = activeCategory
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: `${activeCategoryName} Toys`,
+        description: shopSeoDescription,
+        url: shopCanonicalUrl,
+        isPartOf: { '@type': 'WebSite', name: 'Kidroo Toys', url: window.location.origin },
+        breadcrumb: {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Home', item: window.location.origin },
+            { '@type': 'ListItem', position: 2, name: 'Shop', item: `${window.location.origin}/shop` },
+            { '@type': 'ListItem', position: 3, name: activeCategoryName, item: shopCanonicalUrl },
+          ],
+        },
+        ...(activeCategory.image && { image: activeCategory.image }),
+        numberOfItems: total,
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: shopSeoTitle,
+        description: shopSeoDescription,
+        url: `${window.location.origin}/shop`,
+        isPartOf: { '@type': 'WebSite', name: 'Kidroo Toys', url: window.location.origin },
+      };
 
   return (
     <div className="shop-page">
@@ -190,22 +226,16 @@ const Shop = () => {
         description={shopSeoDescription}
         keywords={`shop toys, buy toys online, ${activeCategoryName ? activeCategoryName.toLowerCase() + ' toys, ' : ''}kids toys, children toys, educational toys India`}
         canonical={shopCanonicalUrl}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'CollectionPage',
-          name: shopSeoTitle,
-          description: shopSeoDescription,
-          url: `${window.location.origin}/shop`,
-          isPartOf: { '@type': 'WebSite', name: 'Kidroo Toys', url: window.location.origin },
-        }}
+        ogImage={activeCategory?.image}
+        jsonLd={shopJsonLd}
       />
       {/* ═══ Breadcrumb ═══ */}
       <div className="shop-page__breadcrumb-bar">
         <div className="shop-page__container">
-          <nav className="shop-page__breadcrumb">
+          <nav className="shop-page__breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
             <FiChevronRight />
-            <span className={activeCategoryName ? '' : 'shop-page__breadcrumb--active'}>Shop</span>
+            {activeCategoryName ? <Link to="/shop">Shop</Link> : <span className="shop-page__breadcrumb--active">Shop</span>}
             {activeCategoryName && (
               <>
                 <FiChevronRight />
@@ -237,7 +267,7 @@ const Shop = () => {
             </h1>
             <p className="shop-page__hero-desc">
               {activeCategoryName
-                ? `Explore our curated selection of ${activeCategoryName.toLowerCase()} toys`
+                ? activeCategoryDescription || `Explore our curated selection of ${activeCategoryName.toLowerCase()} toys`
                 : 'Discover toys that inspire creativity, learning, and endless fun'}
             </p>
           </div>
@@ -290,7 +320,7 @@ const Shop = () => {
                 <li>
                   <button
                     className={`shop-page__category-btn ${!selectedCategory ? 'shop-page__category-btn--active' : ''}`}
-                    onClick={() => handleCategoryClick('')}
+                    onClick={() => handleCategoryClick(null)}
                   >
                     <span>All Categories</span>
                     <span className="shop-page__category-count">{total || '—'}</span>
@@ -301,12 +331,14 @@ const Shop = () => {
                   const name = cat.catagoryName || cat.name;
                   return (
                     <li key={catId}>
-                      <button
+                      {/* Real links so crawlers and middle-click see /category/:slug */}
+                      <Link
+                        to={selectedCategory === catId ? '/shop' : categoryPath(cat)}
                         className={`shop-page__category-btn ${selectedCategory === catId ? 'shop-page__category-btn--active' : ''}`}
-                        onClick={() => handleCategoryClick(catId)}
+                        onClick={() => { setPage(1); setMobileFiltersOpen(false); }}
                       >
                         <span>{name}</span>
-                      </button>
+                      </Link>
                     </li>
                   );
                 })}
@@ -395,7 +427,7 @@ const Shop = () => {
                 {activeCategoryName && (
                   <span className="shop-page__filter-tag">
                     {activeCategoryName}
-                    <button onClick={() => handleCategoryClick('')}><FiX /></button>
+                    <button onClick={() => handleCategoryClick(null)}><FiX /></button>
                   </span>
                 )}
                 {activePriceLabel && (
