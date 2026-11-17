@@ -256,6 +256,19 @@ const ProductDetail = () => {
 
   const currentOrigin = 'https://kidroo.in';
   const productUrl = `${currentOrigin}/product/${slug || product?.slug || productId || ''}`;
+  // Colour/size variants (same productCode) canonicalise to one primary page:
+  // lowest position, then oldest _id. Keep in sync with backend utils/productFamily.ts
+  const primaryVariant = [product, ...skuRelatedProducts]
+    .filter(Boolean)
+    .reduce((best, p) => {
+      const pa = p.position ?? Number.MAX_SAFE_INTEGER;
+      const pb = best.position ?? Number.MAX_SAFE_INTEGER;
+      if (pa !== pb) return pa < pb ? p : best;
+      return String(p._id) < String(best._id) ? p : best;
+    }, product || {});
+  const canonicalUrl = primaryVariant?.slug && primaryVariant.slug !== product?.slug
+    ? `${currentOrigin}/product/${primaryVariant.slug}`
+    : productUrl;
   const productImage = productImages[0] || product?.image || '';
 
   const jsonLd = {
@@ -324,7 +337,7 @@ const ProductDetail = () => {
         title={seoTitle}
         description={seoDescription}
         keywords={seoKeywords}
-        canonical={productUrl}
+        canonical={canonicalUrl}
         ogType="product"
         ogImage={productImage}
         ogTitle={seoTitle}
