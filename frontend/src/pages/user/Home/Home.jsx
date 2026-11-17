@@ -22,7 +22,7 @@ const Home = () => {
   // ── API data ──────────────────────────────────────────────────
   useGetCategoriesQuery();
   const { data: newArrivalResp } = useGetProductsQuery({ page: 1, limit: 8, newArrival: 'true', isActive: 'true' });
-  const { data: bannerResp } = useGetBannersQuery({ activeOnly: true });
+  const { data: bannerResp, isLoading: bannersLoading } = useGetBannersQuery({ activeOnly: true });
   const { data: homeOffersResp } = useGetOffersByPageQuery('home');
 
   const categories = useSelector((s) => s.category.categories) || [];
@@ -226,15 +226,20 @@ const Home = () => {
           {/* Right Hero Visual with interactive 3D perspective */}
           <div className="hero-v2__visual">
             <div className="hero-v2__img-wrap">
-              <img
-                src={
-                  cdnImage(heroBanner?.image, 960) ||
-                  'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&h=600&fit=crop'
-                }
-                alt={heroBanner?.title || 'Hero banner'}
-                className="hero-v2__img"
-                decoding="async"
-              />
+              {/* Wait for the banner so the fallback image isn't downloaded and then swapped out */}
+              {!bannersLoading && (
+                <img
+                  src={
+                    cdnImage(heroBanner?.image, 960) ||
+                    'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&h=600&fit=crop'
+                  }
+                  alt={heroBanner?.title || 'Hero banner'}
+                  className="hero-v2__img"
+                  width="480"
+                  height="480"
+                  fetchPriority="high"
+                />
+              )}
 
               {/* Floating Animal Mascot Badge */}
               <div

@@ -3,12 +3,13 @@
 // • registerServiceWorker(): installs public/sw.js (production only), which
 //   keeps models, sounds, bundles and images on the device between visits.
 // • warmAssets(): quietly downloads files the user will need soon (all 3D
-//   animals, their sounds, images further down the page) once the page is
-//   idle, so scrolling never waits on the network.
+//   animals, their sounds, images further down the page) once the visitor
+//   engages and the page is idle, so scrolling never waits on the network.
 // • cdnImage(): asks Cloudinary for a resized, auto-format (WebP/AVIF) copy.
 // ============================================================================
 
 import { ANIMALS } from '../components/AnimalWorld/animals';
+import { whenEngaged } from './whenEngaged';
 
 export const registerServiceWorker = () => {
   if (!import.meta.env.PROD || typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
@@ -73,8 +74,7 @@ const runQueue = () => {
 export const warmAssets = (urls) => {
   if (typeof window === 'undefined' || shouldSkipWarmup()) return;
   urls.filter((u) => u && !warmed.has(u) && !queue.includes(u)).forEach((u) => queue.push(u));
-  if (document.readyState === 'complete') runQueue();
-  else window.addEventListener('load', runQueue, { once: true });
+  whenEngaged(runQueue);
 };
 
 export const warmAnimalAssets = () => warmAssets(ANIMALS.flatMap((a) => [a.model, a.sound]));

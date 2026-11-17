@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiLogOut, FiMenu, FiX } from 'react-icons/fi';
 import { 
@@ -142,7 +142,10 @@ const AdminLayout = () => {
           </div>
         </header>
         <main className="admin-content">
-          <Outlet />
+          {/* Admin pages load on demand; keep the sidebar/topbar while one downloads */}
+          <Suspense fallback={null}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

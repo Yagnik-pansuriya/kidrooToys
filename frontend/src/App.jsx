@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { CartProvider } from './context/CartContext';
@@ -11,43 +12,46 @@ import Footer from './components/Footer/Footer';
 import CartDrawer from './components/CartDrawer/CartDrawer';
 import ScrollToTop from './components/ScrollToTop/ScrollToTop';
 
-// User Pages
+// User Pages — Home ships in the main bundle; every other page loads on demand
 import Home from './pages/user/Home/Home';
-import Offers from './pages/user/Offers/Offers';
-import AboutUs from './pages/user/AboutUs/AboutUs';
-import UserProfile from './pages/user/UserProfile/UserProfile';
-import Cart from './pages/user/Cart/Cart';
-import ProductDetail from './pages/user/ProductDetail/ProductDetail';
-import Shop from './pages/user/Shop/Shop';
-import Wishlist from './pages/user/Wishlist/Wishlist';
-import Checkout from './pages/user/Checkout/Checkout';
-import OrderConfirmation from './pages/user/OrderConfirmation/OrderConfirmation';
+const Offers = lazy(() => import('./pages/user/Offers/Offers'));
+const AboutUs = lazy(() => import('./pages/user/AboutUs/AboutUs'));
+const UserProfile = lazy(() => import('./pages/user/UserProfile/UserProfile'));
+const Cart = lazy(() => import('./pages/user/Cart/Cart'));
+const ProductDetail = lazy(() => import('./pages/user/ProductDetail/ProductDetail'));
+const Shop = lazy(() => import('./pages/user/Shop/Shop'));
+const Wishlist = lazy(() => import('./pages/user/Wishlist/Wishlist'));
+const Checkout = lazy(() => import('./pages/user/Checkout/Checkout'));
+const OrderConfirmation = lazy(() => import('./pages/user/OrderConfirmation/OrderConfirmation'));
 
-// Admin Pages
-import AdminLogin from './pages/admin/AdminLogin/AdminLogin';
-import AdminLayout from './pages/admin/AdminLayout/AdminLayout';
-import Dashboard from './pages/admin/Dashboard/Dashboard';
-import AdminCategories from './pages/admin/Categories/AdminCategories';
-import AdminProducts from './pages/admin/Products/AdminProducts';
-import AdminOffers from './pages/admin/Offers/AdminOffers';
-import AdminSettings from './pages/admin/Settings/AdminSettings';
-import AdminUsers from './pages/admin/Users/AdminUsers';
-import AdminNewsletter from './pages/admin/Newsletter/AdminNewsletter';
-import AdminReviews from './pages/admin/Reviews/AdminReviews';
-import AdminBanners from './pages/admin/Banners/AdminBanners';
-import AdminSkills from './pages/admin/Skills/AdminSkills';
-import AdminCustomers from './pages/admin/Customers/AdminCustomers';
-import AdminCustomerDetail from './pages/admin/Customers/AdminCustomerDetail';
-import AdminOrders from './pages/admin/Orders/AdminOrders';
-import AdminCarts from './pages/admin/Carts/AdminCarts';
-import AdminCartDetail from './pages/admin/Carts/AdminCartDetail';
+// Admin Pages — never downloaded by shoppers
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin/AdminLogin'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout/AdminLayout'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard/Dashboard'));
+const AdminCategories = lazy(() => import('./pages/admin/Categories/AdminCategories'));
+const AdminProducts = lazy(() => import('./pages/admin/Products/AdminProducts'));
+const AdminOffers = lazy(() => import('./pages/admin/Offers/AdminOffers'));
+const AdminSettings = lazy(() => import('./pages/admin/Settings/AdminSettings'));
+const AdminUsers = lazy(() => import('./pages/admin/Users/AdminUsers'));
+const AdminNewsletter = lazy(() => import('./pages/admin/Newsletter/AdminNewsletter'));
+const AdminReviews = lazy(() => import('./pages/admin/Reviews/AdminReviews'));
+const AdminBanners = lazy(() => import('./pages/admin/Banners/AdminBanners'));
+const AdminSkills = lazy(() => import('./pages/admin/Skills/AdminSkills'));
+const AdminCustomers = lazy(() => import('./pages/admin/Customers/AdminCustomers'));
+const AdminCustomerDetail = lazy(() => import('./pages/admin/Customers/AdminCustomerDetail'));
+const AdminOrders = lazy(() => import('./pages/admin/Orders/AdminOrders'));
+const AdminCarts = lazy(() => import('./pages/admin/Carts/AdminCarts'));
+const AdminCartDetail = lazy(() => import('./pages/admin/Carts/AdminCartDetail'));
 
 // User Layout Wrapper
 const UserLayout = ({ children }) => (
   <>
     <Header />
     <CartDrawer />
-    <main>{children}</main>
+    <main>
+      {/* Keeps header/footer in place while a page chunk downloads */}
+      <Suspense fallback={<div style={{ minHeight: '100vh' }} />}>{children}</Suspense>
+    </main>
     <Footer />
   </>
 );
@@ -93,6 +97,7 @@ function App() {
             <CustomerAuthProvider>
               <Router>
                 <ScrollToTop />
+                <Suspense fallback={null}>
                 <Routes>
                   {/* User Routes */}
                 <Route path="/" element={<UserLayout><Home /></UserLayout>} />
@@ -127,6 +132,7 @@ function App() {
                   <Route path="carts/:customerId" element={<PermissionRoute adminOnly><AdminCartDetail /></PermissionRoute>} />
                 </Route>
               </Routes>
+                </Suspense>
             </Router>
             </CustomerAuthProvider>
           </CartProvider>

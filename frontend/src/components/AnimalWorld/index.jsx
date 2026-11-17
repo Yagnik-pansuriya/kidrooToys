@@ -1,20 +1,36 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { isEngaged, whenEngaged } from '../../utils/whenEngaged';
 
-// three.js is heavy — load it in its own chunk after the page is interactive
+// three.js is heavy — load it in its own chunk only once the visitor engages,
+// so it never delays the first screen
 const LazyCanvas = lazy(() => import('./AnimalCanvas'));
 const LazySpot = lazy(() => import('./AnimalSpot'));
 
-export const AnimalCanvas = () => (
-  <Suspense fallback={null}>
-    <LazyCanvas />
-  </Suspense>
-);
+const useEngaged = () => {
+  const [engaged, setEngaged] = useState(isEngaged);
+  useEffect(() => (engaged ? undefined : whenEngaged(() => setEngaged(true))), [engaged]);
+  return engaged;
+};
 
-export const AnimalSpot = (props) => (
-  <Suspense fallback={null}>
-    <LazySpot {...props} />
-  </Suspense>
-);
+export const AnimalCanvas = () => {
+  const engaged = useEngaged();
+  if (!engaged) return null;
+  return (
+    <Suspense fallback={null}>
+      <LazyCanvas />
+    </Suspense>
+  );
+};
+
+export const AnimalSpot = (props) => {
+  const engaged = useEngaged();
+  if (!engaged) return null;
+  return (
+    <Suspense fallback={null}>
+      <LazySpot {...props} />
+    </Suspense>
+  );
+};
 
 export { ANIMALS, shuffleAnimals } from './animals';
 export { callAnimal, callRandomAnimal } from './animalBus';
