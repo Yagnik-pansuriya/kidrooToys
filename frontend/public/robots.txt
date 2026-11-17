@@ -6,7 +6,6 @@ Disallow: /checkout
 Disallow: /wishlist
 Disallow: /profile
 Disallow: /order-confirmation/
-Disallow: /api/
 Disallow: /docs
 
 Sitemap: https://kidroo.in/sitemap.xml
