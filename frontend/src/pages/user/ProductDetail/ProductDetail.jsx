@@ -256,19 +256,9 @@ const ProductDetail = () => {
 
   const currentOrigin = 'https://kidroo.in';
   const productUrl = `${currentOrigin}/product/${slug || product?.slug || productId || ''}`;
-  // Colour/size variants (same productCode) canonicalise to one primary page:
-  // lowest position, then oldest _id. Keep in sync with backend utils/productFamily.ts
-  const primaryVariant = [product, ...skuRelatedProducts]
-    .filter(Boolean)
-    .reduce((best, p) => {
-      const pa = p.position ?? Number.MAX_SAFE_INTEGER;
-      const pb = best.position ?? Number.MAX_SAFE_INTEGER;
-      if (pa !== pb) return pa < pb ? p : best;
-      return String(p._id) < String(best._id) ? p : best;
-    }, product || {});
-  const canonicalUrl = primaryVariant?.slug && primaryVariant.slug !== product?.slug
-    ? `${currentOrigin}/product/${primaryVariant.slug}`
-    : productUrl;
+  // Every product, including each colour/size variant, is its own indexable page.
+  // Keep in sync with backend routes/seoRenderRoutes.ts buildProduct()
+  const canonicalUrl = product?.slug ? `${currentOrigin}/product/${product.slug}` : productUrl;
   const productImage = productImages[0] || product?.image || '';
 
   const jsonLd = {
@@ -278,30 +268,33 @@ const ProductDetail = () => {
       {
         '@type': 'Product',
         name: name,
-        description: product.description,
+        description: cleanHtmlDescription(product.description) || name,
         image: productImages,
-        sku: productCode,
+        url: canonicalUrl,
+        sku: product.skuCode || productCode,
+        mpn: productCode,
+        ...(productCode && { inProductGroupWithID: productCode }),
         brand: { '@type': 'Brand', name: 'Kidroo Toys' },
         category: categoryName || 'Toys',
-        url: productUrl,
         offers: {
           '@type': 'Offer',
-          url: productUrl,
+          url: canonicalUrl,
           priceCurrency: 'INR',
           price: price.toFixed(2),
+          itemCondition: 'https://schema.org/NewCondition',
           availability: inStock
             ? 'https://schema.org/InStock'
             : 'https://schema.org/OutOfStock',
-          seller: { '@type': 'Organization', name: 'Kidroo Toys' },
+          seller: { '@id': 'https://kidroo.in/#organization' },
           ...(originalPrice > price && {
             priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           }),
         },
-        ...(product.ratings > 0 && {
+        ...(product.ratings > 0 && product.numReviews > 0 && {
           aggregateRating: {
             '@type': 'AggregateRating',
             ratingValue: product.ratings,
-            reviewCount: product.numReviews || 1,
+            reviewCount: product.numReviews,
             bestRating: 5,
             worstRating: 1,
           },
@@ -324,7 +317,7 @@ const ProductDetail = () => {
           { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kidroo.in/' },
           { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://kidroo.in/shop' },
           ...(productCategories[0]?.slug ? [{ '@type': 'ListItem', position: 3, name: productCategories[0].name, item: `https://kidroo.in/category/${productCategories[0].slug}` }] : []),
-          { '@type': 'ListItem', position: productCategories[0]?.slug ? 4 : 3, name: name, item: productUrl },
+          { '@type': 'ListItem', position: productCategories[0]?.slug ? 4 : 3, name: name, item: canonicalUrl },
         ],
       },
     ],

@@ -5,6 +5,10 @@
       "destination": "https://kidroo-backend.vercel.app/api/sitemap.xml"
     },
     {
+      "source": "/merchant-feed.xml",
+      "destination": "https://kidroo-backend.vercel.app/api/merchant-feed.xml"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://kidroo-backend.vercel.app/api/:path*"
     },
