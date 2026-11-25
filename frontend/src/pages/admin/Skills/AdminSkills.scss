@@ -2,105 +2,162 @@
 @import '../../../styles/mixins';
 
 .admin-skills {
+  min-width: 0;
+
   &__header {
-    @include flex-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex-wrap: wrap;
-    gap: $space-md;
+    gap: $space-sm;
     margin-bottom: $space-lg;
+  }
 
-    h1 {
-      display: flex;
-      align-items: center;
-      gap: $space-xs;
-      font-family: $font-heading;
-      font-size: 1.8rem;
+  // Search bar: align with the admin design tokens
+  .admin-search-bar {
+    margin-bottom: $space-lg;
+    border: 1px solid var(--a-border-strong);
+    border-radius: var(--a-radius);
+    box-shadow: var(--a-shadow-xs);
 
-      svg { color: var(--color-primary); }
+    &:focus-within {
+      border-color: var(--a-accent);
+      box-shadow: 0 0 0 3px var(--a-accent-ring);
     }
+
+    &__input { font-size: 0.875rem; height: 40px; padding-top: 0; padding-bottom: 0; }
+    &__icon { color: var(--a-subtle); }
   }
 
   &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 3.5rem 1.5rem;
     text-align: center;
-    padding: 4rem $space-lg;
-    color: var(--color-text-muted);
+    color: var(--a-muted);
+    background: var(--a-surface);
+    border: 1px dashed var(--a-border-strong);
+    border-radius: var(--a-radius-lg);
 
     svg {
-      font-size: 3rem;
-      margin-bottom: $space-md;
-      display: block;
-      margin-inline: auto;
-      opacity: 0.4;
+      font-size: 1.75rem;
+      color: var(--a-subtle);
     }
 
-    p { font-size: 1rem; }
+    p { margin: 0; font-size: 0.875rem; }
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: $space-lg;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: $space-md;
+
+    @include lg { gap: 1.25rem; }
+  }
+
+  &__confirm {
+    padding: 1.25rem;
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--a-text-2);
+
+      strong { color: var(--a-text); }
+    }
+  }
+
+  // Upload slot inside the modal (styles also exist on the Products page;
+  // repeated here so this page does not depend on that stylesheet)
+  .admin-image-slot--add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 6px;
+    border: 1px dashed var(--a-border-strong);
+    border-radius: var(--a-radius);
+    background: var(--a-surface-2);
+    color: var(--a-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+
+    svg { font-size: 1.25rem; }
+
+    &:hover {
+      border-color: var(--a-accent);
+      color: var(--a-accent);
+      background: var(--a-accent-soft);
+    }
   }
 }
 
 // ─── Skill Card ───────────────────────────────────────────────
 .skill-card {
-  background: white;
-  border-radius: $radius-xl;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--a-surface);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  box-shadow: var(--a-shadow-xs);
   overflow: hidden;
-  border: 2px solid #E2E4EC;
-  transition: all 0.25s ease;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 
   &:hover {
-    border-color: var(--color-primary);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
-    transform: translateY(-3px);
+    border-color: var(--a-border-strong);
+    box-shadow: var(--a-shadow);
   }
 
   &__img {
     width: 100%;
-    height: 180px;
-    background: #F4F5FA;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    aspect-ratio: 16 / 10;
+    background: var(--a-surface-2);
+    border-bottom: 1px solid var(--a-border);
     overflow: hidden;
-    border-bottom: 1px solid #EAECF0;
 
     img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      object-position: center;
-      padding: 12px;
+      object-fit: cover;
       display: block;
     }
   }
 
   &__placeholder {
+    @include flex-center;
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-muted);
-    font-size: 2rem;
-    opacity: 0.3;
+    color: var(--a-subtle);
+    font-size: 1.75rem;
   }
 
   &__body {
-    padding: $space-md;
+    flex: 1;
+    min-width: 0;
+    padding: 0.875rem 1rem 0.25rem;
 
     h3 {
-      font-family: $font-heading;
-      font-size: 1.05rem;
-      color: var(--color-text-primary);
-      margin-bottom: $space-xxs;
+      margin: 0 0 0.25rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--a-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     p {
-      font-size: 0.82rem;
-      color: var(--color-text-muted);
+      margin: 0;
+      font-size: 0.8125rem;
       line-height: 1.5;
+      color: var(--a-muted);
       display: -webkit-box;
       -webkit-line-clamp: 2;
       line-clamp: 2;
@@ -112,8 +169,8 @@
   &__actions {
     display: flex;
     justify-content: flex-end;
-    gap: $space-xs;
-    padding: 0 $space-md $space-md;
+    gap: 4px;
+    padding: 0.5rem 0.75rem 0.75rem;
   }
 }
 
@@ -122,11 +179,12 @@
   position: relative;
   width: 100%;
   max-width: 280px;
-  aspect-ratio: 16/10;
-  border-radius: $radius;
+  aspect-ratio: 16 / 10;
+  margin-top: 6px;
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius);
+  background: var(--a-surface-2);
   overflow: hidden;
-  border: 2px solid #E2E4EC;
-  margin-top: $space-xs;
 
   img {
     width: 100%;
@@ -137,26 +195,26 @@
 
   &__change {
     position: absolute;
-    bottom: $space-xs;
-    right: $space-xs;
-    padding: 4px 12px;
-    background: rgba(0, 0, 0, 0.6);
-    color: white;
-    font-size: 0.72rem;
-    font-weight: 700;
-    border-radius: $radius-full;
+    right: 8px;
+    bottom: 8px;
+    padding: 4px 10px;
     border: none;
+    border-radius: var(--a-radius-sm);
+    background: rgba(17, 24, 39, 0.72);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background 150ms ease;
 
-    &:hover { background: rgba(0, 0, 0, 0.8); }
+    &:hover { background: rgba(17, 24, 39, 0.88); }
   }
 }
 
 // ─── Optional field hint ──────────────────────────────────────
-.admin-field__optional {
-  font-weight: 400;
-  font-size: 0.78rem;
-  color: var(--color-text-muted);
+.admin-skills .admin-field__optional {
   margin-left: 2px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--a-subtle);
 }

@@ -100,13 +100,13 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
         {/* Header */}
         <div className="modal-header">
           <div className="modal-header-title">
-            <div className="modal-header-icon">🎟️</div>
+            <div className="modal-header-icon"><FiTag /></div>
             <div>
               <h2>{editingCoupon ? 'Edit Coupon' : 'Create New Coupon'}</h2>
               <p>Configure promo codes, discount values, and customer usage limits</p>
             </div>
           </div>
-          <button className="modal-close" onClick={onClose}><FiX /></button>
+          <button className="modal-close" onClick={onClose} aria-label="Close"><FiX /></button>
         </div>
 
         {/* Stepper Navigation Bar */}
@@ -365,7 +365,7 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
                     </div>
                     {form.applicableProducts.length > 0 && (
                       <div className="selected-count-pill">
-                        ✓ {form.applicableProducts.length} product(s) selected
+                        <FiCheck /> {form.applicableProducts.length} product(s) selected
                       </div>
                     )}
                   </div>
@@ -415,7 +415,7 @@ const CouponFormModal = ({ isOpen, onClose, onSubmit, editingCoupon, isSubmittin
             </button>
           ) : (
             <button className="btn btn-primary btn-pills" type="submit" form="couponForm" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving Coupon...' : '✓ Save & Launch Coupon'}
+              {isSubmitting ? 'Saving Coupon...' : <><FiCheck /> Save & Launch Coupon</>}
             </button>
           )}
         </div>

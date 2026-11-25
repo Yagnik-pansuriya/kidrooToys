@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   FiArrowLeft, FiPhone, FiMail, FiMapPin, FiCalendar, FiClock,
   FiShoppingCart, FiShoppingBag, FiTrendingUp, FiPackage, FiTag,
-  FiAlertCircle, FiExternalLink, FiUser,
+  FiAlertCircle, FiExternalLink, FiUser, FiHome, FiBriefcase,
 } from 'react-icons/fi';
 import { MdVerified } from 'react-icons/md';
 import { RiWhatsappLine } from 'react-icons/ri';
@@ -63,7 +63,7 @@ const AdminCartDetail = () => {
       <div className="acd-not-found">
         <FiAlertCircle />
         <p>Customer not found</p>
-        <button onClick={() => navigate('/admin/carts')}>← Back to Carts</button>
+        <button onClick={() => navigate('/admin/carts')}><FiArrowLeft /> Back to Carts</button>
       </div>
     );
   }
@@ -108,7 +108,7 @@ const AdminCartDetail = () => {
               <span><FiCalendar /> Joined {fmtDate(customer.createdAt)}</span>
               {customer.lastLogin && <span><FiClock /> Last login {fmtDateTime(customer.lastLogin)}</span>}
               {cart.updatedAt && <span><FiShoppingCart /> Cart updated {fmtDateTime(cart.updatedAt)}</span>}
-              {cart.isAbandoned && <span className="acd-unverified-tag">⏳ Abandoned cart</span>}
+              {cart.isAbandoned && <span className="acd-unverified-tag"><FiClock /> Abandoned cart</span>}
             </div>
           </div>
         </div>
@@ -297,7 +297,7 @@ const AdminCartDetail = () => {
                 >
                   <div className="acd-address-card__header">
                     <span className="acd-addr-label">
-                      {addr.label === 'home' ? '🏠' : addr.label === 'work' ? '💼' : '📍'}
+                      {addr.label === 'home' ? <FiHome /> : addr.label === 'work' ? <FiBriefcase /> : <FiMapPin />}
                       {' '}{addr.label}
                     </span>
                     {addr.isDefault && <span className="acd-default-badge">Default</span>}

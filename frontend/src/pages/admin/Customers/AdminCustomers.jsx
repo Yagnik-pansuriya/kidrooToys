@@ -5,7 +5,7 @@ import {
   FiFilter, FiChevronLeft, FiChevronRight, FiEye,
   FiToggleLeft, FiToggleRight, FiRepeat, FiArrowUp,
   FiMessageSquare, FiSend, FiX, FiTrash2, FiCheckSquare,
-  FiAlertCircle, FiPlus,
+  FiAlertCircle, FiPlus, FiCheck,
 } from 'react-icons/fi';
 import { RiVipCrownLine, RiVipDiamondLine, RiWhatsappLine } from 'react-icons/ri';
 import { MdVerified, MdBlock, MdCampaign } from 'react-icons/md';
@@ -85,9 +85,6 @@ const TYPE_BADGE = {
   regular: { label: 'Regular', cls: 'ac-type--regular' },
 };
 
-// Campaign emoji icons
-const CAMPAIGN_ICONS = ['🎉', '🛍️', '🎊', '⭐', '🔥', '💎', '🎁', '🚀'];
-
 // ── SMS Send Modal ────────────────────────────────────────────────────────────
 const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
   const { showSuccess, showError } = useToast();
@@ -164,7 +161,7 @@ const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
             )}
             {targetGroup === 'custom' && selectedCount > 0 && (
               <span className="sms-modal__info">
-                ✓ Will send to {selectedCount} selected customers
+                <FiCheck /> Will send to {selectedCount} selected customers
               </span>
             )}
           </div>
@@ -192,7 +189,7 @@ const SmsModal = ({ selectedIds, selectedCount, onClose, onSent }) => {
           {/* Preview */}
           {message.trim() && (
             <div className="sms-modal__preview">
-              <span className="sms-modal__preview-label">📱 WhatsApp Preview</span>
+              <span className="sms-modal__preview-label"><RiWhatsappLine /> WhatsApp Preview</span>
               <div className="sms-modal__bubble sms-modal__bubble--wa">{message}</div>
             </div>
           )}
@@ -294,17 +291,16 @@ const SmsCampaignsTab = ({ onNewCampaign }) => {
         </div>
       ) : (
         <div className="sms-campaign-list">
-          {campaigns.map((c, idx) => {
+          {campaigns.map((c) => {
             const rate = c.sentCount > 0 ? Math.round((c.deliveredCount / c.sentCount) * 100) : 0;
-            const icon = CAMPAIGN_ICONS[idx % CAMPAIGN_ICONS.length];
             return (
               <div className="sms-campaign-row" key={c._id} id={`campaign-${c._id}`}>
-                <div className="sms-campaign-row__icon">{icon}</div>
+                <div className="sms-campaign-row__icon"><MdCampaign /></div>
                 <div className="sms-campaign-row__info">
                   <div className="sms-campaign-row__name">
                     {c.name}
                     <span className={`sms-status-dot sms-status-dot--${c.status}`}>
-                      • {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
+                      {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
                     </span>
                     <span className="sms-wa-badge"><RiWhatsappLine /> WhatsApp</span>
                   </div>
@@ -509,7 +505,7 @@ const AdminCustomers = () => {
           {/* ── Header ── */}
           <div className="admin-customers__header">
             <div>
-              <h1>Customers 👥</h1>
+              <h1>Customers</h1>
               <p className="admin-customers__subtitle">
                 {pagination.total || 0} total customers registered
               </p>
@@ -715,9 +711,9 @@ const AdminCustomers = () => {
                         <td>
                           <span className={`ac-type-badge ${badge.cls}`}>
                             {ctype === 'vip'    && <RiVipDiamondLine />}
-                            {ctype === 'repeat' && '●'}
-                            {ctype === 'new'    && '●'}
-                            {ctype === 'regular'&& '●'}
+                            {ctype === 'repeat' && <span className="ac-type-badge__dot" />}
+                            {ctype === 'new'    && <span className="ac-type-badge__dot" />}
+                            {ctype === 'regular'&& <span className="ac-type-badge__dot" />}
                             {badge.label}
                           </span>
                         </td>

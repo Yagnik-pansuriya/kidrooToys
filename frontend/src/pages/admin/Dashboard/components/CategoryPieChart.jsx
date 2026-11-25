@@ -7,8 +7,8 @@ const CategoryPieChart = ({ data = [] }) => {
   const [tooltip, setTooltip] = useState(null);
 
   const colors = [
-    '#4f46e5', '#ec4899', '#10b981', '#f59e0b',
-    '#06b6d4', '#8b5cf6', '#3b82f6', '#f43f5e',
+    'var(--a-accent)', '#3b82f6', '#10b981', '#64748b',
+    '#06b6d4', '#eab308', '#ec4899', '#8b5cf6',
   ];
 
   useEffect(() => {
@@ -63,9 +63,9 @@ const CategoryPieChart = ({ data = [] }) => {
     arcs
       .append('path')
       .attr('d', arc)
-      .attr('fill', (d) => colorScale(d.data.categoryName))
+      .style('fill', (d) => colorScale(d.data.categoryName))
       .attr('stroke', '#ffffff')
-      .style('stroke-width', '3px')
+      .style('stroke-width', '2px')
       .style('cursor', 'pointer')
       .on('mouseover', function (event, d) {
         d3.select(this)
@@ -98,7 +98,7 @@ const CategoryPieChart = ({ data = [] }) => {
     g.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '-0.3em')
-      .attr('fill', '#64748b')
+      .attr('fill', '#6b7280')
       .attr('font-size', '12px')
       .attr('font-weight', '500')
       .text('Categories');
@@ -106,9 +106,9 @@ const CategoryPieChart = ({ data = [] }) => {
     g.append('text')
       .attr('text-anchor', 'middle')
       .attr('dy', '1.1em')
-      .attr('fill', '#0f172a')
+      .attr('fill', '#111827')
       .attr('font-size', '18px')
-      .attr('font-weight', '800')
+      .attr('font-weight', '700')
       .text(data.length);
 
   }, [data]);

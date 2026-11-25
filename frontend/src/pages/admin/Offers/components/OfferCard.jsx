@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiEdit2, FiTrash2, FiMapPin, FiCalendar, FiImage, FiLayers } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiMapPin, FiCalendar, FiImage, FiLayers, FiClock } from 'react-icons/fi';
 import { displayTypes, pageTargets, sectionPresets } from '../constants/offerConstants';
 
 const OfferCard = ({ offer, onEdit, onDelete }) => {
@@ -36,8 +36,8 @@ const OfferCard = ({ offer, onEdit, onDelete }) => {
           <span className={`admin-offer-card__status ${offer.isActive ? 'admin-offer-card__status--active' : 'admin-offer-card__status--inactive'}`}>
             {offer.isActive ? '● Active' : '○ Inactive'}
           </span>
-          {isExpired && <span className="admin-offer-card__status admin-offer-card__status--expired">⏰ Expired</span>}
-          {isNotStarted && <span className="admin-offer-card__status admin-offer-card__status--upcoming">🕐 Upcoming</span>}
+          {isExpired && <span className="admin-offer-card__status admin-offer-card__status--expired"><FiClock /> Expired</span>}
+          {isNotStarted && <span className="admin-offer-card__status admin-offer-card__status--upcoming"><FiClock /> Upcoming</span>}
         </div>
 
         <h3 className="admin-offer-card__title">{offer.title}</h3>

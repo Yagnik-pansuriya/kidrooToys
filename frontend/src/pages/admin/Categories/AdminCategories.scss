@@ -1,0 +1,78 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+@import '../Products/admin-reorder';
+
+// Categories page — shared components (header, table, modal, fields) come from
+// AdminLayout/admin-theme.scss; drag/position styles from Products/_admin-reorder.
+
+.admin-categories {
+  &__search {
+    margin-bottom: $space-md;
+  }
+
+  // Category name / slug can be long: keep the table compact
+  .admin-table .admin-cell-name { min-width: 160px; max-width: 280px; }
+
+  .admin-table .admin-cell-slug {
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+    text-transform: none;
+  }
+
+  .admin-products__thumb--icon {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+// ─── Category form modal ─────────────────────────────────────────────────────
+.category-form {
+  &__optional {
+    font-weight: 400;
+    color: var(--a-muted);
+  }
+
+  // Native file input styled to match the admin inputs
+  &__file {
+    padding: 0.4rem !important;
+    font-size: 0.8125rem !important;
+    color: var(--a-muted) !important;
+    cursor: pointer;
+
+    &::file-selector-button {
+      margin-right: 0.75rem;
+      height: 30px;
+      padding: 0 0.85rem;
+      border: 1px solid var(--a-border-strong);
+      border-radius: var(--a-radius-sm);
+      background: var(--a-surface-2);
+      color: var(--a-text-2);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+
+    &:hover::file-selector-button { background: var(--a-surface-3); }
+  }
+
+  &__preview {
+    display: block;
+    width: 100px;
+    height: 100px;
+    margin-top: $space-xs;
+    object-fit: cover;
+    border-radius: var(--a-radius);
+    border: 1px solid var(--a-border);
+    background: var(--a-surface-2);
+
+    &--icon {
+      width: 56px;
+      height: 56px;
+    }
+  }
+}

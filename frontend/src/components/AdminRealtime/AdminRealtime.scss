@@ -9,10 +9,10 @@
   height: 40px;
   border-radius: $radius;
   font-size: 1.25rem;
-  color: #1A1D2E;
+  color: var(--a-text-2, #374151);
   transition: background $transition-base;
 
-  &:hover { background: #F1F2F6; }
+  &:hover { background: var(--a-surface-3, #f3f4f6); }
 
   &__dot {
     position: absolute;

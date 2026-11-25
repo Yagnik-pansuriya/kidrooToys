@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { FiBarChart2 } from 'react-icons/fi';
 
 export const OFFER_METRICS = [
   { key: 'clicks', label: 'Clicks' },
@@ -56,7 +57,11 @@ const OfferUsageD3Chart = ({ data = [], metric = 'clicks' }) => {
     row.append('text')
       .attr('x', labelW - 10).attr('y', BAR_H / 2).attr('dy', '0.35em').attr('text-anchor', 'end')
       .attr('fill', '#334155').attr('font-size', 12).attr('font-weight', 700)
-      .text((d) => (d.title.length > 24 ? `${d.title.slice(0, 22)}…` : d.title));
+      .text((d) => {
+        // Truncate to the space available for labels so nothing is clipped on narrow screens
+        const maxChars = Math.max(6, Math.min(24, Math.floor((labelW - 10) / 7)));
+        return d.title.length > maxChars ? `${d.title.slice(0, maxChars - 1)}…` : d.title;
+      });
 
     // Track, then bar with rounded data end anchored at the baseline
     row.append('rect').attr('x', labelW).attr('width', innerW).attr('height', BAR_H).attr('rx', 4).attr('fill', '#F4F6F9');
@@ -92,7 +97,7 @@ const OfferUsageD3Chart = ({ data = [], metric = 'clicks' }) => {
     <div ref={containerRef} className="d3-chart-wrap">
       {rows.length === 0 && (
         <div className="chart-empty">
-          <div className="chart-empty__icon">🌟</div>
+          <div className="chart-empty__icon"><FiBarChart2 /></div>
           <strong>No offer {label} in this period</strong>
           <span>
             {metric === 'orders' || metric === 'revenue'

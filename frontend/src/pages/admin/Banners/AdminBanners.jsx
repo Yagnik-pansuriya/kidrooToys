@@ -134,7 +134,7 @@ const AdminBanners = () => {
   };
 
   return (
-    <div className="admin-page">
+    <div className="admin-page admin-banners">
       <div className="admin-page__header">
         <div>
           <h1 className="admin-page__title">Home Banners</h1>
@@ -166,6 +166,7 @@ const AdminBanners = () => {
         <div className="admin-loading">Loading banners...</div>
       ) : bannerList.length === 0 ? (
         <div className="admin-empty">
+          <FiImage className="admin-empty__icon" />
           {debouncedSearch
             ? `No banners found for "${debouncedSearch}"`
             : 'No banners yet. Click "Add Banner" to create one.'}
@@ -179,8 +180,8 @@ const AdminBanners = () => {
                   {banner.isActive ? 'Active' : 'Inactive'}
                 </span>
                 <div className="admin-actions">
-                  <button className="admin-action-btn admin-action-btn--edit" onClick={() => openEdit(banner)}><FiEdit2 /></button>
-                  <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(banner)}><FiTrash2 /></button>
+                  <button className="admin-action-btn admin-action-btn--edit" onClick={() => openEdit(banner)} title="Edit banner"><FiEdit2 /></button>
+                  <button className="admin-action-btn admin-action-btn--delete" onClick={() => handleDelete(banner)} title="Delete banner"><FiTrash2 /></button>
                 </div>
               </div>
               {banner.image && (
@@ -264,12 +265,12 @@ const AdminBanners = () => {
                 <div className="admin-field admin-field--full">
                   <label>Hero Image</label>
                   {form.existingImage && !form.imageFile && (
-                    <div style={{ marginBottom: 8 }}>
-                      <img src={form.existingImage} alt="Current" style={{ height: 80, borderRadius: 8, objectFit: 'cover' }} />
-                      <p style={{ fontSize: 12, color: '#666', marginTop: 4 }}>Upload new to replace</p>
+                    <div className="banner-current-img">
+                      <img src={form.existingImage} alt="Current" />
+                      <p>Upload new to replace</p>
                     </div>
                   )}
-                  <input type="file" accept="image/*" onChange={(e) => setForm(p => ({ ...p, imageFile: e.target.files[0] }))} />
+                  <input type="file" accept="image/*" className="banner-file-input" onChange={(e) => setForm(p => ({ ...p, imageFile: e.target.files[0] }))} />
                 </div>
               </div>
               <div className="admin-modal__actions">

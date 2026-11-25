@@ -217,7 +217,7 @@ const AdminProducts = () => {
 
       {/* ── Page header ── */}
       <div className="admin-products__header">
-        <h1>Products 📦</h1>
+        <h1>Products</h1>
         <div className="admin-products__header-actions">
           <ExportCsvButton withRange rangeTitle="Sales date range for units sold / revenue (leave empty for all time)" onExport={handleExport} />
           <button className="admin-btn admin-btn--primary" onClick={openAdd}>

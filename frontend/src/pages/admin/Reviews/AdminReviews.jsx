@@ -106,6 +106,7 @@ const AdminReviews = () => {
         <Loader inline message="Loading reviews…" />
       ) : (
         <div className="admin-reviews__table-wrap">
+          <div className="admin-reviews__table-scroll">
           <table className="admin-table">
             <thead>
               <tr>
@@ -132,14 +133,14 @@ const AdminReviews = () => {
                 reviews.map((review, idx) => (
                   <tr key={review._id || review.id}>
                     <td>{(page - 1) * REVIEWS_PER_PAGE + idx + 1}</td>
-                    <td className="td-bold">{review.product?.productName || '—'}</td>
+                    <td className="td-bold admin-reviews__product" title={review.product?.productName || undefined}>{review.product?.productName || '—'}</td>
                     <td>{review.user?.name || review.name || '—'}</td>
                     <td>
                       <span className="admin-reviews__rating">
                         <FiStar /> {review.rating}
                       </span>
                     </td>
-                    <td>{review.title}</td>
+                    <td className="admin-reviews__title" title={review.title}>{review.title}</td>
                     <td>
                       <span className={`status ${review.isApproved ? 'status--delivered' : 'status--cancelled'}`}>
                         {review.isApproved ? 'Approved' : 'Hidden'}
@@ -169,6 +170,7 @@ const AdminReviews = () => {
               )}
             </tbody>
           </table>
+          </div>
 
           {/* ── Pagination ── */}
           <Pagination

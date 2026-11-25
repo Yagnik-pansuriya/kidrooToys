@@ -1,64 +1,234 @@
 @import '../../../styles/variables';
 @import '../../../styles/mixins';
 
-// ─── Page layout ──────────────────────────────────────────────────────────────
-.admin-page {
-  &__header {
-    @include flex-between;
-    flex-wrap: wrap;
-    gap: $space-md;
-    margin-bottom: $space-xl; // spacing between header and cards grid
-  }
-
-  &__title {
-    font-family: $font-heading;
-    font-size: 1.8rem;
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-
-  &__subtitle {
-    font-size: 0.88rem;
-    color: var(--color-text-muted);
-    margin: 4px 0 0;
-  }
-}
-
-// ─── Empty state ──────────────────────────────────────────────────────────────
+// Global empty state (also used by the Products table) — kept generic
 .admin-empty {
   text-align: center;
   padding: $space-2xl;
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
-  background: white;
-  border-radius: $radius-xl;
-  box-shadow: $shadow-sm;
+  color: var(--a-muted, var(--color-text-muted));
+  font-size: 0.875rem;
+  background: var(--a-surface, #fff);
+  border: 1px solid var(--a-border, transparent);
+  border-radius: var(--a-radius-lg, #{$radius-xl});
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+.admin-banners {
+  min-width: 0;
+
+  &.admin-page .admin-page__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: $space-sm $space-md;
+    margin-bottom: $space-lg;
+
+    > div { min-width: 0; }
+  }
+
+  .admin-page__subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--a-muted);
+  }
+
+  // Search bar: align with the admin design tokens
+  .admin-search-bar {
+    margin-bottom: $space-lg;
+    border: 1px solid var(--a-border-strong);
+    border-radius: var(--a-radius);
+    box-shadow: var(--a-shadow-xs);
+
+    &:focus-within {
+      border-color: var(--a-accent);
+      box-shadow: 0 0 0 3px var(--a-accent-ring);
+    }
+
+    &__input { font-size: 0.875rem; height: 40px; padding-top: 0; padding-bottom: 0; }
+    &__icon { color: var(--a-subtle); }
+  }
+
+  .admin-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 3.5rem 1.5rem;
+    border-style: dashed;
+    border-color: var(--a-border-strong);
+
+    &__icon {
+      font-size: 1.75rem;
+      color: var(--a-subtle);
+    }
+  }
 }
 
 // ─── Banner cards grid ────────────────────────────────────────────────────────
-.admin-offer-grid {
+.admin-banners .admin-offer-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: $space-md;
 
-  @include sm { grid-template-columns: repeat(2, 1fr); }
-  @include lg { grid-template-columns: repeat(3, 1fr); }
+  @include sm { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @include xl { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
 }
 
-// ─── Banner card image ────────────────────────────────────────────────────────
-// Override the inline style so the image is contained properly without cropping
-.admin-offer-card {
-  overflow: visible; // don't clip the card content
+.admin-banners .admin-offer-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1rem;
+  background: var(--a-surface);
+  border: 1px solid var(--a-border);
+  border-radius: var(--a-radius-lg);
+  box-shadow: var(--a-shadow-xs);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+
+  &:hover {
+    border-color: var(--a-border-strong);
+    box-shadow: var(--a-shadow);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-xs;
+    margin: -0.25rem -0.25rem 0.75rem 0;
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: var(--a-radius-sm);
+    background: var(--a-surface-3);
+    color: var(--a-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    &--active { background: var(--a-success-soft); color: var(--a-success); }
+  }
 
   &__banner-img {
-    width: 100%;
-    height: 140px;
-    object-fit: contain; // show full image — no cropping
-    background: #F0F2F8; // subtle bg so transparent images look clean
-    border-radius: $radius;
-    margin-bottom: $space-md;
     display: block;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    height: auto;
+    margin-bottom: 0.875rem;
+    object-fit: contain; // show full image, no cropping
+    background: var(--a-surface-2);
+    border: 1px solid var(--a-border);
+    border-radius: var(--a-radius);
   }
+
+  &__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--a-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__desc {
+    margin: 0.25rem 0 0.875rem;
+    font-size: 0.8125rem;
+    color: var(--a-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-xs;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--a-border);
+  }
+
+  &__coupon {
+    min-width: 0;
+    padding: 2px 8px;
+    border-radius: var(--a-radius-sm);
+    background: var(--a-accent-soft);
+    color: var(--a-accent);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:empty { display: none; }
+  }
+
+  &__date {
+    flex-shrink: 0;
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: var(--a-muted);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// ─── Modal bits ──────────────────────────────────────────────────────────────
+.admin-banners .banner-current-img {
+  margin: 6px 0 8px;
+
+  img {
+    display: block;
+    height: 80px;
+    max-width: 100%;
+    object-fit: cover;
+    border: 1px solid var(--a-border);
+    border-radius: var(--a-radius);
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: var(--a-muted);
+  }
+}
+
+.admin-banners .banner-file-input {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  font-size: 0.8125rem;
+  color: var(--a-text-2);
+
+  &::file-selector-button {
+    margin-right: 0.75rem;
+    height: 34px;
+    padding: 0 0.875rem;
+    border: 1px solid var(--a-border-strong);
+    border-radius: var(--a-radius);
+    background: var(--a-surface);
+    color: var(--a-text-2);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  &::file-selector-button:hover { background: var(--a-surface-2); }
 }
 
 // ─── Active field toggle ───────────────────────────────────────────────────────
@@ -66,21 +236,13 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-
-  &__label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    display: block;
-  }
 }
 
 .banner-toggle {
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   gap: 10px;
+  min-height: 40px;
   cursor: pointer;
   user-select: none;
 
@@ -94,37 +256,39 @@
 
   &__track {
     position: relative;
-    width: 44px;
-    height: 24px;
-    border-radius: 100px;
-    background: #D1D5DB;
-    transition: background 0.25s ease;
+    width: 36px;
+    height: 20px;
     flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--a-border-strong, #d1d5db);
+    transition: background 150ms ease;
 
     .banner-toggle__thumb {
       position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
-      background: white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      transition: left 0.25s ease;
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.2);
+      transition: left 150ms ease;
     }
   }
 
   &:has(input:checked) &__track {
-    background: var(--color-primary);
+    background: var(--a-accent, var(--color-primary));
 
-    .banner-toggle__thumb {
-      left: 23px;
-    }
+    .banner-toggle__thumb { left: 18px; }
+  }
+
+  &:has(input:focus-visible) &__track {
+    box-shadow: 0 0 0 3px var(--a-accent-ring);
   }
 
   &__text {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--a-text-2);
   }
 }

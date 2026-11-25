@@ -11,17 +11,31 @@
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8rem;
-    color: $default-text-muted;
+    color: var(--a-muted, #{$default-text-muted});
 
     input {
-      height: 36px;
-      padding: 0 0.5rem;
-      border: 1px solid $default-border;
+      height: 38px;
+      padding: 0 0.6rem;
+      border: 1px solid var(--a-border-strong, #d1d5db);
       border-radius: 8px;
-      background: $default-surface;
-      color: $default-text-primary;
-      font-size: 0.8rem;
+      background: var(--a-surface, #fff);
+      color: var(--a-text, #111827);
+      font-family: inherit;
+      font-size: 0.8125rem;
       min-width: 0;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+
+      &:focus {
+        outline: none;
+        border-color: var(--a-accent, #{$default-primary});
+        box-shadow: 0 0 0 3px var(--a-accent-ring, rgba(255, 107, 53, 0.2));
+      }
+    }
+
+    @media (max-width: 480px) {
+      flex: 1 1 100%;
+
+      input { flex: 1; }
     }
   }
 
@@ -29,21 +43,23 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    height: 36px;
+    height: 38px;
     padding: 0 0.9rem;
-    border: 1px solid $default-border;
+    border: 1px solid var(--a-border-strong, #d1d5db);
     border-radius: 8px;
-    background: $default-surface;
-    color: $default-text-primary;
+    background: var(--a-surface, #fff);
+    color: var(--a-text-2, #374151);
+    font-family: inherit;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.875rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
     cursor: pointer;
     white-space: nowrap;
     transition: border-color 0.15s, color 0.15s;
 
     &:hover:not(:disabled) {
-      border-color: $default-primary;
-      color: $default-primary;
+      background: var(--a-surface-2, #f9fafb);
+      color: var(--a-text, #111827);
     }
 
     &:disabled {

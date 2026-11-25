@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiImage, FiCheckCircle, FiLoader } from 'react-icons/fi';
+import { FiX, FiImage, FiCheckCircle, FiLoader, FiAlertCircle } from 'react-icons/fi';
 import { slugify } from '../../../../utils/slugify';
 
 const emptyForm = {
@@ -58,14 +58,19 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
 
   return (
     <div className="admin-modal-overlay" onClick={onClose}>
-      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="admin-modal category-form" onClick={(e) => e.stopPropagation()}>
         <div className="admin-modal__header">
           <h2>{editingCategory ? 'Edit Category' : 'Add New Category'}</h2>
-          <button onClick={onClose}><FiX /></button>
+          <button onClick={onClose} aria-label="Close modal"><FiX /></button>
         </div>
 
         <form className="admin-modal__form" onSubmit={handleSubmit}>
-          {apiError && <div className="admin-login__error" style={{ marginBottom: '1rem' }}>{apiError}</div>}
+          {apiError && (
+            <div className="admin-form-alert" role="alert">
+              <FiAlertCircle aria-hidden="true" />
+              <span>{apiError}</span>
+            </div>
+          )}
 
           <div className="admin-form-grid">
             {/* Category Name */}
@@ -98,19 +103,18 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
                 placeholder="e.g. wooden-toys"
                 required
               />
-              <p className="admin-field__hint" style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: 'var(--text-muted, #888)' }}>
+              <p className="admin-field__hint">
                 Auto-generated from name. Used in URL: /category/{form.slug || 'your-slug'}
               </p>
             </div>
             {/* Description (Optional) */}
             <div className="admin-field admin-field--full">
-              <label>Description <span style={{ fontWeight: 400, color: 'var(--text-muted, #888)' }}>(Optional)</span></label>
+              <label>Description <span className="category-form__optional">(Optional)</span></label>
               <textarea
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                 placeholder="Brief description of this category for SEO and display..."
                 rows={3}
-                style={{ resize: 'vertical', minHeight: '70px' }}
               />
             </div>
 
@@ -120,10 +124,11 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
               <input
                 type="file"
                 accept="image/*"
+                className="category-form__file"
                 onChange={handleImageChange}
               />
               {form.previewImage && (
-                <img src={form.previewImage} alt="Preview Image" style={{ width: '100px', height: '100px', objectFit: 'cover', marginTop: '10px', borderRadius: '8px' }} />
+                <img src={form.previewImage} alt="Preview Image" className="category-form__preview" />
               )}
             </div>
 
@@ -133,10 +138,11 @@ const CategoryFormModal = ({ isOpen, onClose, onSubmit, editingCategory, isSubmi
               <input
                 type="file"
                 accept="image/*"
+                className="category-form__file"
                 onChange={handleIconChange}
               />
               {form.previewIcon && (
-                <img src={form.previewIcon} alt="Preview Icon" style={{ width: '50px', height: '50px', objectFit: 'cover', marginTop: '10px', borderRadius: '8px' }} />
+                <img src={form.previewIcon} alt="Preview Icon" className="category-form__preview category-form__preview--icon" />
               )}
             </div>
           </div>

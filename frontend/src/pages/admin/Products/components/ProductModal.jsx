@@ -241,7 +241,7 @@ const ProductModal = ({
 
   return (
     <div className="admin-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="admin-modal admin-modal--product" onClick={(e) => e.stopPropagation()}>
 
         {/* ── Header ── */}
         <div className="admin-modal__header">
@@ -254,8 +254,9 @@ const ProductModal = ({
 
           {/* API error banner */}
           {apiError && (
-            <div className="admin-login__error" style={{ marginBottom: '1rem' }}>
-              {apiError}
+            <div className="admin-form-alert" role="alert">
+              <FiAlertCircle aria-hidden="true" />
+              <span>{apiError}</span>
             </div>
           )}
 
@@ -311,7 +312,7 @@ const ProductModal = ({
                   if (clearError) clearError('slug');
                 }}
               />
-              <p className="admin-field__hint" style={{ marginTop: '0.25rem' }}>
+              <p className="admin-field__hint">
                 Auto-generated from name. URL: /product/{form.slug || 'your-slug'}
               </p>
               {errors.slug && (
@@ -665,10 +666,10 @@ const ProductModal = ({
             </div>
 
             {/* ── Shipping Dimensions (cm) ── */}
-            <div className="admin-field admin-field--full" style={{ marginBottom: '0.25rem' }}>
-              <label style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--admin-text-secondary, #64748b)' }}>
-                📦 Shipping Dimensions (cm)
-              </label>
+            <div className="admin-field admin-field--full admin-field-subhead">
+              <p className="admin-field-subhead__title">
+                <FiBox aria-hidden="true" /> Shipping Dimensions (cm)
+              </p>
               <p className="admin-field__hint">Package dimensions in centimeters. Used by Shiprocket for shipping cost calculation.</p>
             </div>
 
@@ -920,7 +921,7 @@ const ProductModal = ({
               <p className="admin-field__hint">
                 Custom title for search engine results. Keep it under 60 characters for best display.
                 {form.seoTitle && (
-                  <span style={{ marginLeft: 8, color: form.seoTitle.length > 60 ? '#e74c3c' : '#27ae60' }}>
+                  <span className={`admin-char-count ${form.seoTitle.length > 60 ? 'admin-char-count--over' : ''}`}>
                     ({form.seoTitle.length}/60)
                   </span>
                 )}
@@ -949,7 +950,7 @@ const ProductModal = ({
               <p className="admin-field__hint">
                 Custom description for search engine results. Keep it under 155 characters for best display.
                 {form.seoDescription && (
-                  <span style={{ marginLeft: 8, color: form.seoDescription.length > 155 ? '#e74c3c' : '#27ae60' }}>
+                  <span className={`admin-char-count ${form.seoDescription.length > 155 ? 'admin-char-count--over' : ''}`}>
                     ({form.seoDescription.length}/155)
                   </span>
                 )}

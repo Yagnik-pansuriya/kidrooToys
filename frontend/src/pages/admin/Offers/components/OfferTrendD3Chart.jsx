@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { FiTrendingUp } from 'react-icons/fi';
 
 // Views, clicks and orders differ by orders of magnitude, so each gets its own
 // small chart (own y-scale) on a shared x-axis instead of one dual-axis plot.
@@ -128,7 +129,7 @@ const OfferTrendD3Chart = ({ data = [] }) => {
     <div ref={containerRef} className="d3-chart-wrap">
       {!hasData && (
         <div className="chart-empty">
-          <div className="chart-empty__icon">👀</div>
+          <div className="chart-empty__icon"><FiTrendingUp /></div>
           <strong>No offer activity yet</strong>
           <span>Views and clicks appear here as shoppers see your live offers.</span>
         </div>

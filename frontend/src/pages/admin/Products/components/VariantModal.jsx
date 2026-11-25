@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FiX, FiPlus, FiEdit2, FiTrash2, FiLoader, FiPackage, FiImage, FiChevronDown, FiChevronUp, FiTag, FiDollarSign, FiBox, FiCamera, FiSearch, FiSettings } from 'react-icons/fi';
+import { FiX, FiPlus, FiEdit2, FiTrash2, FiLoader, FiPackage, FiImage, FiLock, FiArrowLeft, FiChevronDown, FiChevronUp, FiTag, FiDollarSign, FiBox, FiCamera, FiSearch, FiSettings } from 'react-icons/fi';
 import Loader from '../../../../components/Loader/Loader';
 import {
   useGetVariantsQuery,
@@ -230,10 +230,10 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
         {/* Dimensions — 3 compact inputs in one field */}
         <div className="admin-field">
           <label>Dimensions (cm) — L × W × H</label>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <input type="number" min="0" step="0.1" placeholder="L" {...field('dimLength')} style={{ flex: 1 }} />
-            <input type="number" min="0" step="0.1" placeholder="W" {...field('dimWidth')}  style={{ flex: 1 }} />
-            <input type="number" min="0" step="0.1" placeholder="H" {...field('dimHeight')} style={{ flex: 1 }} />
+          <div className="variant-dims">
+            <input type="number" min="0" step="0.1" placeholder="L" {...field('dimLength')} />
+            <input type="number" min="0" step="0.1" placeholder="W" {...field('dimWidth')} />
+            <input type="number" min="0" step="0.1" placeholder="H" {...field('dimHeight')} />
           </div>
         </div>
       </FormGroup>
@@ -346,7 +346,7 @@ const VariantForm = ({ initial, onSave, onCancel, isBusy }) => {
       {/* ── Dynamic Attributes (JSON stringified) ── */}
       <div className="variant-attrs">
         <div className="variant-attrs__header">
-          <span>Attributes <small style={{ opacity: 0.6 }}>(JSON stringified)</small></span>
+          <span>Attributes <small>(JSON stringified)</small></span>
           <button type="button" className="variant-attrs__add-btn" onClick={addAttr}>
             <FiPlus /> Add Attribute
           </button>
@@ -405,7 +405,7 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
       <div className="variant-row__img">
         {thumbSrc
           ? <img src={thumbSrc} alt={variant.sku} />
-          : <div className="variant-row__img-placeholder"><FiPackage /></div>
+          : <div className="variant-row__img-placeholder"><FiImage aria-hidden="true" /></div>
         }
       </div>
 
@@ -432,8 +432,8 @@ const VariantRow = ({ variant, onEditClick, onDelete, deleting }) => {
 
       {variant.isDefault ? (
         <div className="admin-actions">
-          <span className="admin-tag" style={{ fontSize: '0.75rem', opacity: 0.7 }}>
-            🔒 Synced with Product
+          <span className="admin-tag variant-row__synced">
+            <FiLock aria-hidden="true" /> Synced with Product
           </span>
         </div>
       ) : (
@@ -571,7 +571,7 @@ const VariantModal = ({ product, onClose }) => {
                 className="variant-back-btn"
                 onClick={() => { setView('list'); setEditingVariant(null); }}
               >
-                ← Back to list
+                <FiArrowLeft aria-hidden="true" /> Back to list
               </button>
             )}
             <h2>

@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { FiLogOut, FiMenu, FiX, FiExternalLink } from 'react-icons/fi';
 import { 
   MdDashboard, 
   MdCategory, 
@@ -22,24 +22,31 @@ import { useGetUserPermissionsQuery } from '../../../store/ActionApi/permissionA
 import { useTheme } from '../../../context/ThemeContext';
 import { trimmedLogoUrl } from '../../../utils/logoUrl';
 import AdminRealtime from '../../../components/AdminRealtime/AdminRealtime';
+import './admin-theme.scss';
 import './AdminLayout.scss';
 
-// Map sidebar items to their backend permission route
+// Map sidebar items to their backend permission route; `section` only groups them visually
 const allNavItems = [
-  { to: '/admin/dashboard', icon: <MdDashboard />, label: 'Dashboard', permRoute: null },
-  { to: '/admin/categories', icon: <MdCategory />, label: 'Categories', permRoute: '/categories' },
-  { to: '/admin/products', icon: <MdInventory />, label: 'Products', permRoute: '/products' },
-  { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null },
-  { to: '/admin/customers', icon: <MdPersonSearch />, label: 'Customers', permRoute: null, adminOnly: true },
-  { to: '/admin/carts', icon: <MdShoppingCart />, label: 'Carts', permRoute: null, adminOnly: true },
-  { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers & Coupons', permRoute: '/offers' },
-  { to: '/admin/banners', icon: <MdViewCarousel />, label: 'Banners', permRoute: '/banners' },
-  { to: '/admin/skills', icon: <MdExtension />, label: 'Skills', permRoute: '/skills' },
-  { to: '/admin/newsletter', icon: <MdEmail />, label: 'Newsletter', permRoute: '/newsletter' },
-  { to: '/admin/reviews', icon: <MdRateReview />, label: 'Reviews', permRoute: '/reviews' },
-  { to: '/admin/users', icon: <MdPeople />, label: 'Users', permRoute: '/users', adminOnly: true },
-  { to: '/admin/settings', icon: <MdSettings />, label: 'Settings', permRoute: '/site-settings' },
+  { to: '/admin/dashboard', icon: <MdDashboard />, label: 'Dashboard', permRoute: null, section: 'Overview' },
+  { to: '/admin/orders', icon: <MdShoppingBag />, label: 'Orders', permRoute: null, section: 'Sales' },
+  { to: '/admin/customers', icon: <MdPersonSearch />, label: 'Customers', permRoute: null, adminOnly: true, section: 'Sales' },
+  { to: '/admin/carts', icon: <MdShoppingCart />, label: 'Carts', permRoute: null, adminOnly: true, section: 'Sales' },
+  { to: '/admin/products', icon: <MdInventory />, label: 'Products', permRoute: '/products', section: 'Catalog' },
+  { to: '/admin/categories', icon: <MdCategory />, label: 'Categories', permRoute: '/categories', section: 'Catalog' },
+  { to: '/admin/skills', icon: <MdExtension />, label: 'Skills', permRoute: '/skills', section: 'Catalog' },
+  { to: '/admin/reviews', icon: <MdRateReview />, label: 'Reviews', permRoute: '/reviews', section: 'Catalog' },
+  { to: '/admin/offers', icon: <MdLocalOffer />, label: 'Offers & Coupons', permRoute: '/offers', section: 'Marketing' },
+  { to: '/admin/banners', icon: <MdViewCarousel />, label: 'Banners', permRoute: '/banners', section: 'Marketing' },
+  { to: '/admin/newsletter', icon: <MdEmail />, label: 'Newsletter', permRoute: '/newsletter', section: 'Marketing' },
+  { to: '/admin/users', icon: <MdPeople />, label: 'Users', permRoute: '/users', adminOnly: true, section: 'System' },
+  { to: '/admin/settings', icon: <MdSettings />, label: 'Settings', permRoute: '/site-settings', section: 'System' },
 ];
+
+// Detail routes (e.g. /admin/customers/:id) take the title of their parent list
+const pageTitleFor = (pathname) => {
+  const item = allNavItems.find((i) => pathname === i.to || pathname.startsWith(`${i.to}/`));
+  return item?.label || 'Admin';
+};
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -47,6 +54,7 @@ const AdminLayout = () => {
   const { user, permissions } = useSelector((state) => state.auth);
   const { settings } = useTheme();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   // Re-fetch permissions from backend on every load/refresh (for non-admin users)
   // Admin role has all permissions so skip the call for them
@@ -86,43 +94,61 @@ const AdminLayout = () => {
         return perm?.visible === true;
       });
 
+  // Consecutive items of the same section render under one heading
+  const navSections = navItems.reduce((sections, item) => {
+    const last = sections[sections.length - 1];
+    if (last && last.title === item.section) last.items.push(item);
+    else sections.push({ title: item.section, items: [item] });
+    return sections;
+  }, []);
+
+  const siteName = settings.siteName || 'Kidroo';
+
   return (
     <div className="admin-layout">
       {/* Sidebar */}
-      <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar--open' : ''}`}>
+      <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar--open' : ''}`} aria-label="Admin navigation">
         <div className="admin-sidebar__header">
           {settings.logo ? (
-            <img src={trimmedLogoUrl(settings.logo)} alt={settings.siteName || 'Kidroo'} className="admin-sidebar__logo-img" />
+            <img src={trimmedLogoUrl(settings.logo)} alt={siteName} className="admin-sidebar__logo-img" />
           ) : (
-            <span className="admin-sidebar__logo">🧸</span>
+            <span className="admin-sidebar__logo" aria-hidden="true">{siteName[0].toUpperCase()}</span>
           )}
-          <span className="admin-sidebar__brand">{settings.siteName ? `${settings.siteName} Admin` : 'Kidroo Admin'}</span>
-          <button className="admin-sidebar__close" onClick={() => setSidebarOpen(false)}><FiX /></button>
+          <div className="admin-sidebar__brand-wrap">
+            <span className="admin-sidebar__brand">{siteName}</span>
+            <span className="admin-sidebar__brand-sub">Admin</span>
+          </div>
+          <button className="admin-sidebar__close" onClick={() => setSidebarOpen(false)} aria-label="Close menu"><FiX /></button>
         </div>
         <nav className="admin-sidebar__nav">
-          {navItems.map(item => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => `admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`}
-              onClick={() => setSidebarOpen(false)}
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </NavLink>
+          {navSections.map((section) => (
+            <div key={section.title} className="admin-sidebar__section">
+              <span className="admin-sidebar__section-title">{section.title}</span>
+              {section.items.map(item => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => `admin-sidebar__link ${isActive ? 'admin-sidebar__link--active' : ''}`}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="admin-sidebar__footer">
           <div className="admin-sidebar__user">
             <div className="admin-sidebar__avatar">{(user?.name || 'A')[0].toUpperCase()}</div>
-            <div>
+            <div className="admin-sidebar__user-info">
               <span className="admin-sidebar__name">{user?.name || 'Admin'}</span>
               <span className="admin-sidebar__role">{user?.role || 'Administrator'}</span>
             </div>
+            <button className="admin-sidebar__logout" onClick={handleLogout} aria-label="Logout" title="Logout">
+              <FiLogOut />
+            </button>
           </div>
-          <button className="admin-sidebar__logout" onClick={handleLogout}>
-            <FiLogOut /> Logout
-          </button>
         </div>
       </aside>
 
@@ -132,13 +158,18 @@ const AdminLayout = () => {
       {/* Main */}
       <div className="admin-main">
         <header className="admin-topbar">
-          <button className="admin-topbar__menu" onClick={() => setSidebarOpen(true)}>
-            <FiMenu />
-          </button>
-          <h2 className="admin-topbar__title">Admin Panel</h2>
+          <div className="admin-topbar__left">
+            <button className="admin-topbar__menu" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+              <FiMenu />
+            </button>
+            <h2 className="admin-topbar__title">{pageTitleFor(pathname)}</h2>
+          </div>
           <div className="admin-topbar__actions">
             <AdminRealtime />
-            <NavLink to="/" className="admin-topbar__view-site" target="_blank">View Site →</NavLink>
+            <NavLink to="/" className="admin-topbar__view-site" target="_blank">
+              <FiExternalLink />
+              <span>View site</span>
+            </NavLink>
           </div>
         </header>
         <main className="admin-content">

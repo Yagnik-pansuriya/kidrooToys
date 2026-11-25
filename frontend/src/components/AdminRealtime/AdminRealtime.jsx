@@ -92,7 +92,7 @@ const AdminRealtime = () => {
       if (soundOn && claimSound(e.lastEventId)) playNewOrderSound();
 
       const method = order.paymentMethod === 'cod' ? 'COD' : 'Paid online';
-      toast.showSuccess(`🛍️ New order ${order.orderId} · ${formatINR(order.netAmount)} (${method}) · ${customer.name}`);
+      toast.showSuccess(`New order ${order.orderId} · ${formatINR(order.netAmount)} (${method}) · ${customer.name}`);
       showDesktopNotification(
         'New order received',
         `${order.orderId} · ${formatINR(order.netAmount)} · ${customer.name}`,
@@ -112,7 +112,7 @@ const AdminRealtime = () => {
 
       const [first, ...rest] = added;
       const what = `${first.quantity}× ${first.name}${rest.length ? ` +${rest.length} more` : ''}`;
-      toast.showInfo(`🛒 ${customer.name} added ${what} · cart ${formatINR(cartTotal)}`);
+      toast.showInfo(`${customer.name} added ${what} · cart ${formatINR(cartTotal)}`);
       showDesktopNotification(
         'Item added to cart',
         `${customer.name} added ${what}`,

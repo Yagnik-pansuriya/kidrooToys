@@ -57,13 +57,6 @@ const CouponTrendD3Chart = ({ data = [], timeframe = 'monthly' }) => {
       emptyGroup
         .append('text')
         .attr('text-anchor', 'middle')
-        .attr('font-size', '28px')
-        .attr('dy', '-15px')
-        .text('📊');
-
-      emptyGroup
-        .append('text')
-        .attr('text-anchor', 'middle')
         .attr('fill', '#374151')
         .attr('font-size', '14px')
         .attr('font-weight', '700')

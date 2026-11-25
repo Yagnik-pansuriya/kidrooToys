@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { FiEdit2, FiTrash2, FiImage, FiMove, FiCheck } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiImage, FiMove, FiCheck, FiPackage } from 'react-icons/fi';
 
 /**
  * ProductTable with drag-and-drop reordering + inline position editing
@@ -104,7 +104,7 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
   };
 
   return (
-    <table className="admin-table" aria-label="Products table">
+    <table className="admin-table admin-table--compact" aria-label="Products table">
       <thead>
         <tr>
           <th style={{ width: 40 }}>#</th>
@@ -124,9 +124,14 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
         {sorted.length === 0 && (
           <tr>
             <td colSpan={10} className="admin-table__empty">
-              {searchQuery
-                ? `No products found for "${searchQuery}".`
-                : 'No products yet. Click "Add Product" to create one.'}
+              <div className="admin-empty">
+                <span className="admin-empty__icon"><FiPackage aria-hidden="true" /></span>
+                <p>
+                  {searchQuery
+                    ? `No products found for "${searchQuery}".`
+                    : 'No products yet. Click "Add Product" to create one.'}
+                </p>
+              </div>
             </td>
           </tr>
         )}
@@ -190,17 +195,19 @@ const ProductTable = ({ products = [], searchQuery = '', deleting, onEdit, onDel
               </td>
 
               {/* Name */}
-              <td className="td-bold">{name}</td>
+              <td className="td-bold admin-cell-name">
+                <span className="admin-cell-name__text" title={name}>{name}</span>
+              </td>
 
               {/* Product Code */}
               <td>
-                <span className="admin-tag" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                <span className="admin-tag admin-tag--mono">
                   {product.productCode || '—'}
                 </span>
               </td>
 
               {/* Categories */}
-              <td>
+              <td className="admin-cell-wrap">
                 <div className="admin-tag-group">
                   {categoryNames.length > 0 ? categoryNames.map((cn, i) => (
                     <span key={i} className="admin-tag">{cn}</span>

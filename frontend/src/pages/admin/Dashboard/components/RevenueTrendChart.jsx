@@ -10,6 +10,7 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
     if (!data || data.length === 0 || !svgRef.current) return;
 
     const container = containerRef.current;
+    const accent = getComputedStyle(container).getPropertyValue('--a-accent').trim() || '#ff6b35';
     const width = container.clientWidth || 600;
     const height = 320;
     const margin = { top: 25, right: 25, bottom: 45, left: 65 };
@@ -57,13 +58,13 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
     areaGradient
       .append('stop')
       .attr('offset', '0%')
-      .attr('stop-color', '#4f46e5')
-      .attr('stop-opacity', 0.22);
+      .attr('stop-color', accent)
+      .attr('stop-opacity', 0.16);
 
     areaGradient
       .append('stop')
       .attr('offset', '100%')
-      .attr('stop-color', '#4f46e5')
+      .attr('stop-color', accent)
       .attr('stop-opacity', 0.01);
 
     // Subtle horizontal grid lines
@@ -72,13 +73,16 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
       .attr('class', 'grid-lines')
       .call(yGrid)
       .selectAll('line')
-      .attr('stroke', '#e2e8f0')
+      .attr('stroke', '#eef0f3')
       .attr('stroke-dasharray', '4 4');
 
     g.select('.grid-lines').select('.domain').remove();
 
     // X Axis
-    const xAxis = d3.axisBottom(xScale);
+    // Show at most one date label per ~60px so narrow screens don't overlap them
+    const labels = xScale.domain();
+    const labelStep = Math.max(1, Math.ceil(labels.length / Math.max(2, Math.floor(innerWidth / 60))));
+    const xAxis = d3.axisBottom(xScale).tickValues(labels.filter((_, i) => i % labelStep === 0));
     const xAxisG = g
       .append('g')
       .attr('transform', `translate(0,${innerHeight})`)
@@ -86,9 +90,9 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
 
     xAxisG
       .selectAll('text')
-      .attr('fill', '#64748b')
-      .attr('font-size', '12px')
-      .attr('font-weight', '500')
+      .attr('fill', '#6b7280')
+      .attr('font-size', '11px')
+      .attr('font-weight', '400')
       .attr('dy', '14px');
 
     if (data.length > 15) {
@@ -100,7 +104,7 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
         .attr('transform', 'rotate(-35)');
     }
 
-    xAxisG.select('.domain').attr('stroke', '#cbd5e1');
+    xAxisG.select('.domain').attr('stroke', '#e5e7eb');
 
     // Y Axis
     const yAxis = d3
@@ -111,11 +115,11 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
     const yAxisG = g.append('g').call(yAxis);
     yAxisG
       .selectAll('text')
-      .attr('fill', '#64748b')
-      .attr('font-size', '12px')
-      .attr('font-weight', '500');
+      .attr('fill', '#6b7280')
+      .attr('font-size', '11px')
+      .attr('font-weight', '400');
 
-    yAxisG.select('.domain').attr('stroke', '#cbd5e1');
+    yAxisG.select('.domain').attr('stroke', '#e5e7eb');
 
     // D3 Generators
     const lineGenerator = d3
@@ -142,8 +146,8 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
       .append('path')
       .datum(data)
       .attr('fill', 'none')
-      .attr('stroke', '#4f46e5')
-      .attr('stroke-width', 3)
+      .attr('stroke', accent)
+      .attr('stroke-width', 2.25)
       .attr('d', lineGenerator);
 
     // Animate line path
@@ -167,19 +171,19 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
       .attr('class', 'data-point')
       .attr('cx', (d) => xScale(d.label))
       .attr('cy', (d) => yScale(d.revenue))
-      .attr('r', 5)
+      .attr('r', 3.5)
       .attr('fill', '#ffffff')
-      .attr('stroke', '#4f46e5')
-      .attr('stroke-width', 2.5)
+      .attr('stroke', accent)
+      .attr('stroke-width', 2)
       .style('cursor', 'pointer')
       .on('mouseover', (event, d) => {
         d3.select(event.currentTarget)
           .transition()
           .duration(150)
-          .attr('r', 8)
-          .attr('fill', '#4f46e5')
+          .attr('r', 6)
+          .attr('fill', accent)
           .attr('stroke', '#ffffff')
-          .attr('stroke-width', 3);
+          .attr('stroke-width', 2);
 
         const [xPos, yPos] = d3.pointer(event, container);
         setTooltip({
@@ -194,10 +198,10 @@ const RevenueTrendChart = ({ data = [], timeframe = 'monthly', periodLabel }) =>
         d3.select(event.currentTarget)
           .transition()
           .duration(150)
-          .attr('r', 5)
+          .attr('r', 3.5)
           .attr('fill', '#ffffff')
-          .attr('stroke', '#4f46e5')
-          .attr('stroke-width', 2.5);
+          .attr('stroke', accent)
+          .attr('stroke-width', 2);
 
         setTooltip(null);
       });

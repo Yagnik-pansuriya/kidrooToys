@@ -36,28 +36,32 @@ const AdminLogin = () => {
     <div className="admin-login">
       <div className="admin-login__card">
         <div className="admin-login__header">
-          <span className="admin-login__icon">🧸</span>
-          <h1>Kidroo Admin</h1>
-          <p>Sign in to manage your toy store</p>
+          <span className="admin-login__icon" aria-hidden="true">K</span>
+          <h1>Sign in to Kidroo Admin</h1>
+          <p>Manage products, orders and customers</p>
         </div>
 
         <form className="admin-login__form" onSubmit={handleSubmit}>
           {error && <div className="admin-login__error">{error}</div>}
 
           <div className="admin-login__field">
-            <label><FiMail />Email</label>
+            <label>Email</label>
+            <div className="admin-login__input">
+            <FiMail className="admin-login__input-icon" />
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="you@kidroo.in"
               required
             />
+            </div>
           </div>
 
           <div className="admin-login__field">
-            <label><FiLock /> Password</label>
-            <div className="admin-login__password-input">
+            <label>Password</label>
+            <div className="admin-login__input admin-login__password-input">
+              <FiLock className="admin-login__input-icon" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}

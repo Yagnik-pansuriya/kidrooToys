@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiAlertTriangle } from 'react-icons/fi';
 import './ConfirmDeleteModal.scss';
 
 const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, itemName, title = "Confirm Deletion" }) => {
@@ -6,8 +7,9 @@ const ConfirmDeleteModal = ({ isOpen, onClose, onConfirm, itemName, title = "Con
 
   return (
     <div className="confirm-modal-overlay">
-      <div className="confirm-modal">
-        <h3 className="confirm-modal__title">{title}</h3>
+      <div className="confirm-modal" role="alertdialog" aria-labelledby="confirm-modal-title">
+        <span className="confirm-modal__icon" aria-hidden="true"><FiAlertTriangle /></span>
+        <h3 className="confirm-modal__title" id="confirm-modal-title">{title}</h3>
         <p className="confirm-modal__message">
           Are you sure you want to delete <strong>{itemName || 'this item'}</strong>?<br/>
           This action cannot be undone.

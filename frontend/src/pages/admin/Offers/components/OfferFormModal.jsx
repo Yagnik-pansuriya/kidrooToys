@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { FiX, FiUpload, FiCheck, FiCalendar, FiImage, FiGrid, FiLink, FiArrowRight, FiArrowLeft, FiTrash2, FiType } from 'react-icons/fi';
+import { FiX, FiUpload, FiCheck, FiCalendar, FiImage, FiGrid, FiLink, FiArrowRight, FiArrowLeft, FiTrash2, FiType, FiGift } from 'react-icons/fi';
 import {
   displayTypes, pageTargets, sectionPresets, positionOptions, initialOfferForm, toLocalInput, OFFERS_PAGE_NOTE,
 } from '../constants/offerConstants';
@@ -191,7 +191,7 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
       <div className="offer-modal premium-modal offer-form-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-header-title">
-            <div className="modal-header-icon">🌟</div>
+            <div className="modal-header-icon"><FiGift /></div>
             <div>
               <h2>{editingOffer ? 'Edit Offer' : 'Create New Offer'}</h2>
               <p>The preview shows exactly what shoppers will see</p>
@@ -272,16 +272,19 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
               <div className="step-content">
                 <div className="section-title-badge">FORMAT</div>
                 <div className="display-type-grid">
-                  {displayTypes.map((t) => (
+                  {displayTypes.map((t) => {
+                    const TypeIcon = t.icon;
+                    return (
                     <button type="button" key={t.value}
                       className={`type-card ${form.displayType === t.value ? 'selected' : ''}`}
                       onClick={() => changeDisplayType(t.value)}>
-                      <div className="type-card-icon">{t.icon}</div>
+                      <div className="type-card-icon"><TypeIcon /></div>
                       <div className="type-card-label">{t.label}</div>
                       <div className="type-card-desc">{t.desc}</div>
                       {form.displayType === t.value && <div className="card-check-badge"><FiCheck /></div>}
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="section-title-badge" style={{ marginTop: 22 }}>
@@ -435,7 +438,7 @@ const OfferFormModal = ({ isOpen, onClose, onSubmit, editingOffer, isSubmitting 
             <button className="btn btn-primary btn-pills" type="button" onClick={next}>Next <FiArrowRight /></button>
           ) : (
             <button className="btn btn-primary btn-pills" type="submit" form="offerForm" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving…' : editingOffer ? '✓ Save Changes' : '✓ Publish Offer'}
+              {isSubmitting ? 'Saving…' : <><FiCheck /> {editingOffer ? 'Save Changes' : 'Publish Offer'}</>}
             </button>
           )}
         </div>

@@ -9,7 +9,7 @@ const AnalyticsTablesSection = ({ topBuyers = [], topProducts = [], mostLikedPro
       <div className="analytics-section__header">
         <div className="analytics-section__title-group">
           <h2 className="analytics-section__title">
-            Executive Analytics & Management Reports 📋
+            Analytics & Reports
           </h2>
           <p className="analytics-section__subtitle">
             Detailed performance breakdown of customers, sales, and product engagement
@@ -42,7 +42,7 @@ const AnalyticsTablesSection = ({ topBuyers = [], topProducts = [], mostLikedPro
       {activeTab === 'buyers' && (
         <div className="table-container fade-in">
           <div className="table-container__header">
-            <h3><FiAward style={{ color: '#f59e0b' }} /> Top Buyers Ranking</h3>
+            <h3><FiAward /> Top Buyers Ranking</h3>
             <span className="badge">{topBuyers.length} Top Customers</span>
           </div>
 
@@ -114,7 +114,7 @@ const AnalyticsTablesSection = ({ topBuyers = [], topProducts = [], mostLikedPro
       {activeTab === 'products' && (
         <div className="table-container fade-in">
           <div className="table-container__header">
-            <h3><FiShoppingBag style={{ color: '#10b981' }} /> Best Selling Products</h3>
+            <h3><FiShoppingBag /> Best Selling Products</h3>
             <span className="badge">{topProducts.length} Products</span>
           </div>
 
@@ -150,7 +150,7 @@ const AnalyticsTablesSection = ({ topBuyers = [], topProducts = [], mostLikedPro
                           className="product-img"
                         />
                         <div className="product-info">
-                          <span className="name">{p.productName}</span>
+                          <span className="name" title={p.productName}>{p.productName}</span>
                         </div>
                       </div>
                     </td>
@@ -184,7 +184,7 @@ const AnalyticsTablesSection = ({ topBuyers = [], topProducts = [], mostLikedPro
       {activeTab === 'liked' && (
         <div className="table-container fade-in">
           <div className="table-container__header">
-            <h3><FiHeart style={{ color: '#ec4899' }} /> Most Liked & Wishlisted Toys</h3>
+            <h3><FiHeart /> Most Liked & Wishlisted Toys</h3>
             <span className="badge">{mostLikedProducts.length} Products</span>
           </div>
 
@@ -220,7 +220,7 @@ const AnalyticsTablesSection = ({ topBuyers = [], topProducts = [], mostLikedPro
                           className="product-img"
                         />
                         <div className="product-info">
-                          <span className="name">{p.productName}</span>
+                          <span className="name" title={p.productName}>{p.productName}</span>
                         </div>
                       </div>
                     </td>

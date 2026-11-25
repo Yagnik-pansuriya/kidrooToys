@@ -57,13 +57,6 @@ const CouponProductD3Chart = ({ data = [] }) => {
       emptyGroup
         .append('text')
         .attr('text-anchor', 'middle')
-        .attr('font-size', '28px')
-        .attr('dy', '-15px')
-        .text('🛍️');
-
-      emptyGroup
-        .append('text')
-        .attr('text-anchor', 'middle')
         .attr('fill', '#374151')
         .attr('font-size', '14px')
         .attr('font-weight', '700')
@@ -109,8 +102,8 @@ const CouponProductD3Chart = ({ data = [] }) => {
       .attr('x2', '100%')
       .attr('y2', '0%');
 
-    barGradient.append('stop').attr('offset', '0%').attr('stop-color', '#8B5CF6');
-    barGradient.append('stop').attr('offset', '100%').attr('stop-color', '#EC4899');
+    barGradient.append('stop').attr('offset', '0%').attr('stop-color', '#E8590C');
+    barGradient.append('stop').attr('offset', '100%').attr('stop-color', '#F08A4B');
 
     // Axes
     const yAxis = d3.axisLeft(yScale).tickSize(0);

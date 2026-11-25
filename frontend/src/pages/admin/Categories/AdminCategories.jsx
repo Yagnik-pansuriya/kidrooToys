@@ -16,6 +16,7 @@ import { useToast } from '../../../context/ToastContext';
 import CategoryTable from './components/CategoryTable';
 import CategoryFormModal from './components/CategoryFormModal';
 import ConfirmDeleteModal from '../../../components/ConfirmModal/ConfirmDeleteModal';
+import './AdminCategories.scss';
 
 // Simple debounce hook
 function useDebounce(value, delay = 400) {
@@ -147,27 +148,27 @@ const AdminCategories = () => {
   };
 
   return (
-    <div className="admin-products">
+    <div className="admin-products admin-categories">
       {/* Header */}
       <div className="admin-products__header">
-        <h1>Categories 📂</h1>
+        <h1>Categories</h1>
         <button className="admin-btn admin-btn--primary" onClick={openAdd}>
           <FiPlus /> Add Category
         </button>
       </div>
 
       {/* Search Bar */}
-      <div className="admin-search-bar">
-        <FiSearch className="admin-search-bar__icon" />
+      <div className="admin-products__search-input-wrap admin-categories__search">
+        <FiSearch className="admin-products__search-icon" aria-hidden="true" />
         <input
           type="text"
-          className="admin-search-bar__input"
+          className="admin-products__search-input"
           placeholder="Search categories by name, slug, description…"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
         />
         {searchInput && (
-          <button className="admin-search-bar__clear" onClick={() => setSearchInput('')}>
+          <button className="admin-products__search-clear" onClick={() => setSearchInput('')} aria-label="Clear search">
             <FiX />
           </button>
         )}

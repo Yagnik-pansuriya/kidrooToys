@@ -228,14 +228,14 @@ const PermissionsModal = ({ user, onClose }) => {
 // ─── UserCard ─────────────────────────────────────────────────────────────────
 const UserCard = ({ user, onEdit, onDelete, onPermissions, deleting }) => {
   const roleColors = {
-    admin: '#ef4444',
-    moderator: '#f59e0b',
-    user: '#3b82f6',
+    admin: 'var(--a-accent)',
+    moderator: 'var(--a-warning)',
+    user: 'var(--a-info)',
   };
 
   return (
     <div className="user-card">
-      <div className="user-card__avatar" style={{ background: roleColors[user.role] || '#6b7280' }}>
+      <div className="user-card__avatar" style={{ background: roleColors[user.role] || 'var(--a-muted)' }}>
         {(user.name || 'U')[0].toUpperCase()}
       </div>
       <div className="user-card__info">
@@ -332,7 +332,7 @@ const AdminUsers = () => {
   return (
     <div className="admin-users">
       <div className="admin-users__header">
-        <h1>Users & Permissions 👥</h1>
+        <h1>Users & Permissions</h1>
         <button className="admin-btn admin-btn--primary" onClick={openAdd}>
           <FiPlus /> Add User
         </button>

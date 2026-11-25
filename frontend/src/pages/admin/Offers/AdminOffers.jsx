@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import {
   FiPlus, FiSearch, FiTag, FiPercent, FiDownload,
   FiTrendingUp, FiBarChart2, FiCalendar, FiShoppingBag, FiEye, FiMousePointer, FiRadio,
+  FiFileText, FiCreditCard, FiGift, FiPackage,
 } from 'react-icons/fi';
 import {
   useGetOffersQuery, useAddOfferMutation, useUpdateOfferMutation, useDeleteOfferMutation, useDuplicateOfferMutation,
@@ -378,7 +379,7 @@ const AdminOffers = () => {
       {/* ── Header ────────────────────────────────────────────── */}
       <div className="topbar-wrapper">
         <div>
-          <h1>🎟️ Offers & Coupons</h1>
+          <h1>Offers & Coupons</h1>
           <p className="topbar-sub">Create storefront offer banners and discount codes, and see how they perform.</p>
         </div>
         <div className="topbar-right">
@@ -463,14 +464,14 @@ const AdminOffers = () => {
         <>
           {/* ── Coupon KPIs ──────────────────────────────────────── */}
           <div className="stat-tile-grid">
-            <StatTile icon="🎟️" label="Most used coupon" value={mostUsedCoupon ? mostUsedCoupon.code : '—'}
+            <StatTile icon={<FiTag />} label="Most used coupon" value={mostUsedCoupon ? mostUsedCoupon.code : '—'}
               sub={mostUsedCoupon ? `${mostUsedCoupon.usesCount} orders · ${inr(mostUsedCoupon.totalDiscount)} saved` : 'No coupon orders yet'} />
-            <StatTile icon="🛍️" label="Top coupon product"
+            <StatTile icon={<FiShoppingBag />} label="Top coupon product"
               value={topCouponProduct ? (topCouponProduct.productName.length > 20 ? `${topCouponProduct.productName.slice(0, 18)}…` : topCouponProduct.productName) : '—'}
               sub={topCouponProduct ? `${topCouponProduct.totalCouponOrders} orders with a coupon` : 'No coupon orders yet'} tone="success" />
-            <StatTile icon="🧾" label={`Coupon orders · ${timeframeLabel}`} value={num(summaryData.totalCouponOrders)}
+            <StatTile icon={<FiFileText />} label={`Coupon orders · ${timeframeLabel}`} value={num(summaryData.totalCouponOrders)}
               sub={`${summaryData.activeCouponsCount || 0} active coupons`} tone="purple" />
-            <StatTile icon="💰" label={`Coupon revenue · ${timeframeLabel}`} value={inr(summaryData.totalCouponRevenue)}
+            <StatTile icon={<FiCreditCard />} label={`Coupon revenue · ${timeframeLabel}`} value={inr(summaryData.totalCouponRevenue)}
               sub={`${inr(summaryData.totalDiscountGiven)} discount given`} tone="warning" />
           </div>
 
@@ -506,12 +507,12 @@ const AdminOffers = () => {
                 </thead>
                 <tbody>
                   {productCouponBreakdown.length === 0 ? (
-                    <tr><td colSpan="4" className="admin-empty-state">No coupon orders in this period.</td></tr>
+                    <tr><td colSpan="4" className="admin-empty-state"><div className="empty-icon"><FiShoppingBag /></div>No coupon orders in this period.</td></tr>
                   ) : productCouponBreakdown.map((item, idx) => (
                     <tr key={item.productId || idx}>
                       <td>
                         <div className="offer-name-cell">
-                          {item.image ? <img src={item.image} alt="" className="product-thumb" /> : <div className="product-thumb">📦</div>}
+                          {item.image ? <img src={item.image} alt="" className="product-thumb" /> : <div className="product-thumb"><FiPackage /></div>}
                           <span className="cell-strong">{item.productName || 'Product'}</span>
                         </div>
                       </td>
@@ -570,7 +571,7 @@ const AdminOffers = () => {
                     <td colSpan="6" className="admin-empty-state">
                       {rawOfferList.length === 0 ? (
                         <>
-                          <div className="empty-icon">🎁</div>
+                          <div className="empty-icon"><FiGift /></div>
                           <strong>No offers yet</strong>
                           <p>Create a banner for the home, shop, product or offers page.</p>
                           <button className="btn btn-primary" onClick={openAddOffer}><FiPlus /> Create your first offer</button>
@@ -613,7 +614,7 @@ const AdminOffers = () => {
                 {isCouponsLoading ? (
                   <tr><td colSpan="8" style={{ textAlign: 'center' }}><Loader inline message="Loading coupons…" /></td></tr>
                 ) : couponList.length === 0 ? (
-                  <tr><td colSpan="8" className="admin-empty-state">No coupons found.</td></tr>
+                  <tr><td colSpan="8" className="admin-empty-state"><div className="empty-icon"><FiPercent /></div>No coupons found.</td></tr>
                 ) : couponList.map((coupon) => (
                   <CouponTableRow
                     key={coupon._id || coupon.id}

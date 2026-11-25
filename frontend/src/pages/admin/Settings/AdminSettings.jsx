@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FiSave, FiImage, FiDroplet, FiLoader, FiCreditCard } from 'react-icons/fi';
+import {
+  FiSave, FiImage, FiDroplet, FiLoader, FiCreditCard, FiShoppingBag, FiTruck, FiGift, FiLock,
+  FiAlertTriangle, FiCheckCircle,
+} from 'react-icons/fi';
 import Loader from '../../../components/Loader/Loader';
 import { useTheme } from '../../../context/ThemeContext';
 import { useGetSettingsQuery, useUpdateSettingsMutation } from '../../../store/ActionApi/settingsApi';
@@ -141,18 +144,18 @@ const AdminSettings = () => {
   return (
     <div className="admin-settings">
       <div className="admin-settings__header">
-        <h1>Settings ⚙️</h1>
+        <h1>Settings</h1>
         <button className="admin-btn admin-btn--primary" onClick={handleSave} disabled={isUpdating}>
           {isUpdating ? <><FiLoader className="spin" /> Saving...</> : <><FiSave /> {saved ? 'Saved!' : 'Save Changes'}</>}
         </button>
       </div>
 
-      {saved && <div className="admin-settings__toast">✅ Settings saved successfully! Changes applied to the user site.</div>}
+      {saved && <div className="admin-settings__toast"><FiCheckCircle /> Settings saved successfully! Changes applied to the user site.</div>}
 
       <div className="admin-settings__grid">
         {/* General Settings */}
         <div className="settings-card">
-          <h2 className="settings-card__title">🏪 General</h2>
+          <h2 className="settings-card__title"><FiShoppingBag /> General</h2>
           <div className="admin-field">
             <label>Site Name</label>
             <input type="text" value={form.siteName} onChange={(e) => setForm(p => ({ ...p, siteName: e.target.value }))} />
@@ -173,13 +176,13 @@ const AdminSettings = () => {
 
         {/* Shipping Settings */}
         <div className="settings-card">
-          <h2 className="settings-card__title">🚚 Shipping Settings</h2>
+          <h2 className="settings-card__title"><FiTruck /> Shipping Settings</h2>
           <p className="settings-card__desc">Configure free shipping threshold rules for your store orders.</p>
           
           <div className="payment-toggle">
             <div className="payment-toggle__item">
               <div className="payment-toggle__info">
-                <span className="payment-toggle__icon">🎁</span>
+                <span className="payment-toggle__icon"><FiGift /></span>
                 <div>
                   <strong>Enable Free Shipping Threshold</strong>
                   <p>Waive all product shipment charges when order subtotal meets a threshold</p>
@@ -225,7 +228,7 @@ const AdminSettings = () => {
               </div>
             ) : (
               <div className="logo-upload__placeholder">
-                <span>🧸</span>
+                <span><FiImage /></span>
                 <p>No logo uploaded (using default)</p>
               </div>
             )}
@@ -244,7 +247,7 @@ const AdminSettings = () => {
           <div className="payment-toggle">
             <div className="payment-toggle__item">
               <div className="payment-toggle__info">
-                <span className="payment-toggle__icon">💳</span>
+                <span className="payment-toggle__icon"><FiCreditCard /></span>
                 <div>
                   <strong>Online Payment (Razorpay)</strong>
                   <p>Accept payments via UPI, Credit/Debit Cards, Net Banking, Wallets</p>
@@ -279,14 +282,14 @@ const AdminSettings = () => {
                     onChange={(e) => setForm(p => ({ ...p, razorpayKeySecret: e.target.value }))}
                     placeholder="Leave empty to keep existing"
                   />
-                  <small className="admin-field__hint">🔒 Secret is never displayed. Leave empty to keep the current value.</small>
+                  <small className="admin-field__hint"><FiLock /> Secret is never displayed. Leave empty to keep the current value.</small>
                 </div>
               </div>
             )}
 
             <div className="payment-toggle__item">
               <div className="payment-toggle__info">
-                <span className="payment-toggle__icon">🚚</span>
+                <span className="payment-toggle__icon"><FiTruck /></span>
                 <div>
                   <strong>Cash on Delivery</strong>
                   <p>Customers pay when the order is delivered to their doorstep</p>
@@ -304,7 +307,7 @@ const AdminSettings = () => {
           </div>
 
           {!form.onlinePayment && !form.cashOnDelivery && (
-            <p className="payment-toggle__warning">⚠️ At least one payment method must be enabled!</p>
+            <p className="payment-toggle__warning"><FiAlertTriangle /> At least one payment method must be enabled!</p>
           )}
         </div>
 

@@ -1,18 +1,20 @@
+import { FiImage, FiLayers } from 'react-icons/fi';
+
 export const displayTypes = [
-  { value: 'single-banner', label: 'Single Image Banner', icon: '🖼️', desc: 'One promotional image with your text' },
-  { value: 'slider', label: 'Image Slider', icon: '🎠', desc: 'Several images that cross-fade automatically' },
+  { value: 'single-banner', label: 'Single Image Banner', icon: FiImage, desc: 'One promotional image with your text' },
+  { value: 'slider', label: 'Image Slider', icon: FiLayers, desc: 'Several images that cross-fade automatically' },
 ];
 
 // Only pages that actually render offer slots on the storefront
 export const pageTargets = [
-  { value: 'home', label: '🏠 Home Page' },
-  { value: 'shop', label: '🛍️ Shop Page' },
-  { value: 'product', label: '📦 Product Page' },
-  { value: 'offers', label: '🏷️ Offers Page' },
+  { value: 'home', label: 'Home Page' },
+  { value: 'shop', label: 'Shop Page' },
+  { value: 'product', label: 'Product Page' },
+  { value: 'offers', label: 'Offers Page' },
 ];
 
 export const displayTypeLabel = (v) => displayTypes.find((t) => t.value === v)?.label || v || 'Banner';
-export const pageLabel = (v) => pageTargets.find((p) => p.value === v)?.label || (v === 'custom' ? '⚙️ Custom (not shown)' : v);
+export const pageLabel = (v) => pageTargets.find((p) => p.value === v)?.label || (v === 'custom' ? 'Custom (not shown)' : v);
 export const sectionLabel = (page, section) =>
   (sectionPresets[page] || []).find((s) => s.value === section)?.label || section || 'main';
 
@@ -43,25 +45,25 @@ export const toLocalInput = (date) => {
 
 export const sectionPresets = {
   home: [
-    { value: 'hero', label: '🔝 Hero / Top Section', desc: 'Large banner at the very top of the page' },
-    { value: 'below-hero', label: '⬇️ Below Hero', desc: 'Promotional strip below the hero section' },
-    { value: 'between-categories', label: '📂 Between Categories & Products', desc: 'Offer shown between category and product sections' },
-    { value: 'before-footer', label: '🔚 Before Footer', desc: 'Promotional section near the bottom' },
-    { value: 'top-strip', label: '📢 Top Announcement Strip', desc: 'Slim bar at the very top for announcements' },
+    { value: 'hero', label: 'Hero / Top Section', desc: 'Large banner at the very top of the page' },
+    { value: 'below-hero', label: 'Below Hero', desc: 'Promotional strip below the hero section' },
+    { value: 'between-categories', label: 'Between Categories & Products', desc: 'Offer shown between category and product sections' },
+    { value: 'before-footer', label: 'Before Footer', desc: 'Promotional section near the bottom' },
+    { value: 'top-strip', label: 'Top Announcement Strip', desc: 'Slim bar at the very top for announcements' },
   ],
   shop: [
-    { value: 'top-banner', label: '🔝 Top Banner', desc: 'Banner at the top of shop page' },
-    { value: 'sidebar', label: '📌 Sidebar', desc: 'Side promotional area' },
-    { value: 'between-products', label: '🛒 Between Products', desc: 'Between product grid rows' },
+    { value: 'top-banner', label: 'Top Banner', desc: 'Banner at the top of shop page' },
+    { value: 'sidebar', label: 'Sidebar', desc: 'Side promotional area' },
+    { value: 'between-products', label: 'Between Products', desc: 'Between product grid rows' },
   ],
   product: [
-    { value: 'below-gallery', label: '📸 Below Product Gallery', desc: 'Under the product images' },
-    { value: 'related-section', label: '🔗 Related Products Area', desc: 'Near the related products section' },
+    { value: 'below-gallery', label: 'Below Product Gallery', desc: 'Under the product images' },
+    { value: 'related-section', label: 'Related Products Area', desc: 'Near the related products section' },
   ],
   offers: [
-    { value: 'hero', label: '🔝 Hero Carousel', desc: 'Big rotating banner at the top of /offers' },
-    { value: 'featured', label: '⭐ Featured', desc: 'Also shown in the hero carousel, after Hero offers' },
-    { value: 'grid', label: '📐 Deals Grid', desc: 'Card in the "All Deals" grid' },
+    { value: 'hero', label: 'Hero Carousel', desc: 'Big rotating banner at the top of /offers' },
+    { value: 'featured', label: 'Featured', desc: 'Also shown in the hero carousel, after Hero offers' },
+    { value: 'grid', label: 'Deals Grid', desc: 'Card in the "All Deals" grid' },
   ],
 };
 

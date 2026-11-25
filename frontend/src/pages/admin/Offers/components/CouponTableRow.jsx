@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiTag, FiEdit2, FiTrash2 } from 'react-icons/fi';
 
 const CouponTableRow = ({ coupon, onEdit, onDelete, onToggleStatus }) => {
   const isExpired = coupon.validTo && new Date(coupon.validTo) < new Date();
@@ -17,8 +18,8 @@ const CouponTableRow = ({ coupon, onEdit, onDelete, onToggleStatus }) => {
     <tr>
       <td>
         <div className="offer-name-cell">
-          <div className="offer-icon-box" style={{ background: '#FFF3CD', color: '#856404' }}>
-            🎟️
+          <div className="offer-icon-box">
+            <FiTag />
           </div>
           <div>
             <div className="offer-name">{coupon.code}</div>
@@ -60,8 +61,8 @@ const CouponTableRow = ({ coupon, onEdit, onDelete, onToggleStatus }) => {
       </td>
       <td>
         <div className="action-btns">
-          <button className="btn btn-outline btn-sm" onClick={() => onEdit(coupon)}>✏️ Edit</button>
-          <button className="btn btn-danger btn-sm" onClick={() => onDelete(coupon._id || coupon.id)}>🗑️</button>
+          <button className="icon-btn" onClick={() => onEdit(coupon)} title="Edit" aria-label="Edit"><FiEdit2 /></button>
+          <button className="icon-btn icon-btn--danger" onClick={() => onDelete(coupon._id || coupon.id)} title="Delete" aria-label="Delete"><FiTrash2 /></button>
         </div>
       </td>
     </tr>

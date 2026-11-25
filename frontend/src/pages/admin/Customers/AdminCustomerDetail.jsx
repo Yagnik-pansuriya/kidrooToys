@@ -4,7 +4,8 @@ import {
   FiArrowLeft, FiUser, FiPhone, FiMail, FiMapPin,
   FiShoppingBag, FiTrendingUp, FiCalendar, FiPackage,
   FiToggleRight, FiToggleLeft, FiClock, FiCheckCircle,
-  FiXCircle, FiTruck, FiAlertCircle, FiLoader
+  FiXCircle, FiTruck, FiAlertCircle, FiLoader,
+  FiAlertTriangle, FiCreditCard, FiRepeat, FiHome, FiBriefcase
 } from 'react-icons/fi';
 import { MdVerified, MdBlock } from 'react-icons/md';
 import { useGetAdminCustomerByIdQuery, useToggleAdminCustomerStatusMutation } from '../../../store/ActionApi/adminCustomerApi';
@@ -88,7 +89,7 @@ const AdminCustomerDetail = () => {
       <div className="acd-not-found">
         <FiAlertCircle />
         <p>Customer not found</p>
-        <button onClick={() => navigate('/admin/customers')}>← Back to Customers</button>
+        <button onClick={() => navigate('/admin/customers')}><FiArrowLeft /> Back to Customers</button>
       </div>
     );
   }
@@ -143,7 +144,7 @@ const AdminCustomerDetail = () => {
                 <span><FiClock /> Last login {fmtDateTime(customer.lastLogin)}</span>
               )}
               {!customer.isVerified && (
-                <span className="acd-unverified-tag">⚠️ Not Verified</span>
+                <span className="acd-unverified-tag"><FiAlertTriangle /> Not Verified</span>
               )}
             </div>
           </div>
@@ -235,6 +236,7 @@ const AdminCustomerDetail = () => {
             </div>
           ) : (
             <div className="acd-orders-table-wrap">
+              <div className="acd-orders-table-scroll">
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -266,7 +268,7 @@ const AdminCustomerDetail = () => {
                         <td className="acd-td-total">{fmt(order.totalAmount)}</td>
                         <td>
                           <span className={`acd-badge ${order.paymentMethod === 'online' ? 'acd-badge--online' : 'acd-badge--cod'}`}>
-                            {order.paymentMethod === 'online' ? '💳 Online' : '🚚 COD'}
+                            {order.paymentMethod === 'online' ? <><FiCreditCard /> Online</> : <><FiTruck /> COD</>}
                           </span>
                         </td>
                         <td>
@@ -284,6 +286,7 @@ const AdminCustomerDetail = () => {
                   })}
                 </tbody>
               </table>
+              </div>
 
               {/* Order Summary Footer */}
               <div className="acd-orders-footer">
@@ -297,7 +300,7 @@ const AdminCustomerDetail = () => {
                 </div>
                 {stats.totalOrders > 1 && (
                   <div className="acd-orders-footer__repeat">
-                    🔁 Repeat Customer
+                    <FiRepeat /> Repeat Customer
                   </div>
                 )}
               </div>
@@ -323,7 +326,7 @@ const AdminCustomerDetail = () => {
                 >
                   <div className="acd-address-card__header">
                     <span className="acd-addr-label">
-                      {addr.label === 'home' ? '🏠' : addr.label === 'work' ? '💼' : '📍'}
+                      {addr.label === 'home' ? <FiHome /> : addr.label === 'work' ? <FiBriefcase /> : <FiMapPin />}
                       {' '}{addr.label}
                     </span>
                     {addr.isDefault && (

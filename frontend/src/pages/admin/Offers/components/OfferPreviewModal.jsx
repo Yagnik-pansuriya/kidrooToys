@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiX, FiEdit2, FiExternalLink } from 'react-icons/fi';
+import { FiX, FiEdit2, FiExternalLink, FiEye } from 'react-icons/fi';
 import { OfferSlotPreview } from '../../../../components/OfferSlot/OfferSlot';
 import { pageLabel, sectionLabel, getOfferStatus, statusMeta, displayTypeLabel } from '../constants/offerConstants';
 
@@ -16,7 +16,7 @@ const OfferPreviewModal = ({ preview, onClose, onEdit }) => {
       <div className="offer-modal premium-modal offer-preview-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div className="modal-header-title">
-            <div className="modal-header-icon">👀</div>
+            <div className="modal-header-icon"><FiEye /></div>
             <div>
               <h2>{preview.title}</h2>
               <p>Exactly how shoppers see it in {pageLabel(preview.placement?.page)} → {sectionLabel(preview.placement?.page, preview.placement?.section)}</p>

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FiEdit2, FiTrash2, FiImage, FiCheckCircle, FiMove, FiCheck } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiImage, FiCheckCircle, FiMove, FiCheck, FiGrid } from 'react-icons/fi';
 import Loader from '../../../../components/Loader/Loader';
 
 const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReorder, onMovePosition, movingId, searchTerm, onToggleStatus }) => {
@@ -97,7 +97,7 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
 
   return (
     <div className="admin-products__table-wrap">
-      <table className="admin-table">
+      <table className="admin-table admin-table--compact">
         <thead>
           <tr>
             <th style={{ width: 40 }}>#</th>
@@ -113,8 +113,11 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
         <tbody>
           {sorted.length === 0 && (
             <tr>
-              <td colSpan={8} style={{ textAlign: 'center', padding: '2rem' }}>
-                {searchTerm ? `No categories found for "${searchTerm}"` : 'No categories yet.'}
+              <td colSpan={8} className="admin-table__empty">
+                <div className="admin-empty">
+                  <span className="admin-empty__icon"><FiGrid aria-hidden="true" /></span>
+                  <p>{searchTerm ? `No categories found for "${searchTerm}"` : 'No categories yet.'}</p>
+                </div>
               </td>
             </tr>
           )}
@@ -139,9 +142,9 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
                 </td>
                 <td>
                   {category.icon ? (
-                    <img src={category.icon} alt="Icon" className="admin-products__thumb" style={{ width: '40px', height: '40px'}} />
+                    <img src={category.icon} alt="Icon" className="admin-products__thumb admin-products__thumb--icon" />
                   ) : (
-                    <div className="admin-products__thumb admin-products__thumb--placeholder" style={{ width: '40px', height: '40px'}}><FiCheckCircle /></div>
+                    <div className="admin-products__thumb admin-products__thumb--placeholder admin-products__thumb--icon"><FiCheckCircle /></div>
                   )}
                 </td>
                 <td>
@@ -151,8 +154,10 @@ const CategoryTable = ({ categories, loading, onEdit, onDelete, deleting, onReor
                     <div className="admin-products__thumb admin-products__thumb--placeholder"><FiImage /></div>
                   )}
                 </td>
-                <td className="td-bold">{category.catagoryName}</td>
-                <td><span className="admin-tag">{category.slug}</span></td>
+                <td className="td-bold admin-cell-name">
+                  <span className="admin-cell-name__text" title={category.catagoryName}>{category.catagoryName}</span>
+                </td>
+                <td><span className="admin-tag admin-tag--mono admin-cell-slug" title={category.slug}>{category.slug}</span></td>
 
                 {/* Position — editable */}
                 <td>

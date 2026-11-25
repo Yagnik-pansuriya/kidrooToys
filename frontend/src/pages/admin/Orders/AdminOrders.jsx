@@ -17,7 +17,10 @@ import {
   FiClock, 
   FiTruck, 
   FiFileText,
-  FiLoader
+  FiLoader,
+  FiPackage,
+  FiCheckCircle,
+  FiAlertCircle
 } from 'react-icons/fi';
 import { useToast } from '../../../context/ToastContext';
 import Loader from '../../../components/Loader/Loader';
@@ -179,12 +182,13 @@ const AdminOrders = () => {
         <Loader message="Loading orders..." />
       ) : orders.length === 0 ? (
         <div className="empty-orders">
-          <div className="empty-orders__icon">📦</div>
+          <div className="empty-orders__icon"><FiPackage /></div>
           <h3>No Orders Found</h3>
           <p>No customer orders match the selected filters.</p>
         </div>
       ) : (
         <div className="table-container">
+          <div className="admin-orders__table-scroll">
           <table className="admin-orders__table">
             <thead>
               <tr>
@@ -245,6 +249,7 @@ const AdminOrders = () => {
               ))}
             </tbody>
           </table>
+          </div>
 
           {/* Pagination */}
           {pagination.pages > 1 && (
@@ -283,7 +288,7 @@ const AdminOrders = () => {
             {isLoadingDetail ? (
               <Loader message="Loading details..." />
             ) : !orderDetail ? (
-              <div className="p-4">Failed to load order information.</div>
+              <div className="p-4 details-drawer__error"><FiAlertCircle /> Failed to load order information.</div>
             ) : (
               <div className="details-drawer__content">
                 
@@ -472,7 +477,7 @@ const AdminOrders = () => {
 
             {currentStep === 5 && (
               <div className="stepper-success">
-                🎉 Step Completed Successfully!
+                <FiCheckCircle /> Step Completed Successfully!
               </div>
             )}
           </div>

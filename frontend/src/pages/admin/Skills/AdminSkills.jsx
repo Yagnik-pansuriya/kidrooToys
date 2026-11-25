@@ -156,7 +156,7 @@ const AdminSkills = () => {
                 )}
               </div>
               <div className="skill-card__body">
-                <h3>{skill.name}</h3>
+                <h3 title={skill.name}>{skill.name}</h3>
                 {skill.description && <p>{skill.description}</p>}
               </div>
               <div className="skill-card__actions">
@@ -261,13 +261,13 @@ const AdminSkills = () => {
               <h2>Delete Skill</h2>
               <button onClick={() => setDeleteTarget(null)}><FiX /></button>
             </div>
-            <div style={{ padding: '1.5rem' }}>
+            <div className="admin-skills__confirm">
               <p>Are you sure you want to delete <strong>{deleteTarget.name}</strong>? This cannot be undone.</p>
               <div className="admin-modal__actions" style={{ borderTop: 'none', marginTop: '1rem', paddingTop: 0 }}>
                 <button className="admin-btn admin-btn--secondary" onClick={() => setDeleteTarget(null)}>
                   Cancel
                 </button>
-                <button className="admin-btn admin-btn--primary" style={{ background: '#EF4444' }} onClick={confirmDelete}>
+                <button className="admin-btn admin-btn--danger" onClick={confirmDelete}>
                   Delete
                 </button>
               </div>

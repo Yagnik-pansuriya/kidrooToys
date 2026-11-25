@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   FiBox,
   FiUsers,
-  FiTrendingUp,
   FiDollarSign,
   FiShoppingBag,
   FiCalendar,
@@ -54,32 +53,32 @@ const Dashboard = () => {
       label: 'Total Revenue',
       value: `₹${(summary.totalRevenue || 0).toLocaleString()}`,
       subtext: `${periodLabel} sales`,
-      color: '#4f46e5',
-      bgColor: '#eef2ff',
+      color: 'var(--a-accent)',
+      bgColor: 'var(--a-accent-soft)',
     },
     {
       icon: <FiShoppingBag />,
       label: 'Total Orders',
       value: (summary.totalOrders || 0).toLocaleString(),
       subtext: `Avg Value: ₹${(summary.avgOrderValue || 0).toLocaleString()}`,
-      color: '#059669',
-      bgColor: '#ecfdf5',
+      color: 'var(--a-success)',
+      bgColor: 'var(--a-success-soft)',
     },
     {
       icon: <FiUsers />,
       label: 'Active Buyers',
       value: (summary.totalBuyers || 0).toLocaleString(),
       subtext: 'Unique purchasing customers',
-      color: '#e11d48',
-      bgColor: '#fff1f2',
+      color: 'var(--a-info)',
+      bgColor: 'var(--a-info-soft)',
     },
     {
       icon: <FiBox />,
       label: 'Items Sold',
       value: (summary.totalItemsSold || 0).toLocaleString(),
       subtext: `Total Active Toys: ${summary.totalProducts || 0}`,
-      color: '#d97706',
-      bgColor: '#fef3c7',
+      color: 'var(--a-warning)',
+      bgColor: 'var(--a-warning-soft)',
     },
   ];
 
@@ -112,8 +111,8 @@ const Dashboard = () => {
     <div className="dashboard-page">
       {/* Top Header & Timeframe Switcher */}
       <div className="dashboard-page__header">
-        <div>
-          <h1 className="dashboard-page__title">Management Dashboard 📊</h1>
+        <div className="dashboard-page__heading">
+          <h1 className="dashboard-page__title">Dashboard</h1>
           <p className="dashboard-page__subtitle">
             Real-time analytics, revenue trends, top buyer metrics & best sellers
           </p>
@@ -165,18 +164,18 @@ const Dashboard = () => {
                 min={draftRange.from || undefined}
                 onChange={(e) => setDraftRange((r) => ({ ...r, to: e.target.value }))}
               />
-              <button className="custom-range__apply" onClick={applyCustomRange} disabled={draftInvalid}>
+              <button className="admin-btn admin-btn--primary custom-range__apply" onClick={applyCustomRange} disabled={draftInvalid}>
                 Apply
               </button>
             </div>
           )}
 
-          <button className="export-report-btn" onClick={exportSalesReport} title="Download sales report (CSV)">
+          <button className="admin-btn admin-btn--secondary export-report-btn" onClick={exportSalesReport} title="Download sales report (CSV)">
             <FiDownload /> Export
           </button>
 
           <button
-            className={`refetch-btn ${isFetching ? 'spinning' : ''}`}
+            className={`admin-btn admin-btn--secondary refetch-btn ${isFetching ? 'spinning' : ''}`}
             onClick={() => refetch()}
             title="Refresh Data"
           >
@@ -203,11 +202,10 @@ const Dashboard = () => {
                   {kpi.icon}
                 </div>
                 <div className="kpi-card__info">
-                  <span className="kpi-card__value">{kpi.value}</span>
                   <span className="kpi-card__label">{kpi.label}</span>
+                  <span className="kpi-card__value">{kpi.value}</span>
                   <span className="kpi-card__subtext">{kpi.subtext}</span>
                 </div>
-                <FiTrendingUp className="kpi-card__trend" style={{ color: kpi.color }} />
               </div>
             ))}
           </div>
