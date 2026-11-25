@@ -256,60 +256,98 @@ const ProductDetail = () => {
 
   const currentOrigin = 'https://kidroo.in';
   const productUrl = `${currentOrigin}/product/${slug || product?.slug || productId || ''}`;
-  // Every product, including each colour/size variant, is its own indexable page.
+  const selfUrl = product?.slug ? `${currentOrigin}/product/${product.slug}` : productUrl;
+  // Colour / pack-size variants canonicalise to their group's main page (canonicalSlug from the API).
   // Keep in sync with backend routes/seoRenderRoutes.ts buildProduct()
-  const canonicalUrl = product?.slug ? `${currentOrigin}/product/${product.slug}` : productUrl;
+  const canonicalUrl = product?.canonicalSlug ? `${currentOrigin}/product/${product.canonicalSlug}` : selfUrl;
+  const isGroupLeader = !product?.canonicalSlug || product.canonicalSlug === product.slug;
   const productImage = productImages[0] || product?.image || '';
+
+  const productLd = {
+    '@type': 'Product',
+    name: name,
+    description: cleanHtmlDescription(product.description) || name,
+    image: productImages,
+    url: selfUrl,
+    sku: product.skuCode || productCode,
+    mpn: productCode,
+    ...(productCode && { inProductGroupWithID: productCode }),
+    brand: { '@type': 'Brand', name: 'Kidroo Toys' },
+    category: categoryName || 'Toys',
+    offers: {
+      '@type': 'Offer',
+      url: selfUrl,
+      priceCurrency: 'INR',
+      price: price.toFixed(2),
+      itemCondition: 'https://schema.org/NewCondition',
+      availability: inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      seller: { '@id': 'https://kidroo.in/#organization' },
+      ...(originalPrice > price && {
+        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      }),
+    },
+    ...(product.ratings > 0 && product.numReviews > 0 && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: product.ratings,
+        reviewCount: product.numReviews,
+        bestRating: 5,
+        worstRating: 1,
+      },
+    }),
+    ...(Array.isArray(product.ageRange) && product.ageRange.length > 0 && {
+      audience: {
+        '@type': 'PeopleAudience',
+        suggestedMinAge: product.ageRange[0].split('-')[0] || '0',
+        suggestedMaxAge: (() => {
+          const last = product.ageRange[product.ageRange.length - 1];
+          return last.includes('+') ? '99' : (last.split('-')[1] || '99');
+        })(),
+      },
+    }),
+  };
+
+  // Main variant describes the whole group so Google can show every variant from one URL
+  const groupName = name.replace(/\s+/g, ' ').trim().split(' | ')[0].replace(/\s-\s[^-]{1,24}$/, '').trim();
+  const variantLd = (v) => {
+    const url = `${currentOrigin}/product/${v.slug}`;
+    return {
+      '@type': 'Product',
+      name: (v.productName || '').trim(),
+      url,
+      image: [v.image, ...(v.images || [])].filter((img, i, arr) => img && arr.indexOf(img) === i),
+      sku: v.skuCode || v.productCode,
+      offers: {
+        '@type': 'Offer',
+        url,
+        priceCurrency: 'INR',
+        price: Number(v.price || 0).toFixed(2),
+        itemCondition: 'https://schema.org/NewCondition',
+        availability: Number(v.stock) > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+        seller: { '@id': 'https://kidroo.in/#organization' },
+      },
+    };
+  };
+  const groupLd = isGroupLeader && skuRelatedProducts.length > 0
+    ? {
+        '@type': 'ProductGroup',
+        name: groupName,
+        description: productLd.description,
+        image: productImages,
+        url: selfUrl,
+        brand: productLd.brand,
+        productGroupID: productCode,
+        category: productLd.category,
+        hasVariant: [productLd, ...skuRelatedProducts.map(variantLd)],
+      }
+    : null;
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
-      // ── Product Schema ──
-      {
-        '@type': 'Product',
-        name: name,
-        description: cleanHtmlDescription(product.description) || name,
-        image: productImages,
-        url: canonicalUrl,
-        sku: product.skuCode || productCode,
-        mpn: productCode,
-        ...(productCode && { inProductGroupWithID: productCode }),
-        brand: { '@type': 'Brand', name: 'Kidroo Toys' },
-        category: categoryName || 'Toys',
-        offers: {
-          '@type': 'Offer',
-          url: canonicalUrl,
-          priceCurrency: 'INR',
-          price: price.toFixed(2),
-          itemCondition: 'https://schema.org/NewCondition',
-          availability: inStock
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock',
-          seller: { '@id': 'https://kidroo.in/#organization' },
-          ...(originalPrice > price && {
-            priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          }),
-        },
-        ...(product.ratings > 0 && product.numReviews > 0 && {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: product.ratings,
-            reviewCount: product.numReviews,
-            bestRating: 5,
-            worstRating: 1,
-          },
-        }),
-        ...(Array.isArray(product.ageRange) && product.ageRange.length > 0 && {
-          audience: {
-            '@type': 'PeopleAudience',
-            suggestedMinAge: product.ageRange[0].split('-')[0] || '0',
-            suggestedMaxAge: (() => {
-              const last = product.ageRange[product.ageRange.length - 1];
-              return last.includes('+') ? '99' : (last.split('-')[1] || '99');
-            })(),
-          },
-        }),
-      },
+      groupLd || productLd,
       // ── BreadcrumbList Schema ──
       {
         '@type': 'BreadcrumbList',
@@ -317,7 +355,7 @@ const ProductDetail = () => {
           { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://kidroo.in/' },
           { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://kidroo.in/shop' },
           ...(productCategories[0]?.slug ? [{ '@type': 'ListItem', position: 3, name: productCategories[0].name, item: `https://kidroo.in/category/${productCategories[0].slug}` }] : []),
-          { '@type': 'ListItem', position: productCategories[0]?.slug ? 4 : 3, name: name, item: canonicalUrl },
+          { '@type': 'ListItem', position: productCategories[0]?.slug ? 4 : 3, name: name, item: selfUrl },
         ],
       },
     ],
