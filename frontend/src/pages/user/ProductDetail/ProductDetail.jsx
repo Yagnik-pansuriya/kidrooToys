@@ -10,7 +10,7 @@ import { useCart } from '../../../context/CartContext';
 import { useToast } from '../../../context/ToastContext';
 import { useCustomerAuth } from '../../../context/CustomerAuthContext';
 import { toggleWishlistId } from '../../../store/ReducerApi/customerAuthSlice';
-import Loader from '../../../components/Loader/Loader';
+import ProductDetailSkeleton from './ProductDetailSkeleton';
 import SEO from '../../../components/SEO/SEO';
 import OfferSlot from '../../../components/OfferSlot/OfferSlot';
 import { useScrollReveal } from '../../../utils/useScrollReveal';
@@ -128,7 +128,7 @@ const ProductDetail = () => {
 
 
 
-  if (isLoading) return <Loader message="Loading product…" />;
+  if (isLoading) return <ProductDetailSkeleton />;
   if (!product) return <div className="pdp-empty">Product not found.</div>;
 
   const name = product.productName || product.name;
