@@ -6,8 +6,8 @@ What the site sends:
 
 | Message | When | Template |
 |---|---|---|
-| Order confirmed | COD order placed / online payment done | `kidroo_order_confirmed` |
-| Order status | Admin changes order status | `kidroo_order_status` |
+| Order confirmed | COD order placed / online payment done | `kidroo_order_confirmed_v2` |
+| Order status | Admin changes order status | `kidroo_order_status_v2` |
 | Offer alert | Admin → Offers → WhatsApp icon | `kidroo_offer_alert` |
 | Cart reminder | Admin → Carts → Send WhatsApp | `kidroo_cart_reminder` |
 
@@ -64,14 +64,17 @@ If the Authkey has **IP whitelisting** turned on, add your server's IP there —
 
 ## Step 3 — Create 4 templates in MSG91
 
-MSG91 → **WhatsApp** → **Templates** → **Create template**. Pick the **same number** from Step 2 each time.
+**First delete the old templates:** MSG91 → **WhatsApp** → **Templates** → on `kidroo_order_confirmed`, `kidroo_order_status` and `kidroo_promo_blast` click **⋮** → **Delete**.
+Meta blocks a deleted name for ~30 days, so the new order templates are named `..._v2` (the code already uses these names).
+
+Then MSG91 → **WhatsApp** → **Templates** → **Create New Template**. Pick the **same number** (`918282939385`) each time.
 
 Rules:
 - Copy **names exactly**. Language **English** (code `en`; do not pick "English (US)").
 - Body variables are `{{1}}`, `{{2}}`… in this order — the code fills them in this order.
 - Submit → wait until all 4 show **Approved** (minutes to ~1 day).
 
-### Template 1 — `kidroo_order_confirmed`
+### Template 1 — `kidroo_order_confirmed_v2`
 
 | Field | Value |
 |---|---|
@@ -94,7 +97,7 @@ We will message you when it ships.
 
 Samples: `{{1}}` Asha · `{{2}}` KDR-234521-4521 · `{{3}}` ₹1,250.00 · `{{4}}` Cash on Delivery
 
-### Template 2 — `kidroo_order_status`
+### Template 2 — `kidroo_order_status_v2`
 
 | Field | Value |
 |---|---|
